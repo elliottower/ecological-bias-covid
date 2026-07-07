@@ -1,0 +1,28 @@
+# Large raw data files (download separately, see COVID19_INDIVIDUAL_DATA_SOURCES.md)
+data/cdc_case_surveillance/cdc_full.csv
+data/mexico_covid/COVID19MEXICO.csv
+data/mexico_covid/220103COVID19MEXICO.csv
+data/mexico_covid/datos_abiertos_covid19_2022.zip
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.blg
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# OS
+.DS_Store
+.hugo_build.lock
+
+# Editor
+*.swp
+*~

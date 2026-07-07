@@ -1,0 +1,40 @@
+# Visweswaran DAG Validation Experiment Configuration
+
+# Synthetic data parameters (calibrated to BCD/NTZ published summaries)
+synthetic:
+  n_samples: 1175  # matches published n
+  treatment_prevalence: 0.523  # 614/1175
+  seed: 42
+
+# CI testing
+ci_testing:
+  alpha: 0.05
+  fdr_method: "by"  # Benjamini-Yekutieli (Visweswaran's PCp contribution)
+  use_rcit: true  # try R RCIT first, fall back to KCI
+
+# PC algorithm (DAG discovery)
+pc_algorithm:
+  alpha: 0.05
+  ci_test: "fisherz"  # fisherz or kci
+
+# Sheaf experiment
+sheaf:
+  use_real_4ce: true
+  n_permutations: 1000
+  seed: 42
+
+# Data paths
+data:
+  bcd_ntz_dag: "results/assumed_dag.json"
+  four_ce_csv: "data/4ce_neuro/site_neuro_counts.csv"
+  four_ce_rda_dir: "data/4ce_neuro/results"
+
+# Reference
+reference:
+  bcd_ntz_doi: "10.1101/2025.01.24.25321100"
+  bcd_ntz_code: "github.com/xialab2016/BCD_NTZ_SemiSupervisedCausal"
+  rcit_doi: "10.1515/jci-2018-0017"
+  rcit_code: "github.com/ericstrobl/RCIT"
+  pcp_doi: "10.1145/3351455"
+  four_ce_neuro_doi: "10.1038/s41598-021-99481-9"
+  four_ce_code: "github.com/covidclinical/Phase2.1NeuroAnalysis"

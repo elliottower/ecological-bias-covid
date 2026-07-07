@@ -1,0 +1,63 @@
+{
+  "dataset": "Zenodo NY Hospitals",
+  "n_cases": 1540,
+  "n_sites": 2,
+  "site_variable": "hospital",
+  "cross_hospital_frobenius": 0.9413950668743403,
+  "top_correlation_diffs": [
+    {
+      "var1": "asthma",
+      "var2": "copd",
+      "diff": 0.43798733087821823
+    },
+    {
+      "var1": "endstage.renal.disease",
+      "var2": "chronic.kidney.disease",
+      "diff": 0.3253290239659235
+    },
+    {
+      "var1": "chf",
+      "var2": "chronic.kidney.disease",
+      "diff": 0.2688548393615308
+    },
+    {
+      "var1": "hypertension",
+      "var2": "dementia",
+      "diff": 0.20856686351468454
+    },
+    {
+      "var1": "hypertension",
+      "var2": "hyperlipidemia",
+      "diff": 0.18256848093448544
+    },
+    {
+      "var1": "cerebrovascular.disease",
+      "var2": "dementia",
+      "diff": 0.1735700751097848
+    },
+    {
+      "var1": "chf",
+      "var2": "asthma",
+      "diff": 0.1585698382110369
+    },
+    {
+      "var1": "hypertension",
+      "var2": "chf",
+      "diff": 0.14930127956233208
+    },
+    {
+      "var1": "hypertension",
+      "var2": "diabetes",
+      "diff": -0.14271469845613732
+    },
+    {
+      "var1": "diabetes",
+      "var2": "chronic.kidney.disease",
+      "diff": 0.14246904966418233
+    }
+  ],
+  "gold_standard": {
+    "interaction_or": 0.43724852513793405,
+    "interaction_p": 0.017988066288665634
+  }
+}

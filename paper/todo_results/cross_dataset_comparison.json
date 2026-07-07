@@ -1,0 +1,116 @@
+{
+  "datasets": {
+    "iMSMS": {
+      "description": "Paired household MS microbiome",
+      "n_sites": 7,
+      "n_subjects": 1151,
+      "design": "Paired (household-matched)",
+      "coverage": "Homogeneous"
+    },
+    "4CE": {
+      "description": "Multi-site COVID-19 neurological outcomes",
+      "n_sites": 21,
+      "n_subjects": 22000,
+      "design": "Unpaired (aggregate site-level)",
+      "coverage": "Heterogeneous"
+    }
+  },
+  "methods": {
+    "bracket_norm": {
+      "iMSMS": {
+        "result": "60\u00b0 rotation, BN=6.34",
+        "p_value": 0.001998001998001998,
+        "significant": true,
+        "interpretation": "Severity rotates microbiome perturbation direction"
+      },
+      "4CE": {
+        "result": "N/A (no paired design)",
+        "p_value": null,
+        "significant": null,
+        "interpretation": "Requires paired displacement vectors"
+      }
+    },
+    "sheaf_h1_correlations": {
+      "iMSMS": {
+        "result": "Null (z=0.37)",
+        "p_value": 0.3696303696303696,
+        "significant": false,
+        "interpretation": "Homogeneous coverage \u2192 sheaf reduces to Cochran's Q"
+      },
+      "4CE": {
+        "result": "z=25.0",
+        "p_value": 0.0,
+        "significant": true,
+        "interpretation": "Heterogeneous coverage \u2192 sheaf detects collective inconsistency"
+      }
+    },
+    "meta_analysis_heterogeneity": {
+      "iMSMS": {
+        "result": "I\u00b2=0% (homogeneous)",
+        "I2": 0.0,
+        "interpretation": "All meta-analysis methods agree"
+      },
+      "4CE": {
+        "result": "I\u00b2=99.8% (extreme)",
+        "I2": 0.9976258544802038,
+        "interpretation": "Methods diverge 350-fold; pooling unreliable"
+      }
+    },
+    "cdnod": {
+      "iMSMS": {
+        "result": "MS\u2192EDSS, PCs\u2192EDSS (5 edges)",
+        "n_edges": 5,
+        "n_domains": 7,
+        "interpretation": "Microbiome PCs predict disability"
+      },
+      "4CE": {
+        "result": "neuro\u2194mortality, neuro\u2194age (5 edges)",
+        "n_edges": 5,
+        "n_domains": 21,
+        "interpretation": "Core pathway confirmed but undirected"
+      }
+    },
+    "dag_ci_consistency": {
+      "iMSMS": {
+        "result": "64% consistent (7/11)",
+        "consistency": 0.64,
+        "interpretation": "Core MS\u2192microbiome pathway confirmed"
+      },
+      "4CE": {
+        "result": "42% consistent (5/12)",
+        "consistency": 0.42,
+        "interpretation": "Neurological pathway confirmed; demographic paths missing"
+      }
+    },
+    "lie_bracket_interaction": {
+      "iMSMS": {
+        "result": "Null (7 sites, low power)",
+        "p_value": null,
+        "significant": false,
+        "interpretation": "Insufficient sites for interaction detection"
+      },
+      "4CE": {
+        "result": "age\u00d7mortality significant (p=0.037)",
+        "p_value": 0.0370168002583537,
+        "significant": true,
+        "interpretation": "21 sites provide power for interaction effects"
+      }
+    },
+    "effect_heterogeneity": {
+      "iMSMS": {
+        "result": "0/3 moderators significant",
+        "n_significant": 0,
+        "n_tested": 3,
+        "interpretation": "Homogeneous effect across sites"
+      },
+      "4CE": {
+        "result": "4/4 moderators significant",
+        "n_significant": 4,
+        "n_tested": 4,
+        "interpretation": "Demographics systematically modulate effect"
+      }
+    }
+  },
+  "meta_finding": "Each dataset reveals what the other cannot. iMSMS's paired design provides causal leverage through household matching and detects severity-dependent rotation invisible to unpaired methods. 4CE's 21-site heterogeneous design provides statistical power for interaction effects and reveals collective inconsistency that homogeneous data cannot exhibit. Use sheaf when coverage is heterogeneous, bracket norm when design is paired, CD-NOD when domains > 7.",
+  "timestamp": "2026-07-02T21:27:25.179549+00:00"
+}

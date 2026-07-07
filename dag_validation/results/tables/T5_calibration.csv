@@ -1,0 +1,7 @@
+X,Y,conditioning_set,type,fisher_z_pval,fisher_z_stat,fisher_partial_corr,fisher_verdict,kernel_method,kernel_pval,kernel_verdict,methods_agree
+age_at_dmt_initiation,disease_duration,{},known_truth,0.0,28.020270085198106,0.5559987280912181,dependent,rcit,0.0,dependent,True
+n_ms_phecodes,n_ms_cuis,{},known_truth,0.0,40.49363138824899,0.7192768218560083,dependent,rcit,0.0,dependent,True
+n_ms_phecodes,utilization_total,{},known_truth,0.0,13.660035020895068,0.29649922326679956,dependent,rcit,1.221245e-15,dependent,True
+age_at_dmt_initiation,disease_duration,days_earliest_to_study_dmt|followup_duration|n_ms_cuis|n_ms_phecodes|sex|utilization_total|white_nonhispanic,known_truth,0.0,21.42191217460233,0.44641221615388316,dependent,rcit,5.551115e-16,dependent,True
+sex,followup_duration,{},known_truth,0.3893686808313266,0.8607628297802805,0.019259311932170793,independent,rcit,0.3677586,independent,True
+white_nonhispanic,followup_duration,{},known_truth,0.3196557323718445,0.9951655942635931,0.022265606869726885,independent,rcit,0.2288997,independent,True

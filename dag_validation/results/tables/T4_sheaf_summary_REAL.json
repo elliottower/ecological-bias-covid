@@ -1,0 +1,13 @@
+{
+  "method": "sheaf_h1",
+  "data": "REAL_4CE",
+  "inconsistency": 3.146450411187339,
+  "z_score": 4.440892098500626e-06,
+  "permutation_p": 0.755,
+  "n_sites_used": 16,
+  "n_edges": 120,
+  "sheaf_uses_more_sites": false,
+  "sheaf_n_sites": 16,
+  "cochran_max_sites": 16,
+  "cochran_union_sites": 16
+}

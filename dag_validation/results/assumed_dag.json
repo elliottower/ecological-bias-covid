@@ -1,0 +1,148 @@
+{
+  "nodes": [
+    {
+      "name": "DMT",
+      "role": "treatment"
+    },
+    {
+      "name": "PDDS_change",
+      "role": "outcome"
+    },
+    {
+      "name": "white_nonhispanic",
+      "role": "confounder",
+      "label": "Race/Ethnicity"
+    },
+    {
+      "name": "sex",
+      "role": "confounder",
+      "label": "Sex"
+    },
+    {
+      "name": "age_at_dmt_initiation",
+      "role": "confounder",
+      "label": "Age at DMT"
+    },
+    {
+      "name": "disease_duration",
+      "role": "confounder",
+      "label": "Disease Duration"
+    },
+    {
+      "name": "days_earliest_to_study_dmt",
+      "role": "confounder",
+      "label": "Prior DMT Exposure"
+    },
+    {
+      "name": "followup_duration",
+      "role": "confounder",
+      "label": "Follow-up Duration"
+    },
+    {
+      "name": "n_ms_phecodes",
+      "role": "confounder",
+      "label": "MS PheCode Count"
+    },
+    {
+      "name": "n_ms_cuis",
+      "role": "confounder",
+      "label": "MS NLP CUI Count"
+    },
+    {
+      "name": "utilization_total",
+      "role": "confounder",
+      "label": "Healthcare Utilization"
+    }
+  ],
+  "edges": [
+    {
+      "source": "DMT",
+      "target": "PDDS_change"
+    },
+    {
+      "source": "white_nonhispanic",
+      "target": "DMT"
+    },
+    {
+      "source": "white_nonhispanic",
+      "target": "PDDS_change"
+    },
+    {
+      "source": "sex",
+      "target": "DMT"
+    },
+    {
+      "source": "sex",
+      "target": "PDDS_change"
+    },
+    {
+      "source": "age_at_dmt_initiation",
+      "target": "DMT"
+    },
+    {
+      "source": "age_at_dmt_initiation",
+      "target": "PDDS_change"
+    },
+    {
+      "source": "disease_duration",
+      "target": "DMT"
+    },
+    {
+      "source": "disease_duration",
+      "target": "PDDS_change"
+    },
+    {
+      "source": "days_earliest_to_study_dmt",
+      "target": "DMT"
+    },
+    {
+      "source": "days_earliest_to_study_dmt",
+      "target": "PDDS_change"
+    },
+    {
+      "source": "followup_duration",
+      "target": "DMT"
+    },
+    {
+      "source": "followup_duration",
+      "target": "PDDS_change"
+    },
+    {
+      "source": "n_ms_phecodes",
+      "target": "DMT"
+    },
+    {
+      "source": "n_ms_phecodes",
+      "target": "PDDS_change"
+    },
+    {
+      "source": "n_ms_cuis",
+      "target": "DMT"
+    },
+    {
+      "source": "n_ms_cuis",
+      "target": "PDDS_change"
+    },
+    {
+      "source": "utilization_total",
+      "target": "DMT"
+    },
+    {
+      "source": "utilization_total",
+      "target": "PDDS_change"
+    }
+  ],
+  "treatment": "DMT",
+  "outcome": "PDDS_change",
+  "confounders": [
+    "white_nonhispanic",
+    "sex",
+    "age_at_dmt_initiation",
+    "disease_duration",
+    "days_earliest_to_study_dmt",
+    "followup_duration",
+    "n_ms_phecodes",
+    "n_ms_cuis",
+    "utilization_total"
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "timestamp": "2026-07-03T03:44:50.139074+00:00",
+  "information_geometry": {
+    "method": "information_geometry",
+    "n_sites": 9,
+    "n_variables": 4,
+    "variables": [
+      "age_70plus",
+      "died",
+      "has_comorbidity",
+      "male"
+    ],
+    "geodesic_spread": 0.2595453146453668,
+    "geodesic_spread_sqrt": 0.50945590058941,
+    "euclidean_spread": 0.2515054765658641,
+    "fisher_rao_mean_dist": 0.7218245141044762,
+    "fisher_rao_max_dist": 1.2619008273767958,
+    "frechet_mean": {
+      "age_70plus": 0.09265830105288869,
+      "died": 0.03714523050022268,
+      "has_comorbidity": 0.05604678476938679,
+      "male": 0.41457532893990306
+    },
+    "per_variable_spread": {
+      "age_70plus": 0.10576708858251306,
+      "died": 0.015690802546467833,
+      "has_comorbidity": 0.031010712746453173,
+      "male": 0.10707671076993268
+    },
+    "z_score": 0.0,
+    "p_value": 0.248,
+    "n_perms": 500,
+    "most_heterogeneous": [
+      [
+        "male",
+        0.10707671076993268
+      ],
+      [
+        "age_70plus",
+        0.10576708858251306
+      ],
+      [
+        "has_comorbidity",
+        0.031010712746453173
+      ]
+    ]
+  },
+  "optimal_transport": {
+    "method": "optimal_transport",
+    "n_sites": 9,
+    "n_variables": 4,
+    "w1_mean_pairwise": 0.38424783062397605,
+    "w1_max_pairwise": 0.7641790878461306,
+    "total_transport_cost": 0.22127828826145052,
+    "barycenter": {
+      "age_70plus": 0.19632946076437763,
+      "died": 0.047471574207237924,
+      "has_comorbidity": 0.07954872955902696,
+      "male": 0.5310118036431215
+    },
+    "per_site_cost": {
+      "American Indian/Alas": 0.22248735609924378,
+      "Asian, Non-Hispanic": 0.29078080787386806,
+      "Black, Non-Hispanic": 0.45657055501075167,
+      "Hispanic/Latino": 0.161836897315793,
+      "Missing": 0.24968383131334296,
+      "Multiple/Other, Non-": 0.49351422972616205,
+      "Native Hawaiian/Othe": 0.5539672552972721,
+      "Unknown": 0.2102118325488586,
+      "White, Non-Hispanic": 0.15382962487036422
+    },
+    "per_variable_transport": {
+      "age_70plus": 0.07028530539726723,
+      "died": 0.016279323775270624,
+      "has_comorbidity": 0.030692638126019238,
+      "male": 0.10402102096289342
+    },
+    "bures_mean_distance": null,
+    "bures_max_distance": null,
+    "z_score": 0.05916636889096196,
+    "p_value": 0.48,
+    "n_perms": 500,
+    "most_transported": [
+      [
+        "male",
+        0.10402102096289342
+      ],
+      [
+        "age_70plus",
+        0.07028530539726723
+      ],
+      [
+        "has_comorbidity",
+        0.030692638126019238
+      ]
+    ]
+  }
+}

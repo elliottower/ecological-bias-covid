@@ -1,0 +1,100 @@
+{
+  "n_sites": 9,
+  "ecological_slope": 0.27723755352147905,
+  "ecological_p": 0.11829028181349338,
+  "ecological_r2": 0.31159927201327536,
+  "individual_or_80plus": 9.878030034832715,
+  "individual_p": 0.0,
+  "site_data": [
+    {
+      "site": "American Indian/Alas",
+      "n": 142780,
+      "prop_died": 0.03653873091469394,
+      "prop_80plus": 0.0,
+      "prop_70plus": 0.035362095531587055,
+      "prop_male": 0.48885698277069617,
+      "prop_comorbidity": 0.07111640285754307,
+      "mean_age": 35.341784563664376
+    },
+    {
+      "site": "Asian, Non-Hispanic",
+      "n": 174062,
+      "prop_died": 0.06051866576277418,
+      "prop_80plus": 0.07815605933517941,
+      "prop_70plus": 0.16792292401558065,
+      "prop_male": 0.32698119061024233,
+      "prop_comorbidity": 0.034252163022371336,
+      "mean_age": 28.210752490491895
+    },
+    {
+      "site": "Black, Non-Hispanic",
+      "n": 1920609,
+      "prop_died": 0.021870146396273264,
+      "prop_80plus": 0.0337804311028429,
+      "prop_70plus": 0.0337804311028429,
+      "prop_male": 0.2656417834134902,
+      "prop_comorbidity": 0.07649865225040599,
+      "mean_age": 37.132938042048124
+    },
+    {
+      "site": "Hispanic/Latino",
+      "n": 1195959,
+      "prop_died": 0.07642569686753475,
+      "prop_80plus": 0.09362528314097725,
+      "prop_70plus": 0.15756894676155286,
+      "prop_male": 0.4739961821433678,
+      "prop_comorbidity": 0.04244209040610924,
+      "mean_age": 44.685005924116126
+    },
+    {
+      "site": "Missing",
+      "n": 192529,
+      "prop_died": 0.015592456201403425,
+      "prop_80plus": 0.0,
+      "prop_70plus": 0.055139745181245425,
+      "prop_male": 0.5292241688265145,
+      "prop_comorbidity": 0.004721366651257733,
+      "mean_age": 35.83654929906663
+    },
+    {
+      "site": "Multiple/Other, Non-",
+      "n": 157859,
+      "prop_died": 0.006436123375924084,
+      "prop_80plus": 0.0,
+      "prop_70plus": 0.0,
+      "prop_male": 0.30740724317270474,
+      "prop_comorbidity": 0.04700397189897314,
+      "mean_age": 40.67164368202003
+    },
+    {
+      "site": "Native Hawaiian/Othe",
+      "n": 13548,
+      "prop_died": 0.05868024800708592,
+      "prop_80plus": 0.035798641865958075,
+      "prop_70plus": 0.09322409211691762,
+      "prop_male": 0.15389725420726305,
+      "prop_comorbidity": 0.14208739297313255,
+      "mean_age": 44.727635075287864
+    },
+    {
+      "site": "Unknown",
+      "n": 2730140,
+      "prop_died": 0.03283274850373973,
+      "prop_80plus": 0.13458284190554332,
+      "prop_70plus": 0.2342945783000139,
+      "prop_male": 0.6461621015772085,
+      "prop_comorbidity": 0.03709113818338986,
+      "mean_age": 53.33797167910803
+    },
+    {
+      "site": "White, Non-Hispanic",
+      "n": 6165036,
+      "prop_died": 0.05821961136966597,
+      "prop_80plus": 0.0740868342050233,
+      "prop_70plus": 0.2518682778170314,
+      "prop_male": 0.587097139416542,
+      "prop_comorbidity": 0.11100616444088891,
+      "mean_age": 55.125645657219195
+    }
+  ]
+}

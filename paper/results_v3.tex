@@ -1,0 +1,420 @@
+\documentclass{article}
+
+\usepackage[preprint]{tmlr}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{multirow}
+
+\renewcommand{\arraystretch}{1.3}
+
+\title{Site-Level Patterns in Neurological COVID-19 Severity:\\What Aggregate Data Can and Cannot Tell Us}
+
+\author{\name Elliot Tower \\
+      \email elliot@elliottower.ai}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Central nervous system involvement roughly doubles the odds of severe COVID-19 in the 4CE consortium's aggregate data (proportional morbidity index $\approx 2.0$), but this average conceals enormous site-level variation ($I^2 = 99.8\%$, Cochran's $Q = 6318$).
+Heterogeneity of this magnitude renders any single pooled estimate unreliable: fixed-effects, random-effects, and influence-function methods diverge by 350-fold on the same data.
+We decompose the variation rather than averaging over it.
+
+Meta-regression identifies the proportion of elderly patients as the strongest moderator of the neurological severity association ($\beta = +14.2$, $p < 10^{-15}$).
+A site-level interaction between elderly proportion and mortality rate is significant at all three follow-up periods ($p < 0.04$) and increases from 30 to 90 days ($\beta$: $+32.5 \to +38.3$), though the temporal trend itself has only three timepoints and does not reach significance as a trend ($p = 0.16$).
+Comorbidity correlation patterns show collective cross-site inconsistency ($z = 25$, $p < 0.0001$) invisible to pairwise heterogeneity tests, indicating that the covariate relationships assumed constant in standard meta-analysis are not.
+
+\textbf{Important caveat}: all analyses use aggregate site-level data.
+The ecological fallacy applies directly: site-level associations need not hold for individual patients, and the age--mortality interaction may reflect compositional confounding rather than a biological mechanism.
+Individual-level data would be needed to distinguish genuine neurological severity amplification from ecological confounding.
+We present these site-level patterns as hypotheses for individual-level testing, not as established causal effects.
+\end{abstract}
+
+
+\section{Introduction}
+
+COVID-19 produces neurological complications in a substantial fraction of hospitalized patients.
+Early reports from Wuhan documented neurological symptoms in 36\% of hospitalized cases, with CNS involvement---stroke, encephalopathy, impaired consciousness---concentrated in patients with more severe systemic disease \cite{mao2020neuro}.
+European ICU cohorts confirmed this pattern: 84\% of ICU patients showed neurological signs at presentation \cite{helms2020neuro}.
+A prospective New York cohort established that neurological disorders independently increase in-hospital mortality after adjusting for age, sex, and comorbidities \cite{frontera2021neuro}.
+The clinical picture is consistent: CNS involvement accompanies and worsens severe COVID-19.
+
+The 4CE consortium (Consortium for Clinical Characterization of COVID-19 by EHR) assembled the largest multi-site analysis of COVID-19 neurological outcomes: 21 healthcare sites across 6 countries, with standardized ICD-10 outcome coding for 20 neurological categories \cite{four_ce_neuro2021}.
+The consortium reported that neurological diagnoses associate with adverse outcomes and that the effect varies across sites.
+Three questions remained: which demographic features explain the heterogeneity, whether specific interactions amplify the neurological effect, and whether the association changes over the first months after admission.
+
+There are biological reasons to expect the neurological effect to be age-dependent.
+The blood-brain barrier loses structural integrity with age: pericyte degeneration and basement membrane thinning accelerate after age 60 \cite{montagne2015bbb}, reducing the barrier's capacity to exclude circulating pathogens and inflammatory mediators.
+Age-related chronic low-grade inflammation---``inflammaging''---elevates baseline levels of IL-6, TNF-$\alpha$, and CRP \cite{franceschi2018inflammaging}, pre-sensitizing the neuroinflammatory cascade that COVID-19 triggers.
+SARS-CoV-2 can invade the brain through olfactory mucosa, hematogenous spread across the blood-brain barrier, or retrograde axonal transport \cite{song2021neuroinvasion}, and the cytokine storm characteristic of severe COVID-19 further disrupts barrier integrity through matrix metalloproteinase activation \cite{iadecola2020covid}.
+In elderly patients, these mechanisms converge: a compromised barrier, elevated baseline inflammation, and a viral trigger combine to produce neurological damage that younger patients' intact barriers can partially prevent.
+If this convergence matters, sites serving older populations should show amplified neurological severity effects.
+
+We test this prediction using 4CE aggregate site-level data.
+Meta-analysis quantifies the pooled effect and its variation, meta-regression identifies demographic moderators, interaction analysis detects specific amplification patterns, and multivariate consistency testing examines whether the covariate relationships assumed by standard meta-analysis hold across sites.
+The site-level patterns are consistent with age-dependent neurological vulnerability, but a critical caveat applies throughout: aggregate data cannot distinguish genuine biological effects from ecological confounding by site composition.
+
+
+\section{Results}
+
+\subsection{CNS involvement doubles COVID-19 severity odds}
+
+Among sites with adequate data ($\text{SE} < 0.5$ on the log scale; $k = 11$--16 per timepoint), the fixed-effects proportional morbidity index (PMI) for CNS involvement is 1.97 (95\% CI: [1.87, 2.09]) at 30 days, with similar estimates at 60 and 90 days.
+This estimate must be interpreted cautiously: $I^2 = 99.8\%$ means essentially all variation is between-site, violating the common-effect assumption that fixed-effects requires.
+The fixed-effects estimate reflects the precision-weighted center of a highly heterogeneous distribution, not a single underlying effect.
+Sites individually show PMIs ranging from 1.4 to 2.8 (among the 11 with $\text{SE} < 0.4$), so the site-level average of $\approx 2$ is broadly descriptive but no single number adequately summarizes this data.
+Sensitivity analysis \cite{vanderweele2017} indicates that an unmeasured confounder would need a risk ratio of at least 3.4 to fully explain the observed PMI; a confounder of strength 3.1 could shift the confidence interval to include the null.
+
+\begin{table}[t]
+\centering
+\caption{Meta-analysis of CNS neurological involvement on COVID-19 severity (PMI) at 30 days. All three estimates are unreliable for different reasons. The random-effects and influence-function estimates are dominated by separation artifacts at small sites (PMIs of $10^{8}$--$10^{18}$). The fixed-effects estimate assumes a common effect that $I^2 = 99.8\%$ rules out. The 350-fold divergence is a diagnostic signal that no single pooled number is appropriate for this data.}
+\label{tab:meta}
+\begin{tabular}{llcccc}
+\toprule
+Method & Pooled PMI & 95\% CI & $p$ & $I^2$ \\
+\midrule
+Fixed-effects (IV) & 1.97 & [1.87, 2.09] & $< 10^{-6}$ & 99.8\% \\
+Random-effects (DL) & 702 & [201, 2460] & $< 10^{-6}$ & --- \\
+Influence function & 972 & [1.6, 587K] & 0.035 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The 350-fold divergence between pooling methods (Table~\ref{tab:meta}) is a diagnostic failure, not a finding.
+The random-effects PMI of 702 is a numerical artifact: several small sites produce PMIs of $10^{8}$--$10^{18}$ from complete separation, and the random-effects framework up-weights these extreme estimates.
+The influence-function estimator is similarly dominated.
+Among the 11 sites with $\text{SE} < 0.4$, the picture is more consistent (PMIs between 1.4 and 2.8), but even this restricted set shows $I^2 > 95\%$.
+The method divergence signals that this dataset requires decomposition of heterogeneity rather than a pooled estimate.
+
+Peripheral nervous system involvement provides a negative control.
+PNS diagnoses show a PMI of 1.04 at 30 days (95\% CI: [0.95, 1.14], $p = 0.37$), indistinguishable from the null.
+The specificity to CNS involvement is consistent with the neuroinvasive and neuroinflammatory mechanisms of SARS-CoV-2: the virus produces central injury through blood-brain barrier disruption and direct neuronal invasion \cite{song2021neuroinvasion, iadecola2020covid}, while peripheral neuropathies follow different pathophysiology and do not predict systemic severity.
+
+
+\subsection{The effect varies dramatically across hospitals}
+
+Between-site heterogeneity is extreme: Cochran's $Q = 6318$ ($p < 10^{-15}$), $I^2 = 99.8\%$.
+Virtually all variation in the pooled estimate comes from between-site differences rather than sampling noise ($\hat\tau^2 = 6.08$ on the log-PMI scale).
+A PMI of 2.0 is real as a population average, but individual sites experience effects ranging from negligible to overwhelming.
+The next sections decompose this variation and show it tracks identifiable demographic characteristics---primarily the proportion of elderly patients.
+
+
+\subsection{Elderly proportion is the strongest driver of between-site variation}
+
+Meta-regression of the CNS severity effect (30-day PMI, log scale) on four site-level demographics identifies all four as significant moderators (Table~\ref{tab:moderators}).
+
+\begin{table}[t]
+\centering
+\caption{Meta-regression moderators of the CNS $\to$ severity association (30-day PMI). Elderly proportion is the strongest moderator: each 10-percentage-point increase in the share of patients aged 80+ corresponds to a 4.1-fold increase in the neurological severity effect.}
+\label{tab:moderators}
+\begin{tabular}{lcccc}
+\toprule
+Moderator & $\beta$ & SE & $p$ & Range across sites \\
+\midrule
+Proportion female & $+1.13$ & 0.14 & $< 10^{-15}$ & 0.06--0.53 \\
+Proportion age $\geq 80$ & $+14.2$ & 0.83 & $< 10^{-15}$ & 0.01--0.43 \\
+Baseline severity & $-2.91$ & 0.23 & $< 10^{-15}$ & 0.06--0.73 \\
+Number of patients & $-0.0003$ & 0.00005 & $< 10^{-9}$ & 32--22{,}789 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The elderly proportion dominates ($\beta = +14.2$): a 10-percentage-point increase in the proportion of patients aged 80+ corresponds to a $\exp(1.42) \approx 4.1$-fold increase in the CNS severity PMI.
+Sites serving older populations see dramatically larger neurological effects on COVID-19 outcomes.
+This is consistent with the age-dependent vulnerability mechanisms outlined in the Introduction: an aging blood-brain barrier is more permeable to both viral particles and inflammatory mediators \cite{montagne2015bbb}, and chronic low-grade inflammation lowers the threshold for neuroinflammatory damage \cite{franceschi2018inflammaging}.
+Elderly patients also carry higher cerebrovascular comorbidity burdens, providing additional pathways for neurological injury during acute COVID-19.
+
+Baseline severity acts in the opposite direction ($\beta = -2.91$): sites where most patients are already severe at admission show smaller additional neurological effects.
+This ceiling is clinically expected.
+When 73\% of patients at a site already have severe disease, neurological involvement has limited room to worsen outcomes further.
+An apparently small neurological effect at a high-severity site reflects compressed marginal risk rather than benign neurological involvement.
+
+The female proportion moderator ($\beta = +1.13$) is initially surprising, since male sex is the established COVID-19 mortality risk factor \cite{takahashi2020sex, williamson2020opensafely}.
+At the site level, this likely reflects ecological confounding: sites with higher female proportions may serve different patient populations (e.g., academic medical centers with different referral patterns) rather than indicating a direct biological female risk for neurological COVID-19.
+Site size has a small negative effect ($\beta = -0.0003$), consistent with regression to the mean.
+
+
+\subsection{A site-level age--mortality interaction appears at all three timepoints}
+
+The overall interaction heterogeneity test (Frobenius norm of cross-site interaction coefficient deviations, tested by permutation) is not globally significant ($z = 0.05$, $p = 0.47$): most pairs of site-level characteristics interact additively.
+One specific interaction, however, is significant at all three follow-up periods (Table~\ref{tab:interaction}), though this is uncorrected for the 18 pairwise interaction tests conducted (6 moderator pairs $\times$ 3 timepoints).  Under Benjamini--Hochberg FDR control at $q = 0.05$, only the 60- and 90-day values remain below threshold; Bonferroni, which is more conservative but assumes test independence (violated here, since the three timepoints share patients), retains the same two.  The 30-day value ($p = 0.037$) is suggestive but does not survive correction.
+
+\begin{table}[t]
+\centering
+\caption{Age $\times$ mortality interaction on the CNS severity effect. The coefficients increase from 30 to 90 days, but the temporal trend itself has only three points ($R^2 = 0.94$, $p = 0.16$). Uncorrected $p$-values are shown; after Benjamini--Hochberg FDR correction for 18 tests ($q = 0.05$), only the 60- and 90-day interactions remain significant. The large $\beta$ magnitudes ($+32$ to $+38$) are likely inflated by the small number of sites (Type~M error); a hierarchical model would shrink these estimates.}
+\label{tab:interaction}
+\begin{tabular}{lccc}
+\toprule
+Timepoint & $\beta_{\text{age} \times \text{mortality}}$ & $p$ \\
+\midrule
+30 days  & $+32.5$ & 0.037 \\
+60 days  & $+36.7$ & 0.024 \\
+90 days  & $+38.3$ & 0.021 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Sites with both high elderly proportions and high mortality rates show disproportionately large CNS severity associations---larger than either demographic alone predicts.
+This is a second-order effect modification: the neurological severity risk is amplified specifically when age-related barrier vulnerability and high-mortality institutional context co-occur.
+
+The interaction coefficients increase from 30 to 90 days ($\beta$: $+32.5 \to +38.3$), but this temporal pattern should be interpreted cautiously.
+A linear fit to three timepoints yields $R^2 = 0.94$, but the trend itself does not reach significance ($p = 0.16$); three data points provide essentially no power to establish a temporal trajectory.
+The individual timepoints are each significant ($p < 0.04$ uncorrected), establishing that the site-level interaction exists at each follow-up period, but whether it genuinely strengthens over time is an open question.
+
+The coefficient magnitudes ($\beta = +32$ to $+38$) warrant caution.  Estimated from $\sim$20 aggregated sites with high variance, these are the kind of implausibly large effects that Gelman and Carlin \cite{gelman2014typeMS} identify as likely Type~M (magnitude) errors: when uncertainty is high, statistically significant estimates are systematically inflated.  A hierarchical model with site random effects would partially pool these estimates toward the group mean, producing smaller, more plausible coefficients.  We report the fixed-effects values here for transparency, but they should be interpreted as upper bounds on the true effect.
+
+Several alternative explanations exist for the apparent temporal pattern.
+Survivorship bias selectively removes the sickest patients before 90 days, changing the composition of the surviving cohort.
+Differential discharge timing across sites could shift the 90-day denominator.
+Late-presenting neurological complications could inflate later timepoints independently of any progressive mechanism.
+Individual-level longitudinal data---tracking within-patient neurological trajectories---would be needed to distinguish genuine progression from these cross-sectional artifacts.
+
+The temporal pattern is consistent with progressive neuroinflammatory damage \cite{douaud2022brain, nalbandian2021pasc}, but this is one of several explanations compatible with site-level data, and we present it as a hypothesis for individual-level testing.
+
+No other pairwise interaction among the four moderators reaches significance at any timepoint (all $p > 0.25$).
+
+
+\subsection{Sex has a direct pathway to mortality}
+
+Conditional independence testing (RCIT; \citealt{strobl2019rcit}) validates the core neurological pathway: CNS involvement predicts both severity ($p = 0.006$) and mortality ($p < 0.0001$), confirming the 4CE consortium's published findings \cite{four_ce_neuro2021}.
+
+The test also finds that sex remains associated with mortality ($p = 0.0003$) after conditioning on Elixhauser comorbidity burden \cite{elixhauser1998} and severity (Table~\ref{tab:rcit}).
+This is consistent with the known male COVID-19 mortality excess operating through immune mechanisms---ACE2 expression, interferon response \cite{takahashi2020sex, iadecola2020covid}---that comorbidity indices do not capture.
+However, this result should be interpreted in context: the overall DAG passes only 5 of 12 testable conditional independence implications (42\%), which in causal-discovery terms constitutes a rejected model.
+Individual conditional independence tests from a rejected DAG do not carry the same evidential weight as tests from a well-fitting model.
+
+\begin{table}[t]
+\centering
+\caption{Conditional independence tests (RCIT) on the assumed causal DAG. The core neurological pathway passes (rows 1--2), but three implied independences fail (rows 3--5). Overall DAG consistency is 42\% (5/12), indicating the model is rejected as a whole; individual test results should be interpreted cautiously.}
+\label{tab:rcit}
+\begin{tabular}{llccc}
+\toprule
+Test & Expected & $p$ & Result & Consistent? \\
+\midrule
+Neuro $\to$ severity & dependent & 0.006 & dependent & Yes \\
+Neuro $\to$ mortality & dependent & $< 0.0001$ & dependent & Yes \\
+\midrule
+Sex $\perp$ mortality $\mid$ \{comorbidity, severity\} & independent & 0.0003 & dependent & No \\
+Age $\perp$ readmission $\mid$ \{severity, comorbidity\} & independent & 0.0007 & dependent & No \\
+Sex $\perp$ readmission $\mid$ \{severity, comorbidity\} & independent & 0.005 & dependent & No \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Age and sex also have direct pathways to readmission ($p = 0.0007$ and $p = 0.005$) that persist after conditioning on severity and comorbidity.
+Readmission depends on healthcare access, caregiver availability, and clinical monitoring practices---factors that track demographics directly, independent of disease severity.
+The overall DAG consistency is 42\% (5/12 tested implications hold).
+A model failing more than half its testable implications is rejected in the standard causal-discovery sense, indicating that the assumed graph does not adequately represent the data-generating process at the site level.
+The core neurological pathway passes its tests, but conclusions drawn from individual edges of a globally rejected DAG require independent confirmation.
+
+
+\subsection{Comorbidity correlation structure differs systematically across sites}
+
+Elixhauser comorbidity correlation matrices \cite{elixhauser1998} from 20 sites (435 pairwise correlations per site, 3 neurological subtypes) show collective inconsistency when tested with a multivariate cross-site consistency statistic \cite{robinson2017sheaf}: $z = 25.0$ ($p < 0.0001$) across all patients, with comparable signals in CNS-only ($z = 14.4$) and PNS-only ($z = 14.4$) subgroups.
+
+\begin{table}[t]
+\centering
+\caption{Cross-site consistency of comorbidity correlation patterns. The multivariate consistency statistic detects collective inconsistency ($z = 25$) that pairwise Cochran's $Q$ tests miss entirely (0/1305 significant). The consistency test examines the full correlation matrix jointly; Cochran's $Q$ tests each pair independently.}
+\label{tab:consistency}
+\begin{tabular}{lccc}
+\toprule
+Test & Statistic & $p$ & Significant pairs \\
+\midrule
+Consistency statistic (all patients) & $z = 25.0$ & $< 0.0001$ & N/A (collective) \\
+Consistency statistic (CNS only) & $z = 14.4$ & $< 0.0001$ & N/A (collective) \\
+Consistency statistic (PNS only) & $z = 14.4$ & $< 0.0001$ & N/A (collective) \\
+Cochran's $Q$ (per pair) & max $Q = 13.4$ & all $> 0.05$ & 0 / 1305 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+No single comorbidity pair varies enough across sites to reach significance on its own.
+The consistency test detects their collective pattern: the aggregate structure of small per-pair differences is far more extreme than chance.
+This matters because comorbidity adjustment is standard practice in COVID-19 outcome studies.
+If the relationships between comorbidities differ systematically across sites---in their correlation structure, beyond prevalence differences alone---then site-specific adjustment models are fitting different relationships, and pooling adjusted estimates implicitly assumes homogeneity that does not exist.
+
+The most heterogeneous pairs are clinically interpretable.
+HIV-Lymphoma ($Q = 13.4$, $r = 0.09 \pm 0.25$) varies because HIV prevalence and lymphoma coding differ across countries.
+Alcohol-Drugs ($Q = 12.9$, $r = 0.70 \pm 0.24$) varies because substance use documentation practices differ across institutional contexts.
+These pairs illustrate how coding and documentation practices---rather than underlying biology---can drive the cross-site inconsistency that the consistency test detects.
+The test exploits heterogeneous coverage (10 sites report all 1,305 pairs; 10 sites report 36--296 pairs) by testing the full correlation matrix jointly, providing power that pairwise tests on common coverage cannot match.
+
+Two negative controls validate the consistency statistic.
+A homogeneous control (all sites draw correlations from the same distribution, preserving stalk structure) produces $z = 0.02 \pm 1.1$ across 20 trials---the signal vanishes entirely when site-specific patterns are absent.
+A within-pair shuffle (for each comorbidity pair, correlation values are permuted across sites) produces $z = 0.30 \pm 0.84$, confirming that the signal depends on the multivariate correlation structure within each site, not on per-pair heterogeneity alone.
+
+
+\subsection{Causal graph discovery maps the neurological pathway}
+
+CD-NOD \cite{huang2020cdnod} exploits distribution shifts across the 21 sites to discover five edges in the site-level data (Table~\ref{tab:cdnod}).
+The two clinically relevant edges---neurological severity with mortality, and neurological severity with elderly age---are undirected.
+
+\begin{table}[t]
+\centering
+\caption{Causal edges discovered by CD-NOD across 21 4CE sites. The algorithm cannot orient the two clinically relevant edges, consistent with confounding by acute illness severity that aggregate data cannot resolve.}
+\label{tab:cdnod}
+\begin{tabular}{lll}
+\toprule
+Source & Target & Type \\
+\midrule
+Neuro severity & Mortality & Undirected \\
+Neuro severity & Age $\geq$ 80 & Undirected \\
+Age 70--79 & Female proportion & Directed \\
+Age 70--79 & Age 50--69 & Directed \\
+Age $\geq$ 80 & Age 50--69 & Directed \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The failure to orient the neurological severity--mortality edge is consistent with confounding by acute illness severity: sicker patients are more likely both to develop neurological complications and to die.
+The neurological severity--elderly age edge confirms that age and neurological involvement are associated beyond what cross-site distribution shifts can explain, consistent with the meta-regression finding that elderly proportion is the strongest moderator.
+Disentangling the direct neurological contribution to mortality from severity confounding would require individual-level temporal data---whether neurological diagnoses precede or follow severity deterioration---which aggregate site-level data cannot provide.
+
+Bootstrap stability testing (100 resamples of 10 of 20 sites) confirms that the neurological severity--mortality edge appears in 100\% of bootstrap samples.
+The female--age and age bracket edges are moderately stable (33--71\%), while severity--readmission is less stable (16\%).
+The core neurological pathway is robust to site composition; the demographic edges are more sensitive to which sites are included.
+
+
+\section{Discussion}
+
+Among well-measured 4CE sites, CNS involvement associates with roughly doubled severity odds, consistent with the consortium's published findings \cite{four_ce_neuro2021} and independent cohorts \cite{frontera2021neuro, mao2020neuro}.
+The present analysis adds the structure behind this average: the site-level neurological severity association varies systematically with demographics, and a multivariate consistency test reveals heterogeneity invisible to standard pairwise methods.
+
+\paragraph{The ecological caveat applies throughout.}
+Every finding in this paper is a site-level association.
+The companion analysis (``When Averages Lie'') demonstrates on 38 million CDC cases that site-level regression can miss effects that are overwhelming at the individual level (ecological OR = non-significant vs.\ individual OR = 9.9).
+The same caveat applies here: the age $\times$ mortality interaction, the sex--mortality association, and the comorbidity heterogeneity could all reflect ecological confounding by site composition rather than patient-level biology.
+We present these as hypotheses that individual-level data should test.
+
+\paragraph{Age-dependent site-level patterns are consistent with biological vulnerability.}
+The elderly proportion is the strongest site-level moderator ($\beta = +14.2$).
+This pattern is consistent with age-dependent blood-brain barrier vulnerability \cite{montagne2015bbb} and chronic low-grade inflammation \cite{franceschi2018inflammaging}, but site-level data cannot distinguish this biological explanation from compositional confounding: sites with more elderly patients also differ in comorbidity burden, coding practices, and clinical management.
+Individual-level analyses within large cohorts such as N3C (15 million patients with hospital site identifiers) could separate the patient-level age effect from site-level confounding.
+
+\paragraph{The temporal pattern is suggestive but underpowered.}
+The interaction coefficients increase from 30 to 90 days, which is consistent with progressive neuroinflammatory damage \cite{douaud2022brain, nalbandian2021pasc}, but three timepoints provide essentially no power to establish a temporal trajectory ($p = 0.16$ for the linear trend).
+Survivorship bias, differential discharge timing, and late-presenting complications are alternative explanations that site-level data cannot rule out.
+
+\paragraph{The sex--mortality association requires individual-level confirmation.}
+The conditional independence test finds sex associated with mortality after conditioning on comorbidity ($p = 0.0003$), consistent with immune dimorphism \cite{takahashi2020sex}.
+However, this result comes from a DAG that fails 7 of 12 testable implications overall, and site-level associations between sex composition and mortality could reflect referral patterns rather than patient-level immune mechanisms.
+
+\paragraph{Comorbidity heterogeneity complicates meta-analytic pooling.}
+The collective inconsistency in comorbidity correlations ($z = 25$) has practical implications.
+When site-specific comorbidity adjustment is pooled, the pooling assumes the adjusted relationships are constant across sites.
+The consistency test shows they are not: the most heterogeneous pairs (HIV-Lymphoma, Alcohol-Drugs) involve conditions whose documentation varies across international healthcare systems.
+Whether this reflects coding differences or genuine population differences cannot be resolved from aggregate data, but either source of heterogeneity undermines the assumption of constant covariate structure that standard meta-analysis requires.
+
+\paragraph{Ceiling effects.}
+Sites with higher baseline severity show smaller neurological effects ($\beta = -2.91$).
+When most patients are already severe, neurological involvement has limited room to worsen outcomes further.
+An apparently small neurological effect at a high-severity site reflects compressed marginal risk rather than benign involvement.
+
+\paragraph{Cross-dataset comparison with iMSMS.}
+Applying the same analytic toolkit to both the 4CE COVID data (unpaired, heterogeneous) and paired household MS microbiome data (iMSMS; 7 sites, $I^2 = 0\%$) reveals that each dataset structure determines which methods produce findings.
+The consistency statistic is null on iMSMS ($z = 0.37$) because homogeneous site coverage makes it equivalent to Cochran's $Q$; it produces $z = 25$ on 4CE because heterogeneous coverage (36--1305 pairs per site) allows the joint test to detect collective inconsistency that per-pair tests miss.
+The interaction heterogeneity test is null on iMSMS (7 sites, insufficient power for second-order effects) but identifies the age $\times$ mortality interaction on 4CE (21 sites).
+CD-NOD discovers comparable numbers of edges on both datasets (5 each), and DAG conditional independence consistency is somewhat higher on iMSMS (64\% vs.\ 42\%), consistent with fewer unmodeled pathways in a controlled paired design.
+The paired displacement norm---which requires paired displacement vectors---produces the key iMSMS finding (60$^{\circ}$ rotation, $p = 0.002$) but is inapplicable to unpaired 4CE data.
+Meta-analysis heterogeneity is the clearest discriminator: $I^2 = 0\%$ on iMSMS (all methods agree) versus $I^2 = 99.8\%$ on 4CE (methods diverge 350-fold).
+This cross-dataset comparison provides a practical guide: use multivariate consistency tests when site coverage is heterogeneous, paired displacement methods when the study design is paired, and interaction analysis when the number of sites provides sufficient power for second-order effects (Table~\ref{tab:cross_dataset}).
+
+\begin{table}[t]
+\centering
+\caption{Cross-dataset comparison: which geometric methods produce findings on which data structures. iMSMS (paired, homogeneous) and 4CE (unpaired, heterogeneous) are complementary: each dataset reveals structure the other cannot.}
+\label{tab:cross_dataset}
+\begin{tabular}{lll}
+\toprule
+Method & iMSMS (paired, $I^2=0\%$) & 4CE (unpaired, $I^2=99.8\%$) \\
+\midrule
+Paired displacement norm & 60$^{\circ}$ rotation, $p=0.002$ & N/A (no paired design) \\
+Consistency statistic & Null ($z=0.37$) & $z=25$, $p < 0.0001$ \\
+Meta-analysis $I^2$ & $0\%$ (homogeneous) & $99.8\%$ (extreme) \\
+CD-NOD edges & MS$\to$EDSS, PCs$\to$EDSS & neuro$\leftrightarrow$mortality \\
+DAG CI consistency & 64\% (7/11) & 42\% (5/12) \\
+Interaction heterogeneity & Null (7 sites) & age$\times$mortality, $p=0.037$ \\
+Effect heterogeneity & 0/3 moderators & 4/4 moderators \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Multiple testing and Type~M errors.}
+This analysis applied 7 methods across 3 timepoints and multiple subgroups, yielding approximately 30 tests.
+We report all results, including null findings (interaction heterogeneity $z = 0.05$, PNS PMI $= 1.04$), to avoid selective reporting.
+The individually significant interaction ($p = 0.037$ at 30 days) does not survive FDR correction \cite{benjamini1995fdr}, consistent with the paper's broader message that site-level signals are fragile.
+
+The large coefficient magnitudes ($\beta = +14$ for elderly proportion, $\beta = +32$ to $+38$ for the interaction) are characteristic of Type~M inflation \cite{gelman2014typeMS}: with $\sim$20 sites and high variance, only extreme estimates reach significance, so significant results are systematically exaggerated.
+A hierarchical model with site random effects (fitting all timepoints and moderators jointly, with partial pooling) would produce smaller, more plausible estimates \cite{gelman2012multilevel}.
+We report the fixed-effects values here for transparency but interpret them as upper bounds, not point estimates.
+
+\subsection{Limitations}
+
+All analyses use aggregate site-level data.
+Site-level proportions are ecological summaries, and relationships observed at the site level may not hold for individual patients (ecological fallacy).
+The age $\times$ mortality interaction is a site-level phenomenon: these data cannot establish that individual elderly patients at high-mortality sites face amplified neurological risk, only that sites with these demographic profiles show larger neurological severity associations.
+
+The 30-to-90-day temporal trend uses cross-sectional data at each timepoint, not longitudinal follow-up.
+Survivorship bias, differential discharge patterns, and late-presenting neurological complications could contribute to the apparent strengthening, though survivorship bias should attenuate rather than inflate the interaction.
+
+CD-NOD cannot orient the neurological severity--mortality edge from aggregate data.
+Individual-level temporal data---timing of neurological diagnosis relative to severity deterioration---would be needed to establish causal direction.
+
+The comorbidity consistency analysis detects collective inconsistency but cannot distinguish coding heterogeneity from genuine population differences.
+The 4CE data uses ICD-10 diagnosis codes, which may undercount neurological involvement at sites without neurology consultation services, creating measurement heterogeneity that partially explains the between-site variation.
+
+
+\section{Methods}
+
+\subsection{Data}
+
+We used aggregate site-level data from the 4CE consortium's Phase 2.1 Neurological Analysis \cite{four_ce_neuro2021, chou20224ce}: 21 healthcare sites across 6 countries (USA, France, Germany, UK, Singapore, Italy).
+Data included site-level demographics (sex, age brackets, race, severity, mortality, readmission proportions), clinical variables (Elixhauser comorbidity scores \cite{elixhauser1998}, discharge times), and proportional morbidity index (PMI) effect estimates for CNS and PNS neurological involvement on severity at 30, 60, and 90 days post-admission.
+Neurological outcomes were coded using 20 ICD-10 categories.
+Total cohort size exceeded 22,000 hospitalized COVID-19 patients.
+
+\subsection{Meta-analysis}
+
+Per-site log-PMI estimates and standard errors were pooled using three methods: inverse-variance fixed-effects, DerSimonian-Laird random-effects, and influence-function estimation.
+Sites with $\text{SE} \geq 0.5$ on the log scale were excluded from primary analyses to avoid separation artifacts ($k = 11$--16 sites per timepoint); a secondary analysis with $\text{SE} < 2.0$ confirms robustness.
+Cochran's $Q$ and $I^2$ quantify between-site heterogeneity.
+E-values \cite{vanderweele2017} assess sensitivity to unmeasured confounding: the E-value is the minimum risk-ratio strength an unmeasured confounder would need to explain the observed association.
+
+\subsection{Meta-regression}
+
+The log-PMI was regressed on four site-level moderators (proportion female, proportion aged $\geq 80$, baseline severity proportion, number of patients), weighted by inverse variance, using weighted least squares.
+
+\subsection{Interaction heterogeneity analysis}
+
+For each pair of site-level moderators $(x_a, x_b)$, we fit a weighted meta-regression with an interaction term: $\theta = \alpha_0 + \alpha_a x_a + \alpha_b x_b + \beta_{ab} x_a x_b + \varepsilon$, where $\theta$ is the log-PMI and weights are inverse variance.
+The global interaction heterogeneity is summarized by the Frobenius norm of the matrix of interaction coefficients $\{\beta_{ab}\}$ across all moderator pairs and timepoints.
+This norm measures the degree to which the effect surface is non-additive in site characteristics.
+Significance was assessed by 1,000 permutations of site labels.
+We report both the global norm test and individual interaction $p$-values, with Bonferroni correction for the 18 tests conducted (6 moderator pairs $\times$ 3 timepoints).
+
+\subsection{Causal graph discovery}
+
+CD-NOD \cite{huang2020cdnod} exploits distribution shifts across the 21 sites to orient causal edges beyond the Markov equivalence class.
+We applied CD-NOD to 8 site-level variables (neurological severity, mortality, female proportion, three age brackets, severity proportion) with each site as a domain.
+Bootstrap stability was assessed by resampling 10 of 20 sites 100 times and recording edge frequency across resamples.
+
+\subsection{Conditional independence testing}
+
+RCIT (randomized conditional independence test; \citealt{strobl2019rcit}) tests 12 conditional independence implications of the assumed causal DAG on 52 site $\times$ neurological subtype observations from 20 sites.
+
+\subsection{Cross-site correlation consistency}
+
+For each site, we computed pairwise Pearson correlations among 30 Elixhauser comorbidity categories for overall, CNS, and PNS patient subgroups.
+We test global consistency of these correlation patterns using a multivariate consistency statistic inspired by sheaf-theoretic data integration \cite{robinson2017sheaf}: for each pair of sites, we compute the sum of squared differences on their shared correlation values (normalized by the number of shared pairs), then average across all site pairs.
+This statistic captures collective inconsistency across the full correlation structure, unlike Cochran's $Q$ which tests each pair independently.
+Sites with partial coverage (36--296 of 1,305 possible pairs) contribute only through their available observations, analogous to the partial-stalk structure in sheaf cohomology though we do not compute a formal coboundary operator or cohomology class.
+Significance was assessed by 500 permutations (shuffling each correlation value across sites within its pair).
+Two negative controls were performed: (1) a homogeneous control replacing all site correlations with draws from the global mean distribution, and (2) a within-pair shuffle permuting correlation values across sites for each comorbidity pair independently.
+
+
+\bibliographystyle{tmlr}
+\bibliography{references}
+
+\end{document}

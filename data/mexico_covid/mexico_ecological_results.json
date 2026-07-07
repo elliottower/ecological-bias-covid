@@ -1,0 +1,469 @@
+{
+  "timestamp": "2026-07-03T01:03:36.253621",
+  "dataset": "Mexico COVID-19 Datos Abiertos",
+  "n_total": 3993464,
+  "n_deaths": 299581,
+  "n_sites": 32,
+  "ecological_regression": {
+    "n_sites": 32,
+    "beta": 1.3105305611998093,
+    "intercept": -0.009494559142206288,
+    "r_squared": 0.5041447571974053,
+    "p_value": 5.324808408832085e-06,
+    "se": 0.23729377907248486,
+    "site_details": {
+      "Aguascalientes": {
+        "n": 39537,
+        "mortality_rate": 0.0788375445784961,
+        "prop_elderly": 0.06947922199458735,
+        "prop_male": 0.4882009257151529,
+        "prop_comorbidity": 0.354301034474037
+      },
+      "Baja California": {
+        "n": 91278,
+        "mortality_rate": 0.11991936720787046,
+        "prop_elderly": 0.0749139989920901,
+        "prop_male": 0.4889349021670063,
+        "prop_comorbidity": 0.42633493284252505
+      },
+      "Baja California Sur": {
+        "n": 63163,
+        "mortality_rate": 0.03812358501021167,
+        "prop_elderly": 0.03703117331349049,
+        "prop_male": 0.5007836866519957,
+        "prop_comorbidity": 0.3010939949020787
+      },
+      "CDMX": {
+        "n": 1154276,
+        "mortality_rate": 0.04576288513319172,
+        "prop_elderly": 0.05847821491567008,
+        "prop_male": 0.4864781040236477,
+        "prop_comorbidity": 0.30796880468796023
+      },
+      "Campeche": {
+        "n": 25030,
+        "mortality_rate": 0.08262085497403117,
+        "prop_elderly": 0.06995605273671594,
+        "prop_male": 0.5453855373551738,
+        "prop_comorbidity": 0.37834598481821813
+      },
+      "Chiapas": {
+        "n": 22307,
+        "mortality_rate": 0.09566503788048594,
+        "prop_elderly": 0.0789886582687049,
+        "prop_male": 0.5298785134711077,
+        "prop_comorbidity": 0.3513246962836778
+      },
+      "Chihuahua": {
+        "n": 81063,
+        "mortality_rate": 0.10802709004107916,
+        "prop_elderly": 0.08286147810961844,
+        "prop_male": 0.48210650975167463,
+        "prop_comorbidity": 0.39072079740448784
+      },
+      "Coahuila": {
+        "n": 102613,
+        "mortality_rate": 0.07626713964117607,
+        "prop_elderly": 0.07083897751746855,
+        "prop_male": 0.48721896835683587,
+        "prop_comorbidity": 0.29779852455341915
+      },
+      "Colima": {
+        "n": 34054,
+        "mortality_rate": 0.06545486580137429,
+        "prop_elderly": 0.06181359018030187,
+        "prop_male": 0.49306983026957185,
+        "prop_comorbidity": 0.35367357725964643
+      },
+      "Durango": {
+        "n": 50686,
+        "mortality_rate": 0.06104249694195636,
+        "prop_elderly": 0.06264057136092807,
+        "prop_male": 0.45947598942508777,
+        "prop_comorbidity": 0.290810085625222
+      },
+      "Guanajuato": {
+        "n": 204282,
+        "mortality_rate": 0.06527251544433675,
+        "prop_elderly": 0.06824389814080535,
+        "prop_male": 0.4759009604370429,
+        "prop_comorbidity": 0.3314242077128675
+      },
+      "Guerrero": {
+        "n": 76480,
+        "mortality_rate": 0.08008629707112971,
+        "prop_elderly": 0.08217834728033473,
+        "prop_male": 0.49819560669456064,
+        "prop_comorbidity": 0.3387421548117155
+      },
+      "Hidalgo": {
+        "n": 61663,
+        "mortality_rate": 0.12618588132267325,
+        "prop_elderly": 0.07819924427938958,
+        "prop_male": 0.515998248544508,
+        "prop_comorbidity": 0.4100676256426058
+      },
+      "Jalisco": {
+        "n": 166123,
+        "mortality_rate": 0.1061502621551501,
+        "prop_elderly": 0.08906051540123884,
+        "prop_male": 0.49640928709450227,
+        "prop_comorbidity": 0.3949784196047507
+      },
+      "Mexico (state)": {
+        "n": 245313,
+        "mortality_rate": 0.13490927916580042,
+        "prop_elderly": 0.07221794197616922,
+        "prop_male": 0.5243953642897033,
+        "prop_comorbidity": 0.3170439397830527
+      },
+      "Michoacan": {
+        "n": 73196,
+        "mortality_rate": 0.11008798294988797,
+        "prop_elderly": 0.089540412044374,
+        "prop_male": 0.5052325263675611,
+        "prop_comorbidity": 0.38286245150008197
+      },
+      "Morelos": {
+        "n": 49968,
+        "mortality_rate": 0.0983829650976625,
+        "prop_elderly": 0.09243916106308037,
+        "prop_male": 0.5019212295869356,
+        "prop_comorbidity": 0.34546109510086453
+      },
+      "Nayarit": {
+        "n": 34670,
+        "mortality_rate": 0.08713585232189212,
+        "prop_elderly": 0.08528987597346409,
+        "prop_male": 0.48852033458321314,
+        "prop_comorbidity": 0.33980386501297954
+      },
+      "Nuevo Leon": {
+        "n": 211101,
+        "mortality_rate": 0.0655752459723071,
+        "prop_elderly": 0.06294143561612688,
+        "prop_male": 0.5094386099544768,
+        "prop_comorbidity": 0.32039166086375714
+      },
+      "Oaxaca": {
+        "n": 83247,
+        "mortality_rate": 0.0651434886542458,
+        "prop_elderly": 0.07436904633199995,
+        "prop_male": 0.518156810455632,
+        "prop_comorbidity": 0.28947589702932236
+      },
+      "Puebla": {
+        "n": 129232,
+        "mortality_rate": 0.12192026742602452,
+        "prop_elderly": 0.0789665098427634,
+        "prop_male": 0.5316020799801907,
+        "prop_comorbidity": 0.35108177541166274
+      },
+      "Queretaro": {
+        "n": 101452,
+        "mortality_rate": 0.05796830027993534,
+        "prop_elderly": 0.05024050782636123,
+        "prop_male": 0.490527540117494,
+        "prop_comorbidity": 0.32149193707369
+      },
+      "Quintana Roo": {
+        "n": 62324,
+        "mortality_rate": 0.06462999807457802,
+        "prop_elderly": 0.03589307489891535,
+        "prop_male": 0.5378184968872345,
+        "prop_comorbidity": 0.2725755728130415
+      },
+      "San Luis Potosi": {
+        "n": 110068,
+        "mortality_rate": 0.061879928771305014,
+        "prop_elderly": 0.0726823418250536,
+        "prop_male": 0.49021513973180214,
+        "prop_comorbidity": 0.3516644256277937
+      },
+      "Sinaloa": {
+        "n": 75629,
+        "mortality_rate": 0.11963664731782782,
+        "prop_elderly": 0.09324465482817437,
+        "prop_male": 0.4802522841767047,
+        "prop_comorbidity": 0.3726348358433934
+      },
+      "Sonora": {
+        "n": 124098,
+        "mortality_rate": 0.074626504859063,
+        "prop_elderly": 0.0755290173894825,
+        "prop_male": 0.4615545778336476,
+        "prop_comorbidity": 0.37626714370900416
+      },
+      "Tabasco": {
+        "n": 146002,
+        "mortality_rate": 0.04058163586800181,
+        "prop_elderly": 0.05004041040533691,
+        "prop_male": 0.4920617525787318,
+        "prop_comorbidity": 0.31158477281133135
+      },
+      "Tamaulipas": {
+        "n": 105769,
+        "mortality_rate": 0.06965178833117454,
+        "prop_elderly": 0.06451795894827407,
+        "prop_male": 0.5079938356229141,
+        "prop_comorbidity": 0.34398547778649696
+      },
+      "Tlaxcala": {
+        "n": 27143,
+        "mortality_rate": 0.10363629665107026,
+        "prop_elderly": 0.07254172346461335,
+        "prop_male": 0.5211656780753785,
+        "prop_comorbidity": 0.3125299340529787
+      },
+      "Veracruz": {
+        "n": 121775,
+        "mortality_rate": 0.12156025456785055,
+        "prop_elderly": 0.08463149250667214,
+        "prop_male": 0.5275384931225621,
+        "prop_comorbidity": 0.36606035721617736
+      },
+      "Yucatan": {
+        "n": 76590,
+        "mortality_rate": 0.07662880271575924,
+        "prop_elderly": 0.06942159550855204,
+        "prop_male": 0.5271967619793707,
+        "prop_comorbidity": 0.29292335814074943
+      },
+      "Zacatecas": {
+        "n": 43332,
+        "mortality_rate": 0.07816394350595403,
+        "prop_elderly": 0.08404873996122958,
+        "prop_male": 0.48264561986522664,
+        "prop_comorbidity": 0.3651804670912951
+      }
+    }
+  },
+  "individual_logistic": {
+    "n_complete": 3993464,
+    "age_only": {
+      "or": 11.263882851904775,
+      "p": 0.0
+    },
+    "adjusted": {
+      "age_70plus": {
+        "or": 7.974379482999806,
+        "p": 0.0
+      },
+      "male": {
+        "or": 1.727345046592641,
+        "p": 0.0
+      },
+      "has_comorbidity": {
+        "or": 3.810603278486075,
+        "p": 0.0
+      }
+    },
+    "interaction": {
+      "or": 0.3206501317483788,
+      "p": 0.0
+    }
+  },
+  "per_site_interactions": {
+    "Aguascalientes": {
+      "n": 39537,
+      "interaction_or": 0.25288762801822645,
+      "interaction_beta": -1.3748100469527376,
+      "interaction_p": 1.7042178090925213e-37
+    },
+    "Baja California": {
+      "n": 91278,
+      "interaction_or": 0.23600258033519436,
+      "interaction_beta": -1.4439125403925936,
+      "interaction_p": 5.575365062565749e-101
+    },
+    "Baja California Sur": {
+      "n": 63163,
+      "interaction_or": 0.37582542086355775,
+      "interaction_beta": -0.9786305496296915,
+      "interaction_p": 1.5445586985293977e-17
+    },
+    "CDMX": {
+      "n": 1154276,
+      "interaction_or": 0.3787762574431884,
+      "interaction_beta": -0.970809597978859,
+      "interaction_p": 0.0
+    },
+    "Campeche": {
+      "n": 25030,
+      "interaction_or": 0.30685191945715234,
+      "interaction_beta": -1.1813899948068032,
+      "interaction_p": 7.395159674126559e-22
+    },
+    "Chiapas": {
+      "n": 22307,
+      "interaction_or": 0.23198376557482406,
+      "interaction_beta": -1.4610878857348455,
+      "interaction_p": 5.5664244562431005e-31
+    },
+    "Chihuahua": {
+      "n": 81063,
+      "interaction_or": 0.2616625052177501,
+      "interaction_beta": -1.340699753620735,
+      "interaction_p": 3.253457748379011e-93
+    },
+    "Coahuila": {
+      "n": 102613,
+      "interaction_or": 0.3087150446156195,
+      "interaction_beta": -1.1753366132692007,
+      "interaction_p": 1.2426349138558907e-92
+    },
+    "Colima": {
+      "n": 34054,
+      "interaction_or": 0.23663797045105298,
+      "interaction_beta": -1.4412238565817261,
+      "interaction_p": 2.4283439570309335e-33
+    },
+    "Durango": {
+      "n": 50686,
+      "interaction_or": 0.25520293500693186,
+      "interaction_beta": -1.3656962267667745,
+      "interaction_p": 2.1715307691730474e-48
+    },
+    "Guanajuato": {
+      "n": 204282,
+      "interaction_or": 0.2811238248067741,
+      "interaction_beta": -1.2689600490341193,
+      "interaction_p": 3.79145938657009e-158
+    },
+    "Guerrero": {
+      "n": 76480,
+      "interaction_or": 0.2911191636902712,
+      "interaction_beta": -1.2340225984143212,
+      "interaction_p": 8.919499958089813e-73
+    },
+    "Hidalgo": {
+      "n": 61663,
+      "interaction_or": 0.27776666500513364,
+      "interaction_beta": -1.2809738522438439,
+      "interaction_p": 6.146408395758895e-68
+    },
+    "Jalisco": {
+      "n": 166123,
+      "interaction_or": 0.2507707232903781,
+      "interaction_beta": -1.3832162103291858,
+      "interaction_p": 1.596175289967366e-197
+    },
+    "Mexico (state)": {
+      "n": 245313,
+      "interaction_or": 0.3453689406003444,
+      "interaction_beta": -1.063142040299716,
+      "interaction_p": 1.9062870476248536e-214
+    },
+    "Michoacan": {
+      "n": 73196,
+      "interaction_or": 0.2608627497763774,
+      "interaction_beta": -1.3437608728996007,
+      "interaction_p": 3.717635128761851e-95
+    },
+    "Morelos": {
+      "n": 49968,
+      "interaction_or": 0.291818880039754,
+      "interaction_beta": -1.2316219429997153,
+      "interaction_p": 6.474063739257119e-59
+    },
+    "Nayarit": {
+      "n": 34670,
+      "interaction_or": 0.2622880647692038,
+      "interaction_beta": -1.3383118953588102,
+      "interaction_p": 1.9421792238196336e-38
+    },
+    "Nuevo Leon": {
+      "n": 211101,
+      "interaction_or": 0.3165066244789111,
+      "interaction_beta": -1.1504111071938445,
+      "interaction_p": 1.824685660993168e-150
+    },
+    "Oaxaca": {
+      "n": 83247,
+      "interaction_or": 0.25569368726648056,
+      "interaction_beta": -1.363775085036366,
+      "interaction_p": 1.9653560820502294e-83
+    },
+    "Puebla": {
+      "n": 129232,
+      "interaction_or": 0.3251661065707455,
+      "interaction_beta": -1.1234191300773018,
+      "interaction_p": 4.5172803996384523e-125
+    },
+    "Queretaro": {
+      "n": 101452,
+      "interaction_or": 0.29189077050748696,
+      "interaction_beta": -1.231375620301336,
+      "interaction_p": 2.2207439773295608e-61
+    },
+    "Quintana Roo": {
+      "n": 62324,
+      "interaction_or": 0.19307485394555424,
+      "interaction_beta": -1.644677320991919,
+      "interaction_p": 1.9364246390570632e-56
+    },
+    "San Luis Potosi": {
+      "n": 110068,
+      "interaction_or": 0.3365756533177486,
+      "interaction_beta": -1.0889323310424435,
+      "interaction_p": 4.947826157007906e-64
+    },
+    "Sinaloa": {
+      "n": 75629,
+      "interaction_or": 0.2722085718413433,
+      "interaction_beta": -1.301186698293139,
+      "interaction_p": 5.0246259801641704e-92
+    },
+    "Sonora": {
+      "n": 124098,
+      "interaction_or": 0.36525637599541994,
+      "interaction_beta": -1.0071557719796123,
+      "interaction_p": 2.8782090949525757e-67
+    },
+    "Tabasco": {
+      "n": 146002,
+      "interaction_or": 0.2741779742317926,
+      "interaction_beta": -1.2939778424625699,
+      "interaction_p": 3.534722722071123e-70
+    },
+    "Tamaulipas": {
+      "n": 105769,
+      "interaction_or": 0.2596677917367015,
+      "interaction_beta": -1.348352189041639,
+      "interaction_p": 3.952619413907998e-89
+    },
+    "Tlaxcala": {
+      "n": 27143,
+      "interaction_or": 0.2809143797022532,
+      "interaction_beta": -1.2697053546469257,
+      "interaction_p": 2.8660830369317115e-31
+    },
+    "Veracruz": {
+      "n": 121775,
+      "interaction_or": 0.2683294359834954,
+      "interaction_beta": -1.315539814622272,
+      "interaction_p": 1.639124612476493e-159
+    },
+    "Yucatan": {
+      "n": 76590,
+      "interaction_or": 0.23263980145249202,
+      "interaction_beta": -1.4582639380912152,
+      "interaction_p": 1.9567162075547172e-90
+    },
+    "Zacatecas": {
+      "n": 43332,
+      "interaction_or": 0.2663623047675387,
+      "interaction_beta": -1.3228978489481276,
+      "interaction_p": 1.2506234451911306e-41
+    }
+  },
+  "consistency_test": {
+    "observed": 0.0033674010694442766,
+    "null_mean": 0.0033674010694442758,
+    "null_std": 1.833398376257421e-18,
+    "z_score": 0.4730896182852408,
+    "p_value": 0.326,
+    "n_sites": 32,
+    "coverage": "homogeneous (all sites report all 15 pairs)"
+  }
+}

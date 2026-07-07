@@ -1,0 +1,6 @@
+source,target,type,edge_mark
+neuro_severity,prop_deceased,undirected,neuro_severity -- prop_deceased
+neuro_severity,prop_age_80plus,undirected,neuro_severity -- prop_age_80plus
+prop_age_70to79,prop_female,directed,prop_age_70to79 -> prop_female
+prop_age_70to79,prop_age_50to69,directed,prop_age_70to79 -> prop_age_50to69
+prop_age_80plus,prop_age_50to69,directed,prop_age_80plus -> prop_age_50to69

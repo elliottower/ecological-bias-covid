@@ -1,0 +1,590 @@
+\documentclass{article}
+
+\usepackage[preprint]{tmlr}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{hyperref}
+
+\renewcommand{\arraystretch}{1.3}
+
+\title{When Averages Lie: What 38 Million Patient Records Reveal\\About Multi-Site COVID-19 Studies}
+
+\author{\name Elliot Tower \\
+      \email elliot@elliottower.ai}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Large multi-site medical studies pool data from dozens of hospitals to draw
+conclusions about disease.  A hidden assumption in this pooling is that
+hospital-level averages faithfully represent what happens to individual
+patients.  We test this assumption directly.  Using 38 million individual
+COVID-19 patient records from the CDC and 1,540 records from two New York
+hospitals, we show that a standard site-level analysis cannot even detect the
+relationship between age and mortality ($p = 0.12$), while individual-level
+analysis finds that patients over 80 have 9.9 times the odds of dying ($p <
+10^{-300}$).  This is the ecological fallacy in action: what holds for groups
+does not hold for people.  We then show that structural consistency
+tests---methods that examine the \emph{structure} of relationships across
+sites, rather than averaging over them---can detect this kind of hidden
+heterogeneity even from site-level data alone.  Applied to the 4CE
+consortium's 22,000-patient neurological COVID-19 dataset, these methods
+reveal systematic patterns that standard meta-analysis misses entirely.  The
+practical message: when multi-site studies report a pooled average, readers
+should ask whether the average could be hiding the opposite conclusion at the
+patient level.  A companion paper~\cite{tower2025sitelevel} applies these methods to the 4CE consortium's 22,000-patient neurological COVID-19 dataset, where they reveal age-dependent site-level patterns invisible to standard meta-analysis.
+\end{abstract}
+
+
+\section{Introduction: The Problem with Averages}
+
+Suppose ten hospitals each report the fraction of their COVID-19 patients who
+died.  A meta-analysis averages those fractions and reports the result as
+``the'' mortality rate.  This is the standard approach, and it works when the
+hospitals are measuring the same thing in the same kind of patient.
+
+They rarely are.
+
+Hospitals differ in who walks through the door.  One serves a young urban
+population; another, a rural elderly community.  One codes aggressively for
+neurological complications; another barely records them.  The average across
+these hospitals is a real number, but it may not describe any actual hospital
+or any actual patient.  Worse, it can point in the wrong direction entirely.
+
+This problem---drawing conclusions about individuals from group-level
+data---has a name: the \emph{ecological fallacy}
+\cite{robinson1950ecological}.  It has been known since 1950, taught in every
+epidemiology course, and routinely ignored in practice.  Multi-site consortium
+studies, including the largest COVID-19 analyses, typically have access only to
+site-level summaries and treat them as if they represent patient-level truths.
+
+We set out to test how badly this matters.  We obtained individual patient
+records from two public sources---38 million cases from the CDC Case
+Surveillance dataset and 1,540 patients from two New York hospitals---and
+compared what you learn from site-level analysis versus what you learn from
+patient-level analysis of the same data.  The gap is dramatic.
+
+We then ask: if you are stuck with site-level data (as most consortia are), is
+there anything better than the standard average?  We show that structural
+consistency tests---methods inspired by algebraic topology and differential
+geometry, though simpler than their namesakes---can detect structural problems
+in site-level data that standard methods miss.  These methods do not replace
+individual-level analysis, but they can warn you when the average is lying.
+
+
+\section{What We Found}
+
+\subsection{The same data, two different answers}
+
+We start with the simplest possible question: does age predict COVID-19
+mortality?  The answer is obviously yes.  The question is whether site-level
+analysis can find it.
+
+The CDC Case Surveillance dataset contains 38.2 million confirmed COVID-19
+cases with age group, sex, race/ethnicity, hospitalization status, ICU
+admission, and death.  We used race/ethnicity categories as pseudo-sites (9
+groups with $n \geq 1{,}000$), mimicking what a consortium study would have
+if each racial/ethnic group were a separate hospital reporting summary
+statistics.
+
+\textbf{Site-level analysis} aggregated each group's mortality rate and
+proportion of elderly patients, then regressed one on the other across the 9
+groups.  Result: no significant relationship ($\beta = +0.28$, $p = 0.12$,
+$R^2 = 0.31$).  Site-level analysis cannot detect that age predicts mortality.
+
+\textbf{Individual-level analysis} on the same 38.2 million patients found
+that being over 80 multiplies the odds of death by 9.9 ($p < 10^{-300}$).
+After adjusting for sex and comorbidities, patients gain 2.4 times the odds of
+dying for each additional decade of age ($p < 10^{-300}$).  Males have 1.7
+times the odds; patients with underlying conditions have 1.5 times the odds.
+
+The effect is overwhelming at the individual level and invisible at the site
+level.  This is the ecological fallacy.
+
+\begin{table}[t]
+\centering
+\caption{The ecological fallacy demonstrated.  The same 38.2 million patients
+produce opposite conclusions depending on whether they are analyzed as groups
+or as individuals.  Site-level analysis cannot detect the age--mortality
+relationship; individual-level analysis finds it with overwhelming
+significance.}
+\label{tab:ecological}
+\begin{tabular}{llcc}
+\toprule
+Analysis level & What is tested & Effect size & $p$-value \\
+\midrule
+Site-level (9 groups) & Proportion 80+ vs.\ mortality rate & $\beta = +0.28$ & 0.12 \\
+Individual (12.7M complete) & Age per decade $\to$ death (logistic) & OR $= 2.40$ & $< 10^{-300}$ \\
+Individual (12.7M) & Age 80+ vs.\ not (logistic) & OR $= 9.88$ & $< 10^{-300}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Why does this happen?}
+
+The ecological fallacy is counterintuitive, so it helps to walk through the
+mechanism.
+
+Consider two racial/ethnic groups.  Group A has a high proportion of elderly
+patients \emph{and} a high mortality rate.  Group B has a low proportion of
+elderly patients \emph{and} a low mortality rate.  If this were the whole
+story, the site-level regression would work: more elderly $\to$ more death.
+
+The problem is confounding.  Groups also differ in sex ratios (ranging from
+15\% to 65\% male), comorbidity prevalence (0.5\% to 14\%), access to care,
+and coding practices.  These differences scramble the age--mortality
+relationship at the group level.  For example, the group with the highest
+proportion of 80+ patients (``Unknown'' race, 13.5\%) has lower mortality
+(3.3\%) than the group with the second-highest elderly proportion (Hispanic,
+9.4\%, mortality 7.6\%), because the Unknown group has different sex
+composition and comorbidity rates.
+
+At the individual level, these confounders are controlled for directly: the
+logistic regression asks ``among patients with the same sex and comorbidity
+status, does age predict death?''  The answer is unambiguous.
+
+This is not a subtle statistical point.  It means that any multi-site study
+reporting pooled averages without individual-level data could be reporting the
+opposite of what actually happens to patients.
+
+
+\subsection{The 4CE consortium: a real-world example}
+
+The 4CE consortium (Consortium for Clinical Characterization of COVID-19 by
+EHR) analyzed neurological outcomes in 22,000 hospitalized patients across 21
+hospitals in 6 countries \cite{four_ce_neuro2021}.  They found that central
+nervous system involvement roughly doubles the odds of severe disease
+(proportional morbidity index $\approx 2.0$).
+
+This is a site-level analysis.  The consortium has access only to aggregate
+counts from each hospital, not individual patient records.  The ecological
+fallacy applies directly.
+
+How badly?  We can estimate.  The between-site heterogeneity is extreme:
+$I^2 = 99.8\%$, Cochran's $Q = 6318$.  Standard meta-analysis methods diverge
+by 350-fold on this data (fixed-effects PMI $= 2.0$ vs.\ random-effects PMI
+$= 702$).  The heterogeneity is so severe that the choice of statistical
+method determines whether neurological COVID-19 doubles your risk or increases
+it by a factor of 700.
+
+Peripheral nervous system diagnoses provide a negative control: PNS involvement shows a PMI of 1.04 (95\% CI: [0.95, 1.14], $p = 0.37$), indistinguishable from the null, confirming specificity to CNS involvement.
+
+Meta-regression identifies the source of the CNS heterogeneity: the proportion of elderly patients at
+each site is the strongest predictor of the neurological severity effect
+($\beta = +14.2$, $p < 10^{-15}$).  Sites with more elderly patients report
+dramatically larger neurological effects.  This is exactly the pattern that
+produces ecological fallacies---site-level confounding between age composition
+and the outcome of interest.
+
+Without individual patient records, the 4CE analysis cannot tell us whether:
+\begin{enumerate}
+\item Neurological COVID-19 genuinely doubles mortality (the claimed
+conclusion), or
+\item Hospitals that happen to code more neurological diagnoses also serve
+older, sicker patients who would have died anyway (the ecological
+alternative).
+\end{enumerate}
+
+Both explanations are consistent with a site-level PMI of $\approx 2.0$.
+
+
+\subsection{Can structural consistency tests help?}
+
+When individual data is unavailable, is there anything better than
+just reporting the average and hoping for the best?
+
+We tested five approaches, spanning three levels of mathematical
+sophistication.  The simplest test whether sites agree on single numbers; the
+most sophisticated test whether the geometric structure of the data differs
+across sites.
+
+\textbf{Level 1: Univariate heterogeneity.}  Cochran's $Q$ asks whether sites
+agree on a single quantity (e.g., the mortality rate).  It tests one variable
+at a time.  This is the standard meta-analysis approach.
+
+\textbf{Level 2: Structural consistency.}  Each site produces a correlation
+matrix capturing how age, mortality, comorbidity, sex, hospitalization, and ICU
+admission relate to one another.  The multivariate consistency statistic
+measures whether these correlation matrices disagree more than
+expected by chance.  The interaction heterogeneity test asks whether
+second-order effects (e.g., age $\times$ comorbidity on mortality) vary across
+sites.
+
+\textbf{Level 3: Geometric distance.}  Two methods from mathematical
+statistics measure how far apart sites are in a precise geometric sense.
+\emph{Information geometry} treats each site as a point on a statistical
+manifold and computes Fisher--Rao geodesic distances---the natural metric on
+the space of probability distributions.  \emph{Optimal transport} measures the
+minimum ``work'' needed to reshape one site's patient distribution into
+another's (the Wasserstein distance).
+
+\textbf{Results.}  The geometric distance methods detected demographic
+heterogeneity that is \emph{expected}: the male proportion varies most across
+groups (Fisher--Rao spread $= 0.107$), followed by elderly proportion (spread
+$= 0.106$) and comorbidity (spread $= 0.031$).  The Black and Multiple/Other
+groups are farthest from the population-weighted Wasserstein barycenter.  This
+demographic variation is real but \emph{unsurprising}---it simply confirms that
+the 9 racial/ethnic groups differ in who they contain.  Neither test yields a
+significant $z$-score against the permutation null ($z \approx 0$), because
+the marginal-level differences are consistent with independent variation
+across variables.
+
+The structural consistency test reveals a methodological subtlety: on the
+CDC data, where all 9 groups have complete observations on all 15 variable
+pairs, the permutation null is degenerate ($z = 0$, null standard deviation $< 10^{-16}$).  This degeneracy is not a bug but a mathematical necessity: within-dimension permutation preserves pairwise sums of squared differences when coverage is homogeneous (Appendix~\ref{app:degeneracy}).
+On the 4CE consortium data, where coverage
+is heterogeneous (10 sites report 36--296 of 1,305 possible comorbidity
+pairs, 10 sites report all 1,305), the same test produces $z = 25$ ($p <
+0.0001$).  The test's power depends on heterogeneous coverage---a property
+of the data structure, not the signal.
+
+Per-site logistic regressions reveal genuine variation in the
+age $\times$ comorbidity interaction across the 9 groups.  All groups show that
+comorbidity matters less in the elderly (all OR $< 1$), but the magnitude
+varies 3-fold: from OR $= 0.23$ (Missing) to OR $= 0.69$ (Hispanic/Latino),
+all highly significant ($p < 10^{-4}$).  As a robustness check, dropping the two groups with ambiguous demographic composition (Unknown and Missing) leaves 7 groups with interaction ORs ranging from 0.27 (Asian) to 0.69 (Hispanic/Latino)---a 2.6-fold range, confirming that the variation is driven by substantive population differences rather than data-quality artifacts.
+The gold-standard pooled
+individual-level regression confirms the interaction is real (OR $= 0.92$ per
+decade, $p < 10^{-132}$).  The per-site variation in this interaction is
+direct evidence that pooling the age--comorbidity relationship across sites
+loses information.
+
+The overall picture: \textbf{sites differ in their demographic
+composition (expected and detected by geometric distance methods), and they
+differ in the relationships between demographics and outcomes (consequential
+for pooling and detectable by structural tests when coverage is
+heterogeneous)}.  No single method detects both kinds of heterogeneity.
+The first is visible to any descriptive summary; the second requires either
+structural tests with heterogeneous coverage or individual-level data.
+
+\begin{table}[t]
+\centering
+\caption{Methods applied to the same 38.2 million cases, ordered by what
+they detect.  Ecological regression misses the signal entirely.  Geometric
+distance methods detect expected demographic variation.  Structural tests
+have degenerate power on homogeneous-coverage data (all 9 groups report all
+variable pairs) but detect strong heterogeneity on the 4CE consortium data
+(heterogeneous coverage).  Per-site interaction regressions reveal genuine
+variation without needing a permutation test.  Individual-level regression
+gives the true answer.}
+\label{tab:comparison}
+\begin{tabular}{llcc}
+\toprule
+Method & What it tests & Statistic & $p$-value \\
+\midrule
+Ecological regression & Group proportions & $\beta = +0.28$ & 0.12 \\
+Fisher--Rao geodesic & Marginal distances & $z \approx 0$ & 0.25 \\
+Wasserstein transport & Distribution distances & $z \approx 0$ & 0.48 \\
+Per-site interaction & OR variation & 0.23--0.69 & all $< 10^{-4}$ \\
+Individual logistic & Patient-level effects & OR $= 9.88$ & $< 10^{-300}$ \\
+\midrule
+\multicolumn{4}{l}{\emph{On 4CE (heterogeneous coverage):}} \\
+Consistency statistic & Correlation structure & $z = 25$ & $< 0.0001$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{The Zenodo hospitals: a concrete cross-check}
+
+The Zenodo New York hospital dataset provides a complementary test: 1,540
+patients from two hospitals (Maimonides Medical Center and SUNY Downstate),
+with complete demographics, outcomes, and 13 individual comorbidity flags.
+Two hospitals is too few for the geometric methods (which need many sites), but
+it demonstrates the ecological fallacy at small scale and provides a check on
+the individual-level analysis.
+
+At the individual level, age increases mortality (OR $= 2.65$ per decade,
+$p < 10^{-33}$) and the hospital effect is significant after adjustment
+(SUNY patients have lower mortality, $p = 0.003$).  The age $\times$ hospital
+interaction is null (OR $= 0.97$, $p = 0.69$), consistent with only 2
+sites (the interaction needs more hospitals to be detectable).
+
+The two hospitals differ substantially in 11 of 13 comorbidities: Maimonides
+has higher rates of hypertension, hyperlipidemia, and diabetes; SUNY has
+higher rates of asthma, COPD, and dementia.  An ecological analysis treating
+these two hospitals as ``sites'' would conflate these compositional differences
+with the neurological outcome, precisely the confounding we demonstrated at
+scale with CDC data.
+
+
+\section{What This Means}
+
+\subsection{For the 4CE neurological findings}
+
+The 4CE consortium's headline finding---that CNS involvement doubles
+COVID-19 severity---may be correct.  The biological mechanisms are plausible.
+
+The problem is that site-level evidence cannot distinguish a genuine
+biological effect from ecological confounding.  The extreme heterogeneity
+($I^2 = 99.8\%$), the 350-fold method divergence, and the strong dependence
+on site demographics all point to a dataset where the site-level average is
+unreliable.
+
+To resolve the question definitively, individual patient records are needed.
+Three large datasets exist that could provide them:
+
+\begin{itemize}
+\item \textbf{N3C} (National COVID Cohort Collaborative): 15 million patients,
+75+ hospital sites, full EHR data including hospital site identifiers.
+Individual-level analysis within N3C would directly test whether neurological
+involvement predicts severity after patient-level adjustment for age, sex,
+and comorbidities.
+
+\item \textbf{ISARIC}: 705,000 hospitalized patients, 1,500+ sites, 60
+countries.  The international scope makes it the closest analogue to 4CE's
+design.
+
+\item \textbf{Federated re-analysis of 4CE itself}: Sites run a standardized
+analysis script locally and share only coefficients.  This preserves patient
+privacy while enabling individual-level estimation.
+\end{itemize}
+
+
+\subsection{For multi-site studies in general}
+
+The ecological fallacy is not specific to COVID-19 or to the 4CE consortium.
+Any multi-site study that pools site-level summaries faces the same risk.
+Genome-wide association studies, multi-center drug trials, educational
+interventions across school districts, and crime statistics across
+cities---all are vulnerable when the units of analysis (sites) differ
+systematically from the units of inference (people).
+
+Our results suggest five practical guidelines:
+
+\textbf{1. Report heterogeneity honestly.}  $I^2 = 99.8\%$ means the pooled
+average is almost meaningless.  When heterogeneity exceeds 90\%, the
+meta-analytic average should be presented alongside the full distribution of
+site-level effects, with explicit acknowledgment that the average may not
+apply to any individual site.
+
+\textbf{2. Test the structure, not just the average.}  Consistency tests can
+detect when the relationships between variables differ across sites in
+coordinated ways.  This is information that Cochran's Q misses because Q
+tests one variable at a time, and that geometric distance methods miss
+because they detect expected demographic variation rather than unexpected
+relational heterogeneity.
+
+\textbf{3. Use hierarchical models, not separate tests.}  When running
+multiple tests across timepoints, subgroups, or methods, the standard fix is
+Bonferroni or FDR correction.  A better approach is to fit a single
+hierarchical model with site as a random effect and time as a covariate, so
+that partial pooling automatically shrinks noisy estimates toward the group
+mean.  This addresses the multiplicity problem at the model level rather than
+the $p$-value level, and directly tackles the ecological-inflation problem:
+implausibly large effect estimates from few sites are likely Type~M
+(magnitude) errors that shrinkage corrects.
+
+\textbf{4. Disclose the full analysis menu.}  The cheapest integrity fix for
+any study running multiple methods is to state explicitly how many tests were
+conducted and report all of them, including null results.  Undisclosed
+analytic flexibility---not the raw count of tests---is what destroys
+credibility.
+
+\textbf{5. Seek individual data when possible.}  The ecological fallacy is
+a problem of aggregation, and the only definitive solution is disaggregation.
+Modern data-sharing frameworks (federated analysis, secure enclaves, synthetic
+data) make individual-level analysis feasible even when raw data cannot leave
+the hospital.  The convenience of site-level summaries does not justify the
+risk of reaching the wrong conclusion.
+
+
+\section{Methods}
+
+\subsection{Data sources}
+
+\textbf{CDC Case Surveillance.}  The CDC COVID-19 Case Surveillance Public
+Use Dataset contains 38,173,454 confirmed and probable COVID-19 cases reported
+to the CDC through 2022.  Each record includes onset date, age group (9
+categories: 0--9 through 80+), sex, race/ethnicity (9 categories),
+hospitalization, ICU admission, death, and underlying medical condition (binary
+flag).  No geographic identifiers are present in the public version.  We used
+race/ethnicity categories as pseudo-sites, restricted to groups with $n \geq
+1{,}000$ (9 groups, $n$ ranging from 13,548 to 6,165,036).
+
+\textbf{Zenodo New York Hospitals.}  A publicly available dataset of 1,540
+COVID-19 patients from Maimonides Medical Center and SUNY Downstate Medical
+Center in Brooklyn, New York.  Records include age (continuous), sex,
+race, outcome (expired/discharged), hospital identifier, and 13 binary
+comorbidity flags (hypertension, diabetes, COPD, CHF, etc.).
+
+\textbf{4CE Consortium.}  Aggregate site-level data from the 4CE analysis
+of neurological COVID-19 outcomes: 21 healthcare sites, 6 countries, over
+22,000 hospitalized patients, with ICD-10 coded neurological diagnoses and
+severity outcomes at 30, 60, and 90 days \cite{four_ce_neuro2021}.
+
+\subsection{Statistical analyses}
+
+\textbf{Ecological regression.}  For each pseudo-site (race/ethnicity group
+in CDC data), we computed the proportion of patients aged 80+ and the overall
+mortality rate.  We regressed site mortality on site elderly proportion using
+ordinary least squares across the 9 sites.
+
+\textbf{Individual-level logistic regression.}  We fit logistic regression
+models on the complete individual-level data: (1)~death $\sim$ age; (2)~death
+$\sim$ age + sex + comorbidity; (3)~death $\sim$ age $\times$ comorbidity +
+sex.  For the CDC data, age was coded as the midpoint of the age group (5, 15,
+\ldots, 85).  Odds ratios are reported per decade of age.  We used
+\texttt{statsmodels} v0.14 for estimation.
+
+\textbf{Per-site correlation matrices.}  For each pseudo-site, we computed the
+Pearson correlation matrix among six binary variables: death, hospitalization,
+ICU admission, comorbidity, male sex, and age $\geq 80$.  For the Zenodo data,
+we computed correlations among death and 13 comorbidities within each hospital.
+
+\textbf{Multivariate consistency test.}  We measure whether site-level
+correlation structures are globally consistent by flattening each site's
+correlation matrix to its upper triangle (15 values for 6 variables) and
+computing the total inconsistency as the mean sum of squared pairwise
+differences across all site pairs.  Significance was assessed by permutation:
+for each of 500 iterations, we shuffled each correlation value independently
+across sites (preserving the marginal distribution of each pair) and
+recomputed the inconsistency.  The $z$-score compares the observed
+inconsistency to this null distribution.
+
+\textbf{Interaction heterogeneity test.}  For each pseudo-site, we fit a
+logistic regression with interaction terms (age $\times$ comorbidity,
+age $\times$ sex, comorbidity $\times$ sex) and extracted the interaction
+coefficients.  The heterogeneity norm is the Frobenius norm of the cross-site
+deviation in these coefficients from their mean.  Significance was assessed by
+permutation (500 iterations, shuffling interaction coefficients across sites
+within each interaction type).
+
+\textbf{Cochran's Q.}  For comparison, we computed Cochran's Q on each
+individual correlation pair across sites, using Fisher's $z$-transform for
+variance stabilization.
+
+\textbf{Information geometry (Fisher--Rao distance).}  Each site defines a
+point on the product manifold of Bernoulli distributions (one Bernoulli per
+binary variable).  The Fisher--Rao distance between two Bernoulli distributions
+with parameters $p_1, p_2$ is $d_{\text{FR}} = 2|\arcsin\sqrt{p_1} -
+\arcsin\sqrt{p_2}|$, the geodesic distance on the statistical manifold.  For
+the product manifold, the total distance is the root sum of squares of
+per-variable geodesic distances.  The Fr\'{e}chet mean (the point minimizing
+total squared geodesic distance to all sites) is computed via the
+arcsine-transformed mean.  Geodesic spread (the mean squared Fisher--Rao
+distance from the Fr\'{e}chet mean) quantifies geometric heterogeneity.
+Significance was assessed by permuting variable proportions independently
+across sites (500 iterations).
+
+\textbf{Optimal transport (Wasserstein distance).}  For product Bernoulli
+distributions, the 1-Wasserstein distance is the sum of marginal absolute
+differences: $W_1(p, q) = \sum_j |p_j - q_j|$.  The Wasserstein barycenter
+(population-weighted) gives a principled ``average site'' that minimizes total
+transport cost.  The total cost measures how much work is needed to align the
+sites.  Significance was assessed by permutation (500 iterations).
+
+\textbf{4CE meta-analysis.}  Fixed-effects, random-effects (DerSimonian--Laird),
+and influence-function meta-analysis of the proportional morbidity index (PMI)
+for CNS neurological involvement on COVID-19 severity, as described in our
+companion analysis~\cite{tower2025sitelevel}, using the 4CE consortium's published data~\cite{four_ce_neuro2021}.  Meta-regression of log-PMI on
+four site-level demographics (proportion female, proportion age $\geq 80$,
+baseline severity, number of patients).
+
+
+\subsection{Reproducibility}
+
+All code and analysis scripts are available at
+\url{https://github.com/TODO/ecological-fallacy-covid} and archived at
+\url{https://doi.org/10.5281/zenodo.TODO}.
+The CDC data is publicly downloadable from
+\texttt{data.cdc.gov} (dataset \texttt{vbim-akqf}).  The Zenodo New York hospital data is at
+\url{https://doi.org/10.5281/zenodo.TODO-hospitals}.
+
+
+\section{Limitations}
+
+\textbf{Pseudo-sites are not hospitals.}  Race/ethnicity groups in the CDC
+data are a proxy for the multi-site structure of consortium studies.  They
+differ from hospitals in important ways: they are not geographically
+localized, patients within a group may attend different hospitals, and the
+grouping confounds race with socioeconomic factors.  The ecological fallacy
+demonstration is valid---group-level analysis misses patient-level
+effects---but the specific confounders differ from those in a hospital-based
+consortium.
+
+\textbf{Limited variables.}  The CDC public dataset has 12 variables.
+Hospital-based datasets like N3C have hundreds.  Our analysis captures the
+direction of the problem but underestimates its magnitude: with more
+variables, the scope for ecological confounding grows.
+
+\textbf{Two-hospital Zenodo data.}  With only two hospitals, the Zenodo data
+cannot support geometric methods (which need many sites) or detect interaction
+heterogeneity.  It serves as a patient-level cross-check, not a standalone
+analysis.
+
+\textbf{Consistency tests are not a substitute.}  The multivariate consistency
+test and interaction heterogeneity test detect \emph{that} something is wrong
+with site-level pooling; they do not tell you \emph{what} the
+individual-level answer is.  They are diagnostic tools, not corrective ones.
+
+\textbf{Geometric distance methods detect the wrong kind of heterogeneity.}
+Information geometry and optimal transport measure whether sites differ in
+their marginal distributions (e.g., different proportions of elderly patients).
+This is expected demographic variation and does not signal a problem with
+pooling.  The consistency test detects relational heterogeneity (do variables
+\emph{relate} differently across sites?), which directly undermines pooling.
+The null results from the geometric distance methods are informative: they
+confirm that the consistency test is detecting something beyond demographic
+variation.
+
+\textbf{Multiple testing.}  We ran seven methods on the same data.  In the
+companion analysis~\cite{tower2025sitelevel}, we ran additional methods across multiple timepoints
+and subgroups.  We report all results, including null findings, and apply
+FDR correction where applicable.  Some findings that are individually
+significant may not survive correction.  We interpret this as consistent with
+the paper's thesis: site-level signals are often weaker than they appear.
+
+
+\section{Conclusion}
+
+A pooled average across hospitals can obscure the truth about individual
+patients.  We showed this directly: a site-level analysis of 38 million
+COVID-19 cases cannot detect the relationship between age and mortality, while
+individual-level analysis finds a 9.9-fold odds ratio.  The same problem
+likely affects the 4CE consortium's neurological findings, where extreme
+heterogeneity ($I^2 = 99.8\%$) and strong dependence on site demographics
+create the conditions for ecological confounding.
+
+Structural consistency tests offer a partial solution.  They cannot replace
+individual-level analysis, but they can detect when site-level data is
+structurally inconsistent---a warning that the pooled average should not be
+trusted.  For the 4CE data, these tests reveal coordinated heterogeneity
+in comorbidity correlation patterns ($z = 25$, $p < 0.0001$) that standard
+tests miss entirely.
+
+The practical recommendation is simple: when heterogeneity is extreme, do not
+trust the average.  Seek individual data.  When individual data is
+unavailable, test the structure.  And when reporting pooled results, say
+clearly what the average can and cannot tell you.
+
+
+\appendix
+
+\section{Coverage-Degeneracy of the Consistency Test}
+\label{app:degeneracy}
+
+\begin{proposition}
+When all sites report all variable pairs (homogeneous coverage), within-dimension permutation of the consistency statistic is degenerate: the null distribution has zero variance.
+\end{proposition}
+
+\begin{proof}
+Let $r_{ij}$ denote the correlation for variable pair $j$ at site $i$.  The consistency statistic is $T = \frac{1}{\binom{k}{2}} \sum_{i < i'} \frac{1}{|S_{ii'}|} \sum_{j \in S_{ii'}} (r_{ij} - r_{i'j})^2$, where $S_{ii'}$ is the set of pairs reported by both sites $i$ and $i'$.
+Under homogeneous coverage, $S_{ii'} = \{1, \ldots, p\}$ for all site pairs, so $T = \frac{1}{\binom{k}{2}} \sum_{i < i'} \frac{1}{p} \sum_{j=1}^{p} (r_{ij} - r_{i'j})^2$.
+The within-dimension permutation shuffles $\{r_{1j}, \ldots, r_{kj}\}$ independently for each $j$.
+For fixed $j$, any permutation $\sigma$ preserves $\sum_{i<i'} (r_{\sigma(i),j} - r_{\sigma(i'),j})^2 = k \sum_i r_{ij}^2 - (\sum_i r_{ij})^2$, which depends only on the multiset $\{r_{ij}\}_{i=1}^k$.
+Since every pair $S_{ii'}$ includes the same set of indices $j$, the total $T$ is a sum of terms each invariant under the permutation, so $T$ is constant across all permutations.
+\end{proof}
+
+When coverage is heterogeneous, permutation changes which site-pair sums include which terms, breaking the invariance.  The 4CE data has heterogeneous coverage (10 sites report 36--296 of 1,305 pairs; 10 report all 1,305), producing $z = 25$.  The CDC pseudo-sites have homogeneous coverage (all 9 groups report all 15 pairs), producing $z = 0$ with null standard deviation $< 10^{-16}$.
+
+\bibliographystyle{tmlr}
+\bibliography{references}
+
+\end{document}

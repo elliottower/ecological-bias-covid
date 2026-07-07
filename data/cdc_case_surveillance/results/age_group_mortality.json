@@ -1,0 +1,52 @@
+{
+  "0 - 9 Years": {
+    "total": 8466822,
+    "died": 1123,
+    "mortality_rate": 0.00013263536188666775
+  },
+  "10 - 19 Years": {
+    "total": 12428392,
+    "died": 1448,
+    "mortality_rate": 0.00011650742911874682
+  },
+  "20 - 29 Years": {
+    "total": 17658006,
+    "died": 6382,
+    "mortality_rate": 0.00036142246185667847
+  },
+  "30 - 39 Years": {
+    "total": 17078442,
+    "died": 17450,
+    "mortality_rate": 0.0010217559657959433
+  },
+  "40 - 49 Years": {
+    "total": 14620204,
+    "died": 39933,
+    "mortality_rate": 0.0027313572368757645
+  },
+  "50 - 59 Years": {
+    "total": 13716593,
+    "died": 93838,
+    "mortality_rate": 0.0068412032054898765
+  },
+  "60 - 69 Years": {
+    "total": 10471990,
+    "died": 184559,
+    "mortality_rate": 0.017624061902274543
+  },
+  "70 - 79 Years": {
+    "total": 6392854,
+    "died": 258964,
+    "mortality_rate": 0.04050835511025279
+  },
+  "80+ Years": {
+    "total": 4252648,
+    "died": 421397,
+    "mortality_rate": 0.09909049608620323
+  },
+  "NA": {
+    "total": 51,
+    "died": 0,
+    "mortality_rate": 0.0
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "n_complete": 12692522,
+  "age_or_per_decade_unadjusted": 2.4122613417724157,
+  "age_or_per_decade_adjusted": 2.403258593521322,
+  "male_or": 1.6985727742317047,
+  "comorbidity_or": 1.470531402363165,
+  "age_x_comorbidity_interaction_or": 0.9171384528506611,
+  "age_x_comorbidity_interaction_p": 1.857999036467825e-132,
+  "model2_aic": 3822068.518809577,
+  "model3_aic": 3821485.5289977277
+}

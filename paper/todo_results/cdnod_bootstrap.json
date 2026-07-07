@@ -1,0 +1,73 @@
+{
+  "n_bootstrap": 100,
+  "sites_per_sample": 10,
+  "n_total_sites": 20,
+  "edges": [
+    {
+      "edge": "neuro_severity -- prop_deceased",
+      "count": 100,
+      "frequency": 1.0
+    },
+    {
+      "edge": "prop_female -- prop_age_70to79",
+      "count": 71,
+      "frequency": 0.71
+    },
+    {
+      "edge": "prop_age_50to69 -- prop_age_80plus",
+      "count": 49,
+      "frequency": 0.49
+    },
+    {
+      "edge": "prop_age_70to79 -> prop_age_50to69",
+      "count": 33,
+      "frequency": 0.33
+    },
+    {
+      "edge": "prop_age_80plus -> prop_age_50to69",
+      "count": 33,
+      "frequency": 0.33
+    },
+    {
+      "edge": "prop_age_70to79 -> prop_female",
+      "count": 18,
+      "frequency": 0.18
+    },
+    {
+      "edge": "prop_severe -- prop_readmitted",
+      "count": 16,
+      "frequency": 0.16
+    },
+    {
+      "edge": "neuro_severity -- prop_age_80plus",
+      "count": 12,
+      "frequency": 0.12
+    },
+    {
+      "edge": "prop_female -> prop_age_70to79",
+      "count": 8,
+      "frequency": 0.08
+    },
+    {
+      "edge": "prop_deceased -- prop_age_80plus",
+      "count": 7,
+      "frequency": 0.07
+    },
+    {
+      "edge": "prop_severe -> prop_readmitted",
+      "count": 2,
+      "frequency": 0.02
+    },
+    {
+      "edge": "prop_deceased -- prop_age_50to69",
+      "count": 2,
+      "frequency": 0.02
+    },
+    {
+      "edge": "prop_female -> prop_age_50to69",
+      "count": 1,
+      "frequency": 0.01
+    }
+  ],
+  "timestamp": "2026-07-02T21:36:00.726337+00:00"
+}

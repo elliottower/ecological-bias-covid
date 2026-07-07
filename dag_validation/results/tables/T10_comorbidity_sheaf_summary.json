@@ -1,0 +1,17 @@
+{
+  "sheaf_norm": 0.04217769071822511,
+  "sheaf_z": 25.041287873705283,
+  "sheaf_p": 0.0,
+  "n_sites": 20,
+  "n_perms": 1000,
+  "cochran_n_sig": 0,
+  "cochran_n_total": 1305,
+  "n_full_coverage": 10,
+  "n_partial_coverage": 10,
+  "sheaf_CNS_norm": 0.09725284240448011,
+  "sheaf_CNS_z": 14.378491772093138,
+  "sheaf_CNS_p": 0.0,
+  "sheaf_PNS_norm": 0.09725284240448011,
+  "sheaf_PNS_z": 14.378491772093138,
+  "sheaf_PNS_p": 0.0
+}

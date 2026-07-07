@@ -1,0 +1,13 @@
+description,x,y,z,expected,p_value,observed,consistent,n_observations
+sex _|_ neuro | age,prop_female,neuro_severity,prop_age_80plus,independent,0.8065447,independent,True,51
+"sex _|_ mortality | {elix, severity}",prop_female,prop_deceased,mean_elixhauser|prop_severe,independent,0.0003402467,dependent,False,32
+"sex _|_ severity | {age, elix}",prop_female,prop_severe,prop_age_80plus|mean_elixhauser,independent,0.1012186,independent,True,32
+age → severity (marginal),prop_age_80plus,prop_severe,none,dependent,0.3255023,independent,False,51
+neuro → severity (marginal),neuro_severity,prop_severe,none,dependent,0.006499785,dependent,True,52
+neuro → mortality (marginal),neuro_severity,prop_deceased,none,dependent,4.87732e-06,dependent,True,52
+elix → severity (marginal),mean_elixhauser,prop_severe,none,dependent,0.336128,independent,False,32
+elix → mortality (marginal),mean_elixhauser,prop_deceased,none,dependent,0.0025813,dependent,True,32
+"age _|_ readmit | {severity, elix}",prop_age_80plus,prop_readmitted,prop_severe|mean_elixhauser,independent,0.0007229773,dependent,False,32
+neuro → readmit (marginal),neuro_severity,prop_readmitted,none,dependent,0.6553791,independent,False,52
+"sex _|_ readmit | {severity, elix}",prop_female,prop_readmitted,prop_severe|mean_elixhauser,independent,0.004964613,dependent,False,32
+age → cns_effect (marginal),prop_age_80plus,cns_effect,none,dependent,0.3286258,independent,False,51

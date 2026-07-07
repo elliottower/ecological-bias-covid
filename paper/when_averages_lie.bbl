@@ -1,0 +1,22 @@
+\begin{thebibliography}{2}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Chou et~al.(2021)Chou, Beghi, Visweswaran, et~al.]{four_ce_neuro2021}
+Shih-Hsuan Chou, Ettore Beghi, Shyam Visweswaran, et~al.
+\newblock Neurological diagnoses in hospitalized {COVID-19} patients associated
+  with adverse outcomes: a multinational cohort study.
+\newblock \emph{Scientific Reports}, 11:\penalty0 22274, 2021.
+\newblock \doi{10.1038/s41598-021-99481-9}.
+
+\bibitem[Robinson(1950)]{robinson1950ecological}
+William~S Robinson.
+\newblock Ecological correlations and the behavior of individuals.
+\newblock \emph{American Sociological Review}, 15\penalty0 (3):\penalty0
+  351--357, 1950.
+\newblock \doi{10.2307/2087176}.
+
+\end{thebibliography}

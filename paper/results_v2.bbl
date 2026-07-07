@@ -1,0 +1,142 @@
+\begin{thebibliography}{18}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Chou et~al.(2021{\natexlab{a}})Chou, Beghi, Visweswaran,
+  et~al.]{chou20224ce}
+Shih-Hsuan Chou, Ettore Beghi, Shyam Visweswaran, et~al.
+\newblock Global incidence of neurological manifestations among patients
+  hospitalized with {COVID-19}: a report from the {4CE} consortium.
+\newblock \emph{JAMA Network Open}, 4\penalty0 (5):\penalty0 e2112131,
+  2021{\natexlab{a}}.
+\newblock \doi{10.1001/jamanetworkopen.2021.12131}.
+
+\bibitem[Chou et~al.(2021{\natexlab{b}})Chou, Beghi, Visweswaran,
+  et~al.]{four_ce_neuro2021}
+Shih-Hsuan Chou, Ettore Beghi, Shyam Visweswaran, et~al.
+\newblock Neurological diagnoses in hospitalized {COVID-19} patients associated
+  with adverse outcomes: a multinational cohort study.
+\newblock \emph{Scientific Reports}, 11:\penalty0 22274, 2021{\natexlab{b}}.
+\newblock \doi{10.1038/s41598-021-99481-9}.
+
+\bibitem[Douaud et~al.(2022)Douaud, Lee, Alfaro-Almagro,
+  et~al.]{douaud2022brain}
+Gwenaelle Douaud, Soojin Lee, Fidel Alfaro-Almagro, et~al.
+\newblock {SARS-CoV-2} is associated with changes in brain structure in {UK
+  Biobank}.
+\newblock \emph{Nature}, 604\penalty0 (7907):\penalty0 697--707, 2022.
+\newblock \doi{10.1038/s41586-022-04569-5}.
+
+\bibitem[Elixhauser et~al.(1998)Elixhauser, Steiner, Harris, and
+  Coffey]{elixhauser1998}
+Anne Elixhauser, Claudia Steiner, D~Robert Harris, and Rosanna~M Coffey.
+\newblock Comorbidity measures for use with administrative data.
+\newblock \emph{Medical Care}, 36\penalty0 (1):\penalty0 8--27, 1998.
+
+\bibitem[Franceschi et~al.(2018)Franceschi, Garagnani, Parini, Giuliani, and
+  Santoro]{franceschi2018inflammaging}
+Claudio Franceschi, Paolo Garagnani, Paolo Parini, Cristina Giuliani, and
+  Aurelia Santoro.
+\newblock Inflammaging: a new immune--metabolic viewpoint for age-related
+  diseases.
+\newblock \emph{Nature Reviews Endocrinology}, 14\penalty0 (10):\penalty0
+  576--590, 2018.
+\newblock \doi{10.1038/s41574-018-0059-4}.
+
+\bibitem[Frontera et~al.(2021)Frontera, Sabouri, Mainali,
+  et~al.]{frontera2021neuro}
+Jennifer~A Frontera, Sakinah Sabouri, Shraddha Mainali, et~al.
+\newblock A prospective study of neurologic disorders in hospitalized patients
+  with {COVID-19} in {New York City}.
+\newblock \emph{Neurology}, 96\penalty0 (4):\penalty0 e575--e586, 2021.
+\newblock \doi{10.1212/WNL.0000000000010979}.
+
+\bibitem[Helms et~al.(2020)Helms, Kremer, Merdji, et~al.]{helms2020neuro}
+Julie Helms, St{\'e}phane Kremer, Hamid Merdji, et~al.
+\newblock Neurologic features in severe {SARS-CoV-2} infection.
+\newblock \emph{New England Journal of Medicine}, 382\penalty0 (23):\penalty0
+  2268--2270, 2020.
+\newblock \doi{10.1056/NEJMc2008597}.
+
+\bibitem[Huang et~al.(2020)Huang, Zhang, Zhang, Ramsey, Sanchez-Romero,
+  Glymour, and Sch{\"o}lkopf]{huang2020cdnod}
+Biwei Huang, Kun Zhang, Jiji Zhang, Joseph Ramsey, Ruben Sanchez-Romero, Clark
+  Glymour, and Bernhard Sch{\"o}lkopf.
+\newblock Causal discovery from heterogeneous/nonstationary data.
+\newblock \emph{Journal of Machine Learning Research}, 21\penalty0
+  (89):\penalty0 1--53, 2020.
+
+\bibitem[Iadecola et~al.(2020)Iadecola, Bhatt, et~al.]{iadecola2020covid}
+Costantino Iadecola, Inder Bhatt, et~al.
+\newblock Effects of {COVID-19} on the nervous system.
+\newblock \emph{Cell}, 183\penalty0 (1):\penalty0 16--27, 2020.
+\newblock \doi{10.1016/j.cell.2020.08.028}.
+
+\bibitem[Mao et~al.(2020)Mao, Jin, Wang, et~al.]{mao2020neuro}
+Ling Mao, Huijuan Jin, Mengdie Wang, et~al.
+\newblock Neurologic manifestations of hospitalized patients with coronavirus
+  disease 2019 in {Wuhan, China}.
+\newblock \emph{JAMA Neurology}, 77\penalty0 (6):\penalty0 683--690, 2020.
+\newblock \doi{10.1001/jamaneurol.2020.1127}.
+
+\bibitem[Montagne et~al.(2015)Montagne, Barnes, Sweeney,
+  et~al.]{montagne2015bbb}
+Axel Montagne, Samuel~R Barnes, Melanie~D Sweeney, et~al.
+\newblock Blood-brain barrier breakdown in the aging human hippocampus.
+\newblock \emph{Neuron}, 85\penalty0 (2):\penalty0 296--302, 2015.
+\newblock \doi{10.1016/j.neuron.2014.12.032}.
+
+\bibitem[Nalbandian et~al.(2021)Nalbandian, Sehgal, Gupta,
+  et~al.]{nalbandian2021pasc}
+Ani Nalbandian, Kartik Sehgal, Aakriti Gupta, et~al.
+\newblock Post-acute {COVID-19} syndrome.
+\newblock \emph{Nature Medicine}, 27\penalty0 (4):\penalty0 601--615, 2021.
+\newblock \doi{10.1038/s41591-021-01283-z}.
+
+\bibitem[Robinson(2017)]{robinson2017sheaf}
+Michael Robinson.
+\newblock Sheaves are the canonical data structure for sensor integration.
+\newblock \emph{Information Fusion}, 36:\penalty0 208--224, 2017.
+\newblock \doi{10.1016/j.inffus.2016.12.002}.
+
+\bibitem[Song et~al.(2021)Song, Zhang, Israelow, et~al.]{song2021neuroinvasion}
+Eric Song, Ce~Zhang, Benjamin Israelow, et~al.
+\newblock Neuroinvasion of {SARS-CoV-2} in human and mouse brain.
+\newblock \emph{Journal of Experimental Medicine}, 218\penalty0 (3):\penalty0
+  e20202135, 2021.
+\newblock \doi{10.1084/jem.20202135}.
+
+\bibitem[Strobl et~al.(2019)Strobl, Zhang, and Visweswaran]{strobl2019rcit}
+Eric~V Strobl, Kun Zhang, and Shyam Visweswaran.
+\newblock Approximate kernel-based conditional independence tests for fast
+  non-parametric causal discovery.
+\newblock \emph{Journal of Causal Inference}, 7\penalty0 (1), 2019.
+\newblock \doi{10.1515/jci-2018-0017}.
+
+\bibitem[Takahashi et~al.(2020)Takahashi, Ellingson, Wong,
+  et~al.]{takahashi2020sex}
+Takehiro Takahashi, Mallory~K Ellingson, Patrick Wong, et~al.
+\newblock Sex differences in immune responses that underlie {COVID-19} disease
+  outcomes.
+\newblock \emph{Nature}, 588\penalty0 (7837):\penalty0 315--320, 2020.
+\newblock \doi{10.1038/s41586-020-2700-3}.
+
+\bibitem[VanderWeele \& Ding(2017)VanderWeele and Ding]{vanderweele2017}
+Tyler~J VanderWeele and Peng Ding.
+\newblock Sensitivity analysis in observational research: introducing the
+  {E}-value.
+\newblock \emph{Annals of Internal Medicine}, 167\penalty0 (4):\penalty0
+  268--274, 2017.
+\newblock \doi{10.7326/M16-2607}.
+
+\bibitem[Williamson et~al.(2020)Williamson, Walker, Bhaskaran,
+  et~al.]{williamson2020opensafely}
+Elizabeth~J Williamson, Alex~J Walker, Krishnan Bhaskaran, et~al.
+\newblock Factors associated with {COVID-19}-related death using {OpenSAFELY}.
+\newblock \emph{Nature}, 584\penalty0 (7821):\penalty0 430--436, 2020.
+\newblock \doi{10.1038/s41586-020-2521-4}.
+
+\end{thebibliography}

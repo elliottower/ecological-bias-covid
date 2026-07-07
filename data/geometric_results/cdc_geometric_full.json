@@ -1,0 +1,214 @@
+{
+  "timestamp": "2026-07-03T03:50:39.201361+00:00",
+  "dataset": "CDC Case Surveillance (chunked, age_70plus)",
+  "n_total_rows": 33820888,
+  "n_valid_sites": 9,
+  "sites": {
+    "American Indian/Alaska Na": {
+      "n": 193254
+    },
+    "Asian, Non-Hispanic": {
+      "n": 712313
+    },
+    "Black, Non-Hispanic": {
+      "n": 3278186
+    },
+    "Hispanic/Latino": {
+      "n": 4276896
+    },
+    "Missing": {
+      "n": 455197
+    },
+    "Multiple/Other, Non-Hispa": {
+      "n": 761524
+    },
+    "Native Hawaiian/Other Pac": {
+      "n": 40528
+    },
+    "Unknown": {
+      "n": 8674028
+    },
+    "White, Non-Hispanic": {
+      "n": 15428962
+    }
+  },
+  "consistency_statistic": {
+    "observed": 0.07633711582499073,
+    "null_mean": 0.07633711582499071,
+    "null_std": 2.200843885906926e-17,
+    "z_score": 1.3877787807814457e-07,
+    "p_value": 0.77,
+    "n_sites": 9,
+    "n_perms": 200
+  },
+  "best_cochran_q": {
+    "Q": 0.09309207976096957,
+    "pair": "hospitalized \u00d7 icu",
+    "p": 0.9999998115654496
+  },
+  "cochran_q_all": {
+    "died \u00d7 hospitalized": {
+      "Q": 0.07050204505909324,
+      "p": 0.9999999374488375,
+      "mean_r": 0.42426264912984113,
+      "sd_r": 0.07243479105314997
+    },
+    "died \u00d7 icu": {
+      "Q": 0.09139315755915199,
+      "p": 0.9999998248302905,
+      "mean_r": 0.24291512518790062,
+      "sd_r": 0.09386663186319127
+    },
+    "died \u00d7 has_comorbidity": {
+      "Q": 0.007441394305449123,
+      "p": 0.9999999999920385,
+      "mean_r": 0.07051950191029072,
+      "sd_r": 0.028586472334130378
+    },
+    "died \u00d7 male": {
+      "Q": 0.0009025054873621804,
+      "p": 0.9999999999999982,
+      "mean_r": 0.03315187934641566,
+      "sd_r": 0.010001028068738364
+    },
+    "died \u00d7 age_70plus": {
+      "Q": 0.03711587403081505,
+      "p": 0.9999999951307524,
+      "mean_r": 0.3197257396004509,
+      "sd_r": 0.05574342495437899
+    },
+    "hospitalized \u00d7 icu": {
+      "Q": 0.09309207976096957,
+      "p": 0.9999998115654496,
+      "mean_r": 0.2906585436783184,
+      "sd_r": 0.09209992431183549
+    },
+    "hospitalized \u00d7 has_comorbidity": {
+      "Q": 0.02044295972728758,
+      "p": 0.9999999995488789,
+      "mean_r": 0.12054760833720247,
+      "sd_r": 0.046979805926609816
+    },
+    "hospitalized \u00d7 male": {
+      "Q": 0.0006289770595302831,
+      "p": 0.9999999999999996,
+      "mean_r": 0.025693351337192333,
+      "sd_r": 0.008353976351105267
+    },
+    "hospitalized \u00d7 age_70plus": {
+      "Q": 0.023605841692474375,
+      "p": 0.9999999991989736,
+      "mean_r": 0.24631440920040173,
+      "sd_r": 0.04744779287260836
+    },
+    "icu \u00d7 has_comorbidity": {
+      "Q": 0.0049932094024213395,
+      "p": 0.9999999999983844,
+      "mean_r": 0.11458491090927993,
+      "sd_r": 0.023242948019329513
+    },
+    "icu \u00d7 male": {
+      "Q": 0.0005912363591122773,
+      "p": 0.9999999999999997,
+      "mean_r": 0.01819056307468773,
+      "sd_r": 0.008101894913540577
+    },
+    "icu \u00d7 age_70plus": {
+      "Q": 0.012631331940955837,
+      "p": 0.9999999999340414,
+      "mean_r": 0.07630596381309726,
+      "sd_r": 0.03705336981723202
+    },
+    "has_comorbidity \u00d7 male": {
+      "Q": 0.0005009993466146621,
+      "p": 0.9999999999999999,
+      "mean_r": -0.003684254858927848,
+      "sd_r": 0.00746026833196812
+    },
+    "has_comorbidity \u00d7 age_70plus": {
+      "Q": 0.00600490543469268,
+      "p": 0.999999999996622,
+      "mean_r": 0.07712796675165796,
+      "sd_r": 0.025662167044220602
+    },
+    "male \u00d7 age_70plus": {
+      "Q": 0.0012758575973082433,
+      "p": 0.9999999999999931,
+      "mean_r": -0.00482315055977457,
+      "sd_r": 0.011904492864579631
+    }
+  },
+  "interaction_heterogeneity": {
+    "observed_norm": 0.9704009518102582,
+    "null_mean": 0.9704009518102584,
+    "null_std": 1.211110335867595e-16,
+    "z_score": -2.220446049250313e-06,
+    "p_value": 1.0,
+    "n_sites": 9,
+    "per_site": {
+      "American Indian/Alaska Na": {
+        "age_x_comorbidity_beta": -0.5766855878576708,
+        "age_x_comorbidity_se": 0.0731024786573907,
+        "age_x_comorbidity_p": 3.052814873470446e-15,
+        "age_x_comorbidity_or": 0.5617571792440343,
+        "n": 193254
+      },
+      "Asian, Non-Hispanic": {
+        "age_x_comorbidity_beta": -1.321146371470692,
+        "age_x_comorbidity_se": 0.0397356499802841,
+        "age_x_comorbidity_p": 2.1536989894560883e-242,
+        "age_x_comorbidity_or": 0.26682924114007944,
+        "n": 712313
+      },
+      "Black, Non-Hispanic": {
+        "age_x_comorbidity_beta": -0.8028687598378063,
+        "age_x_comorbidity_se": 0.016028292940423117,
+        "age_x_comorbidity_p": 0.0,
+        "age_x_comorbidity_or": 0.44804179440414815,
+        "n": 3278186
+      },
+      "Hispanic/Latino": {
+        "age_x_comorbidity_beta": -0.37081334576882496,
+        "age_x_comorbidity_se": 0.020882438994661308,
+        "age_x_comorbidity_p": 1.516503551942521e-70,
+        "age_x_comorbidity_or": 0.6901727532014227,
+        "n": 4276896
+      },
+      "Missing": {
+        "age_x_comorbidity_beta": -1.4581225793608414,
+        "age_x_comorbidity_se": 0.15431801877738785,
+        "age_x_comorbidity_p": 3.4268457458996305e-21,
+        "age_x_comorbidity_or": 0.23267268944390734,
+        "n": 455197
+      },
+      "Multiple/Other, Non-Hispa": {
+        "age_x_comorbidity_beta": -1.0233883892679665,
+        "age_x_comorbidity_se": 0.04745448467461518,
+        "age_x_comorbidity_p": 3.7730449056471947e-103,
+        "age_x_comorbidity_or": 0.3593751718397095,
+        "n": 761524
+      },
+      "Native Hawaiian/Other Pac": {
+        "age_x_comorbidity_beta": -0.7708506769858773,
+        "age_x_comorbidity_se": 0.12512822356022085,
+        "age_x_comorbidity_p": 7.252199926751256e-10,
+        "age_x_comorbidity_or": 0.46261936123237307,
+        "n": 40528
+      },
+      "Unknown": {
+        "age_x_comorbidity_beta": -0.8432592966143,
+        "age_x_comorbidity_se": 0.01852963950098228,
+        "age_x_comorbidity_p": 0.0,
+        "age_x_comorbidity_or": 0.4303057413260705,
+        "n": 8674028
+      },
+      "White, Non-Hispanic": {
+        "age_x_comorbidity_beta": -0.7321959290152772,
+        "age_x_comorbidity_se": 0.00842063274360682,
+        "age_x_comorbidity_p": 0.0,
+        "age_x_comorbidity_or": 0.48085191321381043,
+        "n": 15428962
+      }
+    }
+  }
+}
