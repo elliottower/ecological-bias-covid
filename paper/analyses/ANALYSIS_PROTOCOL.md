@@ -335,4 +335,6 @@ could not be reported as evidence of cross-site inconsistency.
 
 ## Commit SHA
 
-**[TO BE FILLED AFTER COMMIT]**
+**97f70946176a2ccad3b7ac116c127efd71827942**
+Frozen: 2026-07-07
+Repository: github.com/elliottower/ecological-bias-covid (private)
