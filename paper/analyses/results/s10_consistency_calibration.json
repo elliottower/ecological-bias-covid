@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-07-07 15:16:09",
+  "seed": 20260707,
+  "n_sims": 2000,
+  "n_vars": 30,
+  "n_pairs": 435,
+  "n_sites": 20,
+  "site_sample_size": 500,
+  "null_mean": 0.004009598806097854,
+  "null_std": 7.652731373267514e-05,
+  "fpr_z2": 0.0405,
+  "fpr_z25": 0.0,
+  "percentiles": {
+    "p50": 0.004007817788877967,
+    "p95": 0.004139448827553073,
+    "p99": 0.0041929194795726245,
+    "p999": 0.004262087480820435
+  },
+  "conclusion": "CALIBRATION CONFIRMED: FPR at z=2 is within nominal range and FPR at z=25 is negligible."
+}

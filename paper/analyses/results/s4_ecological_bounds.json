@@ -1,0 +1,104 @@
+{
+  "timestamp": "2026-07-07 15:16:15",
+  "observed_elderly_mortality_rate": 0.09909049608620323,
+  "n_elderly_80plus": 4252648,
+  "n_died_80plus": 421397,
+  "individual_or_80plus": 9.878030034832715,
+  "site_bounds": [
+    {
+      "site": "American Indian/Alas",
+      "n": 142780,
+      "mortality_rate": 0.03653873091469394,
+      "elderly_prop": 0.0,
+      "lower": null,
+      "upper": null,
+      "note": "elderly proportion is 0, bounds undefined"
+    },
+    {
+      "site": "Asian, Non-Hispanic",
+      "n": 174062,
+      "mortality_rate": 0.06051866576277418,
+      "elderly_prop": 0.07815605933517941,
+      "lower": 0.0,
+      "upper": 0.774331079094384,
+      "width": 0.774331079094384,
+      "contains_observed": true
+    },
+    {
+      "site": "Black, Non-Hispanic",
+      "n": 1920609,
+      "mortality_rate": 0.021870146396273264,
+      "elderly_prop": 0.0337804311028429,
+      "lower": 0.0,
+      "upper": 0.6474205829313029,
+      "width": 0.6474205829313029,
+      "contains_observed": true
+    },
+    {
+      "site": "Hispanic/Latino",
+      "n": 1195959,
+      "mortality_rate": 0.07642569686753475,
+      "elderly_prop": 0.09362528314097725,
+      "lower": 0.0,
+      "upper": 0.8162933590540491,
+      "width": 0.8162933590540491,
+      "contains_observed": true
+    },
+    {
+      "site": "Missing",
+      "n": 192529,
+      "mortality_rate": 0.015592456201403425,
+      "elderly_prop": 0.0,
+      "lower": null,
+      "upper": null,
+      "note": "elderly proportion is 0, bounds undefined"
+    },
+    {
+      "site": "Multiple/Other, Non-",
+      "n": 157859,
+      "mortality_rate": 0.006436123375924084,
+      "elderly_prop": 0.0,
+      "lower": null,
+      "upper": null,
+      "note": "elderly proportion is 0, bounds undefined"
+    },
+    {
+      "site": "Native Hawaiian/Othe",
+      "n": 13548,
+      "mortality_rate": 0.05868024800708592,
+      "elderly_prop": 0.035798641865958075,
+      "lower": 0.0,
+      "upper": 1.0,
+      "width": 1.0,
+      "contains_observed": true
+    },
+    {
+      "site": "Unknown",
+      "n": 2730140,
+      "mortality_rate": 0.03283274850373973,
+      "elderly_prop": 0.13458284190554332,
+      "lower": 0.0,
+      "upper": 0.24395939362599675,
+      "width": 0.24395939362599675,
+      "contains_observed": true
+    },
+    {
+      "site": "White, Non-Hispanic",
+      "n": 6165036,
+      "mortality_rate": 0.05821961136966597,
+      "elderly_prop": 0.0740868342050233,
+      "lower": 0.0,
+      "upper": 0.7858293851314073,
+      "width": 0.7858293851314073,
+      "contains_observed": true
+    }
+  ],
+  "intersection": {
+    "lower": 0.0,
+    "upper": 0.24395939362599675,
+    "width": 0.24395939362599675,
+    "valid": true,
+    "contains_observed": true
+  },
+  "conclusion": "Bounds are wide (24.4%). Ecological data alone is uninformative about elderly mortality \u2014 supports the paper's claims."
+}

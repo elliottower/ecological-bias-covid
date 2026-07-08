@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-07-07 15:14:37",
+  "moderator": "elderly_proportion",
+  "beta": 14.2,
+  "se": 0.83,
+  "rr_point": 1468864.189654094,
+  "rr_ci_lower": 288716.3507995527,
+  "evalue_point": 2937727.8793081027,
+  "evalue_ci_lower": 577432.2015986724,
+  "interpretation": "Substantial unmeasured confounding needed to explain the moderator effect. The E-value for the CI bound alone exceeds 3.",
+  "method": "VanderWeele & Ding (2017)"
+}

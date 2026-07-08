@@ -197,7 +197,7 @@ def main():
     print(f"  Expected ecological slope:  {expected_slope:+.4f} (p={exp_p:.2e})")
     print(f"  Ratio (observed/expected):  {ratio:.2f}")
 
-    agreement = abs(1 - ratio) < 0.20
+    agreement = bool(abs(1 - ratio) < 0.20)
 
     if agreement:
         conclusion = ("FALSIFICATION: Observed and expected ecological slopes "

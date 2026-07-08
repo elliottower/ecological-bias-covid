@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-07-07 15:20:41",
+  "age_threshold": 70,
+  "estimator": "Mundlak fixed-effects approximation (logistic + state dummies)",
+  "within_coef": 1.6528121388621846,
+  "within_se": 0.023490948557673613,
+  "within_or": 5.22164318554312,
+  "within_ci": [
+    4.9866776164558235,
+    5.467680017483729
+  ],
+  "within_p": 0.0,
+  "between_coef": 0.10976822347801786,
+  "between_se": 1299342.6515881298,
+  "between_or": 1.116019373391247,
+  "between_ci": [
+    0.0,
+    Infinity
+  ],
+  "between_p": 0.999999932594862,
+  "difference_coef": -1.5430439153841666,
+  "n_obs": 229125,
+  "n_states": 32,
+  "converged": true,
+  "ci_overlap": true,
+  "conclusion": "FALSIFICATION: Within and between CIs overlap. No statistically distinguishable aggregation bias."
+}

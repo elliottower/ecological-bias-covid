@@ -1,0 +1,180 @@
+{
+  "timestamp": "2026-07-07 15:20:44",
+  "age_threshold": 70,
+  "coefficients": {
+    "intercept": -3.814193551765482,
+    "beta_elderly": 1.1795089193307688,
+    "beta_male": -0.49895076052101117,
+    "beta_comorb": 1.1001515990309274
+  },
+  "n_states": 32,
+  "observed_ecological_slope": 0.23415169600916674,
+  "observed_ecological_p": 0.014379307431272349,
+  "expected_ecological_slope": 0.11205379081298905,
+  "expected_ecological_p": 3.8015876272451507e-13,
+  "ratio_observed_expected": 2.089636542506194,
+  "within_20_percent": false,
+  "per_state": {
+    "01": {
+      "elderly_prop": 0.10474831872834726,
+      "observed_mortality": 0.03077236600774404,
+      "predicted_mortality": 0.03172302225926686
+    },
+    "02": {
+      "elderly_prop": 0.16224772457459438,
+      "observed_mortality": 0.09141274238227147,
+      "predicted_mortality": 0.04323450733733957
+    },
+    "03": {
+      "elderly_prop": 0.18112712975098297,
+      "observed_mortality": 0.03905635648754915,
+      "predicted_mortality": 0.04252685670241774
+    },
+    "04": {
+      "elderly_prop": 0.11993769470404984,
+      "observed_mortality": 0.03894080996884735,
+      "predicted_mortality": 0.036147198423494176
+    },
+    "05": {
+      "elderly_prop": 0.13648433351035583,
+      "observed_mortality": 0.036378120021242695,
+      "predicted_mortality": 0.033262364747498704
+    },
+    "06": {
+      "elderly_prop": 0.21762078765732845,
+      "observed_mortality": 0.06211936662606577,
+      "predicted_mortality": 0.043347126710316604
+    },
+    "07": {
+      "elderly_prop": 0.08565989847715735,
+      "observed_mortality": 0.027918781725888325,
+      "predicted_mortality": 0.027373335959076324
+    },
+    "08": {
+      "elderly_prop": 0.16941913439635536,
+      "observed_mortality": 0.058656036446469245,
+      "predicted_mortality": 0.0386195278419655
+    },
+    "09": {
+      "elderly_prop": 0.15542116187889193,
+      "observed_mortality": 0.014888655408348923,
+      "predicted_mortality": 0.03560150860176857
+    },
+    "10": {
+      "elderly_prop": 0.13270355375618534,
+      "observed_mortality": 0.012595591542959963,
+      "predicted_mortality": 0.03344241341921298
+    },
+    "11": {
+      "elderly_prop": 0.09195696721311475,
+      "observed_mortality": 0.04546618852459016,
+      "predicted_mortality": 0.03149501363294323
+    },
+    "12": {
+      "elderly_prop": 0.18520321246045265,
+      "observed_mortality": 0.08128498418106596,
+      "predicted_mortality": 0.04132075103208914
+    },
+    "13": {
+      "elderly_prop": 0.11535091988708264,
+      "observed_mortality": 0.04205198092086051,
+      "predicted_mortality": 0.03346183955924802
+    },
+    "14": {
+      "elderly_prop": 0.11821608040201005,
+      "observed_mortality": 0.04798994974874372,
+      "predicted_mortality": 0.03338314273035001
+    },
+    "15": {
+      "elderly_prop": 0.1310788479697828,
+      "observed_mortality": 0.03446647780925401,
+      "predicted_mortality": 0.034907676482327656
+    },
+    "16": {
+      "elderly_prop": 0.1688073394495413,
+      "observed_mortality": 0.06834862385321101,
+      "predicted_mortality": 0.039985068195972744
+    },
+    "17": {
+      "elderly_prop": 0.16081972907259465,
+      "observed_mortality": 0.05939562348037513,
+      "predicted_mortality": 0.037975098057460126
+    },
+    "18": {
+      "elderly_prop": 0.14460784313725492,
+      "observed_mortality": 0.05337690631808279,
+      "predicted_mortality": 0.03703157298874145
+    },
+    "19": {
+      "elderly_prop": 0.1131949733434882,
+      "observed_mortality": 0.0634044173648134,
+      "predicted_mortality": 0.033447310715012474
+    },
+    "20": {
+      "elderly_prop": 0.1621668698832956,
+      "observed_mortality": 0.050862219125587874,
+      "predicted_mortality": 0.03817873749041329
+    },
+    "21": {
+      "elderly_prop": 0.09689697672732546,
+      "observed_mortality": 0.0220764155731168,
+      "predicted_mortality": 0.029942391158674694
+    },
+    "22": {
+      "elderly_prop": 0.11968996869876286,
+      "observed_mortality": 0.03443136085854822,
+      "predicted_mortality": 0.030824376342895213
+    },
+    "23": {
+      "elderly_prop": 0.10536585365853658,
+      "observed_mortality": 0.07414634146341463,
+      "predicted_mortality": 0.030500270517317622
+    },
+    "24": {
+      "elderly_prop": 0.13125716469239587,
+      "observed_mortality": 0.05254107756973634,
+      "predicted_mortality": 0.03586591215420485
+    },
+    "25": {
+      "elderly_prop": 0.11601102480581307,
+      "observed_mortality": 0.048859934853420196,
+      "predicted_mortality": 0.03142512264266451
+    },
+    "26": {
+      "elderly_prop": 0.08805291442744936,
+      "observed_mortality": 0.04423315419594874,
+      "predicted_mortality": 0.032345674658519126
+    },
+    "27": {
+      "elderly_prop": 0.1298278268962308,
+      "observed_mortality": 0.04746393671475105,
+      "predicted_mortality": 0.03627837061410363
+    },
+    "28": {
+      "elderly_prop": 0.13791322314049587,
+      "observed_mortality": 0.08161157024793389,
+      "predicted_mortality": 0.038157900205255973
+    },
+    "29": {
+      "elderly_prop": 0.13260730301089046,
+      "observed_mortality": 0.024983984625240232,
+      "predicted_mortality": 0.031509637432372686
+    },
+    "30": {
+      "elderly_prop": 0.16920382594638286,
+      "observed_mortality": 0.04324397144011855,
+      "predicted_mortality": 0.03848070935195667
+    },
+    "31": {
+      "elderly_prop": 0.04095112285336856,
+      "observed_mortality": 0.016622633201232938,
+      "predicted_mortality": 0.02631137559431863
+    },
+    "32": {
+      "elderly_prop": 0.17563198118753676,
+      "observed_mortality": 0.042915931804820694,
+      "predicted_mortality": 0.03920485443651482
+    }
+  },
+  "conclusion": "Ecological regression is amplified relative to expectation (ratio=2.09). Aggregation bias distorts the ecological estimate by 109%."
+}

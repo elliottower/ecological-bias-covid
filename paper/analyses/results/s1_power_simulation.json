@@ -1,0 +1,174 @@
+{
+  "timestamp": "2026-07-07 16:49:57",
+  "seed": 20260707,
+  "note": "vectorized version \u2014 cell-level multinomial instead of per-individual",
+  "individual_ors": {
+    "age_80plus": 9.878030034832715,
+    "comorbidity": 1.5,
+    "male": 1.7
+  },
+  "n_sims": 2000,
+  "cdc_sites": [
+    {
+      "name": "American Indian/Alas",
+      "n": 142780,
+      "elderly": 0.0,
+      "comorbidity": 0.07111640285754307,
+      "male": 0.48885698277069617
+    },
+    {
+      "name": "Asian, Non-Hispanic",
+      "n": 174062,
+      "elderly": 0.07815605933517941,
+      "comorbidity": 0.034252163022371336,
+      "male": 0.32698119061024233
+    },
+    {
+      "name": "Black, Non-Hispanic",
+      "n": 1920609,
+      "elderly": 0.0337804311028429,
+      "comorbidity": 0.07649865225040599,
+      "male": 0.2656417834134902
+    },
+    {
+      "name": "Hispanic/Latino",
+      "n": 1195959,
+      "elderly": 0.09362528314097725,
+      "comorbidity": 0.04244209040610924,
+      "male": 0.4739961821433678
+    },
+    {
+      "name": "Missing",
+      "n": 192529,
+      "elderly": 0.0,
+      "comorbidity": 0.004721366651257733,
+      "male": 0.5292241688265145
+    },
+    {
+      "name": "Multiple/Other, Non-",
+      "n": 157859,
+      "elderly": 0.0,
+      "comorbidity": 0.04700397189897314,
+      "male": 0.30740724317270474
+    },
+    {
+      "name": "Native Hawaiian/Othe",
+      "n": 13548,
+      "elderly": 0.035798641865958075,
+      "comorbidity": 0.14208739297313255,
+      "male": 0.15389725420726305
+    },
+    {
+      "name": "Unknown",
+      "n": 2730140,
+      "elderly": 0.13458284190554332,
+      "comorbidity": 0.03709113818338986,
+      "male": 0.6461621015772085
+    },
+    {
+      "name": "White, Non-Hispanic",
+      "n": 6165036,
+      "elderly": 0.0740868342050233,
+      "comorbidity": 0.11100616444088891,
+      "male": 0.587097139416542
+    }
+  ],
+  "population_means": {
+    "elderly": 0.050003343506169355,
+    "comorbidity": 0.0629132602982302,
+    "male": 0.4199182273486699
+  },
+  "results": {
+    "cdc_matched_9": {
+      "power": 1.0,
+      "mean_slope": 0.19609481551114027,
+      "median_slope": 0.1961382773237812,
+      "std_slope": 0.002357587404890733,
+      "mean_p": 1.7914402350245113e-05,
+      "median_p": 1.4009963668888547e-05,
+      "n_sims": 2000
+    },
+    "cdc_resampled_20": {
+      "power": 1.0,
+      "mean_slope": 0.19486547776071678,
+      "median_slope": 0.19568767530172665,
+      "std_slope": 0.010985725356719102,
+      "mean_p": 2.6270667161496e-10,
+      "median_p": 1.4827988133673138e-12,
+      "n_sims": 2000
+    },
+    "cdc_resampled_50": {
+      "power": 1.0,
+      "mean_slope": 0.19558182495267,
+      "median_slope": 0.19597828701038528,
+      "std_slope": 0.006369418792354235,
+      "mean_p": 4.419721774089474e-25,
+      "median_p": 4.5922693250974615e-31,
+      "n_sims": 2000
+    },
+    "cdc_resampled_100": {
+      "power": 1.0,
+      "mean_slope": 0.19597299779922844,
+      "median_slope": 0.19615487558051758,
+      "std_slope": 0.004357083449205338,
+      "mean_p": 2.9479637395696556e-51,
+      "median_p": 1.0166122781601982e-61,
+      "n_sims": 2000
+    },
+    "cdc_resampled_500": {
+      "power": 1.0,
+      "mean_slope": 0.19609813117340344,
+      "median_slope": 0.19611780218933922,
+      "std_slope": 0.0018788689667103215,
+      "mean_p": 6.864591435706802e-282,
+      "median_p": 2.711489343983551e-306,
+      "n_sims": 2000
+    },
+    "independent_9": {
+      "power": 1.0,
+      "mean_slope": 0.16849116309342174,
+      "median_slope": 0.169212944879101,
+      "std_slope": 0.023803051524711485,
+      "mean_p": 0.0005539764003980226,
+      "median_p": 7.397283061858588e-05,
+      "n_sims": 2000
+    },
+    "independent_20": {
+      "power": 1.0,
+      "mean_slope": 0.16786598162382538,
+      "median_slope": 0.16794324472919592,
+      "std_slope": 0.014932991524252464,
+      "mean_p": 2.2043500673968315e-08,
+      "median_p": 2.675451449442335e-10,
+      "n_sims": 2000
+    },
+    "independent_50": {
+      "power": 1.0,
+      "mean_slope": 0.16807940474931124,
+      "median_slope": 0.16791030884161995,
+      "std_slope": 0.009233179335095345,
+      "mean_p": 1.4034614577118244e-20,
+      "median_p": 6.126103904782631e-25,
+      "n_sims": 2000
+    },
+    "independent_100": {
+      "power": 1.0,
+      "mean_slope": 0.16816780065022255,
+      "median_slope": 0.16810009196274092,
+      "std_slope": 0.006678024025022702,
+      "mean_p": 3.730325895310096e-40,
+      "median_p": 3.1538765661325548e-49,
+      "n_sims": 2000
+    },
+    "independent_500": {
+      "power": 1.0,
+      "mean_slope": 0.16822563264253365,
+      "median_slope": 0.16825716920493494,
+      "std_slope": 0.0029101207103676397,
+      "mean_p": 3.7328005964071716e-222,
+      "median_p": 5.771762839832589e-242,
+      "n_sims": 2000
+    }
+  },
+  "conclusion": "FALSIFICATION TRIGGERED: Power > 80% at n<=50 under CDC-matched confounding. The CDC null is primarily a power problem, not bias."
+}

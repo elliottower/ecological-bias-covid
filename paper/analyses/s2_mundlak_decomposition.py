@@ -100,7 +100,7 @@ def fit_mundlak(records, state_means):
 
     print("  Fitting logistic regression (this may take a few minutes)...")
     model = Logit(y, X)
-    result = model.fit(method="lbfgs", maxiter=100, disp=False)
+    result = model.fit(method="newton", maxiter=100, disp=False)
 
     within_coef = result.params[1]
     between_coef = result.params[2]

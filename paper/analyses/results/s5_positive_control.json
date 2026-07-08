@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-07-07 15:15:49",
+  "results": {
+    "cdc_sex": {
+      "dataset": "CDC",
+      "predictor": "sex_ratio",
+      "n_sites": 9,
+      "slope": 0.0008607718357603401,
+      "intercept": 0.040429038149808666,
+      "r_squared": 3.5046502679847904e-05,
+      "p_value": 0.9879402095812114,
+      "se": 0.05495523574529607,
+      "significant": false
+    },
+    "cdc_elderly": {
+      "dataset": "CDC",
+      "predictor": "elderly_proportion",
+      "n_sites": 9,
+      "slope": 0.27723755352147905,
+      "intercept": 0.026927687311688278,
+      "r_squared": 0.31159927201327536,
+      "p_value": 0.11829028181349338,
+      "se": 0.15574907679088873,
+      "significant": false
+    },
+    "mexico_sex": {
+      "dataset": "Mexico",
+      "predictor": "sex_ratio",
+      "n_sites": 32,
+      "slope": 0.3622098077034267,
+      "intercept": -0.09720571526488644,
+      "r_squared": 0.08717317353967242,
+      "p_value": 0.10089108285486337,
+      "se": 0.21399436988072632,
+      "significant": false
+    },
+    "mexico_elderly": {
+      "dataset": "Mexico",
+      "predictor": "elderly_proportion",
+      "n_sites": 32,
+      "slope": 1.3105305611998093,
+      "intercept": -0.009494559142206288,
+      "r_squared": 0.5041447571974053,
+      "p_value": 5.324808408832085e-06,
+      "se": 0.23729377907248486,
+      "significant": true
+    }
+  },
+  "cross_site_correlations_cdc": {
+    "elderly_male": 0.41218607471452456,
+    "elderly_comorbidity": -0.0476861362850688,
+    "male_comorbidity": -0.42136016531678494
+  },
+  "conclusion": "FALSIFICATION: Sex-mortality ecological regression also fails on CDC. The pseudo-site construction may be too noisy for any ecological regression."
+}
