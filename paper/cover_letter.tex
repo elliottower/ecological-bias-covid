@@ -1,0 +1,56 @@
+\documentclass[11pt]{letter}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+
+\signature{Elliot Tower\\Independent Researcher\\\texttt{elliot@elliottower.ai}}
+\address{Elliot Tower\\Independent Researcher\\elliot@elliottower.ai}
+
+\date{July 7, 2026}
+
+\begin{document}
+
+\begin{letter}{Editorial Office\\BMC Medical Research Methodology}
+
+\opening{Dear Editors,}
+
+I am submitting the manuscript ``Ecological bias distorts effect sizes
+in federated COVID-19 analysis: evidence from 42 million patient
+records'' for consideration as a Research Article in \textit{BMC
+Medical Research Methodology}.
+
+This paper quantifies how ecological bias distorts effect sizes when
+multi-site studies pool site-level summaries instead of individual
+patient data.  Using 42 million COVID-19 records from the United
+States (CDC) and Mexico, we show that ecological regression produces
+linear slopes incommensurable with the individual-level odds ratios
+they purport to estimate---a different quantity, not a noisy estimate.
+Applied to the 4CE consortium's neurological dataset (21 hospitals, 6
+countries), meta-analytic methods diverge by 350-fold, and a
+multivariate consistency test detects coordinated heterogeneity
+invisible to standard approaches.
+
+The paper contributes to the methodological literature in three ways:
+(1) it provides large-scale empirical quantification of ecological
+bias in federated clinical data, a setting where the fallacy is
+routinely acknowledged but rarely measured; (2) it introduces
+structural diagnostics (a multivariate consistency test with a formal
+degeneracy proof) for detecting when site-level pooling is
+unreliable; and (3) it includes ten pre-registered supplementary
+analyses with explicit falsification criteria, two of which fired,
+demonstrating transparent reporting of both confirmatory and
+disconfirmatory results.
+
+The datasets used are publicly available (CDC Case Surveillance,
+Mexico Datos Abiertos), all code is available on GitHub, and the
+analysis protocol was frozen before results were examined.  The
+manuscript has not been submitted elsewhere and is not under
+consideration at another journal.
+
+I believe this work is well suited to BMC Medical Research
+Methodology's focus on statistical methods for health research, and I
+hope the editors and reviewers will find it a useful contribution.
+
+\closing{Sincerely,}
+
+\end{letter}
+\end{document}

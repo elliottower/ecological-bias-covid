@@ -78,20 +78,20 @@ fig, axes = plt.subplots(1, 2, figsize=(10, 4.5))
 # --- Panel A: CDC ---
 ax = axes[0]
 sites = cdc["site_data"]
-x_cdc = [s["prop_80plus"] for s in sites]
-y_cdc = [s["prop_died"] for s in sites]
-names_cdc = [s["site"][:12] for s in sites]
+exclude = {"Missing", "Unknown"}
+x_cdc = [s["prop_80plus"] for s in sites if s["site"] not in exclude]
+y_cdc = [s["prop_died"] for s in sites if s["site"] not in exclude]
+names_cdc = [s["site"][:12] for s in sites if s["site"] not in exclude]
 
 ax.scatter(x_cdc, y_cdc, s=60, c='#2171b5', edgecolors='white',
            linewidth=0.5, zorder=3, label="Site-level (pseudo-sites)")
 
-slope = cdc["ecological_slope"]
-intercept = np.mean(y_cdc) - slope * np.mean(x_cdc)
+slope, intercept, _, p_val, _ = stats.linregress(x_cdc, y_cdc)
 x_fit = np.linspace(min(x_cdc) - 0.01, max(x_cdc) + 0.01, 100)
 ax.plot(x_fit, intercept + slope * x_fit, '--', color='#cb181d',
-        linewidth=1.5, alpha=0.8, label=r"Ecological: $\beta=+0.28$, $p=0.12$")
+        linewidth=1.5, alpha=0.8)
 
-# CI band for ecological slope (n=9)
+# CI band for ecological slope (n=7)
 n = len(x_cdc)
 x_arr = np.array(x_cdc)
 y_arr = np.array(y_cdc)
@@ -100,42 +100,25 @@ residuals = y_arr - y_pred
 se_resid = np.sqrt(np.sum(residuals**2) / (n - 2))
 x_mean = np.mean(x_arr)
 ss_x = np.sum((x_arr - x_mean)**2)
-for x_val in x_fit:
-    se_pred = se_resid * np.sqrt(1/n + (x_val - x_mean)**2 / ss_x)
 ci_upper = intercept + slope * x_fit + 1.96 * se_resid * np.sqrt(1/n + (x_fit - x_mean)**2 / ss_x)
 ci_lower = intercept + slope * x_fit - 1.96 * se_resid * np.sqrt(1/n + (x_fit - x_mean)**2 / ss_x)
 ax.fill_between(x_fit, ci_lower, ci_upper, color='#cb181d', alpha=0.08)
 
 for i, name in enumerate(names_cdc):
+    dy = -4 if "White" in name else 4
     ax.annotate(name, (x_cdc[i], y_cdc[i]), fontsize=6, alpha=0.7,
-                xytext=(4, 4), textcoords='offset points')
-
-# Individual-level dose-response inset
-ax_inset = ax.inset_axes([0.55, 0.08, 0.42, 0.42])
-age_x = []
-age_y = []
-for ag, data in sorted(age_mort.items(), key=lambda x: age_group_midpoint(x[0]) or 0):
-    mid = age_group_midpoint(ag)
-    if mid is not None:
-        age_x.append(mid)
-        age_y.append(data["mortality_rate"])
-
-ax_inset.bar(age_x, age_y, width=8, color='#2171b5', alpha=0.7, edgecolor='white')
-ax_inset.set_xlabel("Age", fontsize=7)
-ax_inset.set_ylabel("Mortality", fontsize=7)
-ax_inset.set_title("Individual-level", fontsize=7, fontweight='bold')
-ax_inset.tick_params(labelsize=6)
-ax_inset.spines['top'].set_visible(False)
-ax_inset.spines['right'].set_visible(False)
-ax_inset.annotate("OR = 9.9", xy=(75, max(age_y)*0.8), fontsize=7,
-                   fontweight='bold', color='#cb181d')
+                xytext=(4, dy), textcoords='offset points')
 
 ax.set_xlabel("Proportion aged 80+")
 ax.set_ylabel("Mortality rate")
 ax.set_title(r"A.  CDC: ecological regression")
-ax.text(0.05, 0.95, "Signal disappears\n" + r"$\beta=+0.28$, $p=0.12$",
+p_str = f"$p={p_val:.2f}$" if p_val >= 0.01 else f"$p={p_val:.1e}$"
+ax.text(0.05, 0.95, r"Ecological: $\beta=" + f"{slope:+.2f}$, {p_str}",
         transform=ax.transAxes, fontsize=9, va='top',
         bbox=dict(boxstyle='round,pad=0.3', facecolor='#fee0d2', alpha=0.8))
+ax.text(0.05, 0.87, r"Individual: OR = 9.9, $p < 0.001$",
+        transform=ax.transAxes, fontsize=9, va='top',
+        bbox=dict(boxstyle='round,pad=0.3', facecolor='#deebf7', alpha=0.8))
 
 # --- Panel B: Mexico ---
 ax = axes[1]
@@ -168,10 +151,12 @@ ax.fill_between(x_fit, ci_lower_mx, ci_upper_mx, color='#cb181d', alpha=0.08)
 ax.set_xlabel("Proportion aged 70+")
 ax.set_ylabel("Mortality rate")
 ax.set_title(r"B.  Mexico: ecological regression")
-ax.text(0.05, 0.95, "Signal distorts\n" + r"$\beta=+1.31$, $p<0.0001$"
-        + "\nIndividual OR = 11.3",
+ax.text(0.05, 0.95, r"Ecological: $\beta=+1.31$, $p<0.0001$",
         transform=ax.transAxes, fontsize=9, va='top',
-        bbox=dict(boxstyle='round,pad=0.3', facecolor='#d9f0d3', alpha=0.8))
+        bbox=dict(boxstyle='round,pad=0.3', facecolor='#fee0d2', alpha=0.8))
+ax.text(0.05, 0.87, r"Individual: OR = 11.3, $p < 0.001$",
+        transform=ax.transAxes, fontsize=9, va='top',
+        bbox=dict(boxstyle='round,pad=0.3', facecolor='#deebf7', alpha=0.8))
 
 for a in axes:
     a.spines['top'].set_visible(False)

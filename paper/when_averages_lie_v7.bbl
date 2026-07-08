@@ -1,0 +1,136 @@
+\begin{thebibliography}{17}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Chen et~al.(2023)]{chen2023fedglmm}
+Yue Chen et~al.
+\newblock A privacy-preserving and computation-efficient federated algorithm
+  for generalized linear mixed models to analyze correlated electronic health
+  records data.
+\newblock \emph{PLoS ONE}, 18\penalty0 (1):\penalty0 e0280192, 2023.
+\newblock \doi{10.1371/journal.pone.0280192}.
+
+\bibitem[Chou et~al.(2021)Chou, Beghi, Visweswaran, et~al.]{four_ce_neuro2021}
+Shih-Hsuan Chou, Ettore Beghi, Shyam Visweswaran, et~al.
+\newblock Neurological diagnoses in hospitalized {COVID-19} patients associated
+  with adverse outcomes: a multinational cohort study.
+\newblock \emph{Scientific Reports}, 11:\penalty0 22274, 2021.
+\newblock \doi{10.1038/s41598-021-99481-9}.
+
+\bibitem[Diez-Roux(2000)]{diezroux2000multilevel}
+Ana~V Diez-Roux.
+\newblock Multilevel analysis in public health research.
+\newblock \emph{Annual Review of Public Health}, 21\penalty0 (1):\penalty0
+  171--192, 2000.
+\newblock \doi{10.1146/annurev.publhealth.21.1.171}.
+
+\bibitem[Elixhauser et~al.(1998)Elixhauser, Steiner, Harris, and
+  Coffey]{elixhauser1998}
+Anne Elixhauser, Claudia Steiner, D~Robert Harris, and Rosanna~M Coffey.
+\newblock Comorbidity measures for use with administrative data.
+\newblock \emph{Medical Care}, 36\penalty0 (1):\penalty0 8--27, 1998.
+
+\bibitem[Franceschi et~al.(2018)Franceschi, Garagnani, Parini, Giuliani, and
+  Santoro]{franceschi2018inflammaging}
+Claudio Franceschi, Paolo Garagnani, Paolo Parini, Cristina Giuliani, and
+  Aurelia Santoro.
+\newblock Inflammaging: a new immune--metabolic viewpoint for age-related
+  diseases.
+\newblock \emph{Nature Reviews Endocrinology}, 14\penalty0 (10):\penalty0
+  576--590, 2018.
+\newblock \doi{10.1038/s41574-018-0059-4}.
+
+\bibitem[Gelman \& Carlin(2014)Gelman and Carlin]{gelman2014typeMS}
+Andrew Gelman and John Carlin.
+\newblock Beyond power calculations: assessing {Type S} (sign) and {Type M}
+  (magnitude) errors.
+\newblock \emph{Perspectives on Psychological Science}, 9\penalty0
+  (6):\penalty0 641--651, 2014.
+\newblock \doi{10.1177/1745691614551642}.
+
+\bibitem[Gelman et~al.(2012)Gelman, Hill, and Yajima]{gelman2012multilevel}
+Andrew Gelman, Jennifer Hill, and Masanao Yajima.
+\newblock Why we (usually) don't have to worry about multiple comparisons.
+\newblock \emph{Journal of Research on Educational Effectiveness}, 5\penalty0
+  (2):\penalty0 189--211, 2012.
+\newblock \doi{10.1080/19345747.2011.618213}.
+
+\bibitem[Greenland(2001)]{greenland2001ecologic}
+Sander Greenland.
+\newblock Ecologic versus individual-level sources of bias in ecologic
+  estimates of contextual health effects.
+\newblock \emph{International Journal of Epidemiology}, 30\penalty0
+  (6):\penalty0 1343--1350, 2001.
+\newblock \doi{10.1093/ije/30.6.1343}.
+
+\bibitem[Greenland \& Morgenstern(1992)Greenland and
+  Morgenstern]{greenland1992ecological}
+Sander Greenland and Hal Morgenstern.
+\newblock Divergent biases in ecologic and individualistic studies.
+\newblock \emph{Statistics in Medicine}, 11\penalty0 (9):\penalty0 1209--1223,
+  1992.
+\newblock \doi{10.1002/sim.4780110907}.
+
+\bibitem[Haendel et~al.(2021)Haendel, Chute, Bennett, et~al.]{haendel2021n3c}
+Melissa~A Haendel, Christopher~G Chute, Tellen~D Bennett, et~al.
+\newblock The {National COVID Cohort Collaborative (N3C)}: rationale, design,
+  infrastructure, and deployment.
+\newblock \emph{Journal of the American Medical Informatics Association},
+  28\penalty0 (3):\penalty0 427--443, 2021.
+\newblock \doi{10.1093/jamia/ocaa196}.
+
+\bibitem[Iadecola et~al.(2020)Iadecola, Bhatt, et~al.]{iadecola2020covid}
+Costantino Iadecola, Inder Bhatt, et~al.
+\newblock Effects of {COVID-19} on the nervous system.
+\newblock \emph{Cell}, 183\penalty0 (1):\penalty0 16--27, 2020.
+\newblock \doi{10.1016/j.cell.2020.08.028}.
+
+\bibitem[Montagne et~al.(2015)Montagne, Barnes, Sweeney,
+  et~al.]{montagne2015bbb}
+Axel Montagne, Samuel~R Barnes, Melanie~D Sweeney, et~al.
+\newblock Blood-brain barrier breakdown in the aging human hippocampus.
+\newblock \emph{Neuron}, 85\penalty0 (2):\penalty0 296--302, 2015.
+\newblock \doi{10.1016/j.neuron.2014.12.032}.
+
+\bibitem[Robinson(1950)]{robinson1950ecological}
+William~S Robinson.
+\newblock Ecological correlations and the behavior of individuals.
+\newblock \emph{American Sociological Review}, 15\penalty0 (3):\penalty0
+  351--357, 1950.
+\newblock \doi{10.2307/2087176}.
+
+\bibitem[Song et~al.(2021)Song, Zhang, Israelow, et~al.]{song2021neuroinvasion}
+Eric Song, Ce~Zhang, Benjamin Israelow, et~al.
+\newblock Neuroinvasion of {SARS-CoV-2} in human and mouse brain.
+\newblock \emph{Journal of Experimental Medicine}, 218\penalty0 (3):\penalty0
+  e20202135, 2021.
+\newblock \doi{10.1084/jem.20202135}.
+
+\bibitem[Subramanian et~al.(2009)Subramanian, Jones, Kaddour, and
+  Krieger]{subramanian2009revisiting}
+SV~Subramanian, Kelvyn Jones, Afamia Kaddour, and Nancy Krieger.
+\newblock Revisiting {Robinson}: the perils of individualistic and ecologic
+  fallacy.
+\newblock \emph{International Journal of Epidemiology}, 38\penalty0
+  (2):\penalty0 342--360, 2009.
+\newblock \doi{10.1093/ije/dyn359}.
+
+\bibitem[VanderWeele \& Ding(2017)VanderWeele and Ding]{vanderweele2017}
+Tyler~J VanderWeele and Peng Ding.
+\newblock Sensitivity analysis in observational research: introducing the
+  {E}-value.
+\newblock \emph{Annals of Internal Medicine}, 167\penalty0 (4):\penalty0
+  268--274, 2017.
+\newblock \doi{10.7326/M16-2607}.
+
+\bibitem[Wilson et~al.(2022)Wilson, Doiron, et~al.]{wilson2022datashield}
+Rosie Wilson, Dany Doiron, et~al.
+\newblock {dsSurvival}: privacy preserving survival models for federated
+  individual patient meta-analysis in {DataSHIELD}.
+\newblock \emph{BMC Medical Research Methodology}, 22:\penalty0 161, 2022.
+\newblock \doi{10.1186/s12874-022-01540-0}.
+
+\end{thebibliography}
