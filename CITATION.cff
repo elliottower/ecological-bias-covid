@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "Ecological Bias in COVID Epidemiology"
+title: "Ecological Bias Distorts Effect Sizes in Federated COVID-19 Analysis"
 authors:
   - family-names: Tower
     given-names: Elliot
@@ -9,3 +9,4 @@ authors:
 type: software
 license: MIT
 repository-code: "https://github.com/elliottower/ecological-bias-covid"
+doi: "10.5281/zenodo.21252371"
