@@ -1,0 +1,24 @@
+{
+  "title": "Ecological Bias in COVID Epidemiology",
+  "upload_type": "software",
+  "description": "Analysis of ecological bias in COVID-19 epidemiological studies.",
+  "creators": [
+    {
+      "name": "Tower, Elliot",
+      "orcid": "0000-0001-7004-8884"
+    }
+  ],
+  "license": "MIT",
+  "keywords": [
+    "ecological bias",
+    "COVID-19",
+    "epidemiology"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/elliottower/ecological-bias-covid",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
