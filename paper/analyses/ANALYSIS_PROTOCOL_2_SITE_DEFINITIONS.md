@@ -1,6 +1,6 @@
 # Does the ecological discrepancy depend on how sites are defined, and how much of it do patient composition and calendar time account for?
 
-**Status:** DRAFT — not frozen. To freeze: commit this file alone, push it, tag the commit, and record the SHA below, as `ANALYSIS_PROTOCOL.md` was frozen at `97f7094`.
+**Status:** FROZEN at commit `a38196b`, tag `registration-s11-s12`, as `ANALYSIS_PROTOCOL.md` was frozen at `97f7094`.
 **Date drafted:** 2026-09-24
 **Extends:** `ANALYSIS_PROTOCOL.md` (frozen 2026-07-07 at `97f7094`) and `PROTOCOL_CORRECTION_ADDENDUM.md`
 **Data:** the 3 January 2022 Mexico snapshot, `220103COVID19MEXICO.csv`, sha256 `25ccc890d190bf66a90aae98507f78f6bfe8b0e9be10767936a0e929512dbc6d`, loaded by `mexico_confirmed_cases.py`: 3,993,464 confirmed-case records, 299,581 deaths.
@@ -279,4 +279,6 @@ sections, the treatment of the CDC and 4CE material — are not analyses and are
 
 ## Commit SHA
 
-**Not frozen.**
+**a38196b15db16a4d497e5aa4d9e0a07f1c3834b3**
+Frozen and pushed 2026-09-24, tagged `registration-s11-s12`.
+Repository: github.com/elliottower/ecological-bias-covid (public)
