@@ -1,0 +1,455 @@
+{
+  "timestamp": "2026-09-24T15:34:53",
+  "source_url": "https://datosabiertos.salud.gob.mx/gobmx/salud/datos_abiertos/historicos/2022/01/datos_abiertos_covid19_03.01.2022.zip",
+  "csv": "220103COVID19MEXICO.csv",
+  "csv_sha256": "25ccc890d190bf66a90aae98507f78f6bfe8b0e9be10767936a0e929512dbc6d",
+  "total_rows": 12425179,
+  "clasificacion_final_counts": {
+    "1": 251234,
+    "2": 14870,
+    "3": 3727360,
+    "4": 11480,
+    "5": 84126,
+    "6": 487711,
+    "7": 7848398
+  },
+  "definitions": {
+    "confirmed": "CLASIFICACION_FINAL in {1, 2, 3}",
+    "death": "FECHA_DEF != '9999-99-99'",
+    "site": "ENTIDAD_UM (state of the treating medical unit)",
+    "elderly": "EDAD >= 70",
+    "male": "SEXO == 2 (1 is female, 99 unknown; unknown falls in the reference group)",
+    "comorbidity": "any of ['DIABETES', 'HIPERTENSION', 'OBESIDAD', 'CARDIOVASCULAR', 'RENAL_CRONICA', 'EPOC', 'ASMA', 'INMUSUPR', 'TABAQUISMO'] == 1 (2 is no, 97/98/99 unknown; unknown falls in the reference group)"
+  },
+  "codes_among_confirmed_cases": {
+    "EDAD_min": 0,
+    "EDAD_max": 147,
+    "EDAD_over_120": 24,
+    "EDAD_missing": 0,
+    "SEXO": {
+      "1": 2009034,
+      "2": 1984430
+    },
+    "ENTIDAD_UM": {
+      "1": 39537,
+      "2": 91278,
+      "3": 63163,
+      "4": 25030,
+      "5": 102613,
+      "6": 34054,
+      "7": 22307,
+      "8": 81063,
+      "9": 1154276,
+      "10": 50686,
+      "11": 204282,
+      "12": 76480,
+      "13": 61663,
+      "14": 166123,
+      "15": 245313,
+      "16": 73196,
+      "17": 49968,
+      "18": 34670,
+      "19": 211101,
+      "20": 83247,
+      "21": 129232,
+      "22": 101452,
+      "23": 62324,
+      "24": 110068,
+      "25": 75629,
+      "26": 124098,
+      "27": 146002,
+      "28": 105769,
+      "29": 27143,
+      "30": 121775,
+      "31": 76590,
+      "32": 43332
+    },
+    "ENTIDAD_RES": {
+      "1": 39423,
+      "2": 92092,
+      "3": 63147,
+      "4": 24449,
+      "5": 102491,
+      "6": 33505,
+      "7": 23672,
+      "8": 81148,
+      "9": 1006766,
+      "10": 51212,
+      "11": 204636,
+      "12": 77618,
+      "13": 63581,
+      "14": 166822,
+      "15": 384959,
+      "16": 74043,
+      "17": 50854,
+      "18": 34745,
+      "19": 210836,
+      "20": 84226,
+      "21": 126905,
+      "22": 100649,
+      "23": 62775,
+      "24": 109066,
+      "25": 75874,
+      "26": 123839,
+      "27": 144817,
+      "28": 104853,
+      "29": 29699,
+      "30": 124991,
+      "31": 76368,
+      "32": 43403
+    },
+    "SECTOR": {
+      "1": 429,
+      "2": 959,
+      "3": 45567,
+      "4": 1549497,
+      "5": 27033,
+      "6": 122661,
+      "7": 2909,
+      "8": 23741,
+      "9": 118209,
+      "10": 22596,
+      "11": 11153,
+      "12": 2066299,
+      "13": 2390,
+      "14": 1,
+      "99": 20
+    },
+    "MUNICIPIO_RES_unknown_999": 2874,
+    "MUNICIPIO_RES_distinct": 2453,
+    "FECHA_SINTOMAS_min": "2020-02-19 00:00:00",
+    "FECHA_SINTOMAS_max": "2022-01-03 00:00:00",
+    "FECHA_SINTOMAS_invalid_or_out_of_range": 0,
+    "onset_months": 24,
+    "FECHA_DEF_alive_code": 3693883,
+    "FECHA_DEF_missing": 0,
+    "FECHA_DEF_unparseable_dates": 0,
+    "comorbidity_flags": {
+      "DIABETES": {
+        "1": 441334,
+        "2": 3542416,
+        "98": 9714
+      },
+      "HIPERTENSION": {
+        "1": 573739,
+        "2": 3410587,
+        "98": 9138
+      },
+      "OBESIDAD": {
+        "1": 480813,
+        "2": 3504071,
+        "98": 8580
+      },
+      "CARDIOVASCULAR": {
+        "1": 49325,
+        "2": 3935039,
+        "98": 9100
+      },
+      "RENAL_CRONICA": {
+        "1": 48653,
+        "2": 3935787,
+        "98": 9024
+      },
+      "EPOC": {
+        "1": 35584,
+        "2": 3948807,
+        "98": 9073
+      },
+      "ASMA": {
+        "1": 78850,
+        "2": 3905691,
+        "98": 8923
+      },
+      "INMUSUPR": {
+        "1": 26619,
+        "2": 3957708,
+        "98": 9137
+      },
+      "TABAQUISMO": {
+        "1": 262182,
+        "2": 3721850,
+        "98": 9432
+      }
+    }
+  },
+  "record_identifier": {
+    "field": "ID_REGISTRO",
+    "duplicated_values": 0,
+    "unique": true,
+    "note": "a record identifier, not a person identifier: uniqueness here means one row per record, and the same person may appear in more than one record"
+  },
+  "unknown_in_reference_group": {
+    "sex_unknown": 0,
+    "all_comorbidity_flags_unknown": 7080
+  },
+  "expected_from_primary_analysis": {
+    "n": 3993464,
+    "deaths": 299581,
+    "sites": 32
+  },
+  "observed": {
+    "n": 3993464,
+    "deaths": 299581,
+    "sites": 32
+  },
+  "site_table": {
+    "Aguascalientes": {
+      "n": 39537,
+      "deaths": 3117,
+      "mortality_rate": 0.0788375446,
+      "prop_elderly": 0.069479222,
+      "prop_male": 0.4882009257,
+      "prop_comorbidity": 0.3543010345
+    },
+    "Baja California": {
+      "n": 91278,
+      "deaths": 10946,
+      "mortality_rate": 0.1199193672,
+      "prop_elderly": 0.074913999,
+      "prop_male": 0.4889349022,
+      "prop_comorbidity": 0.4263349328
+    },
+    "Baja California Sur": {
+      "n": 63163,
+      "deaths": 2408,
+      "mortality_rate": 0.038123585,
+      "prop_elderly": 0.0370311733,
+      "prop_male": 0.5007836867,
+      "prop_comorbidity": 0.3010939949
+    },
+    "CDMX": {
+      "n": 1154276,
+      "deaths": 52823,
+      "mortality_rate": 0.0457628851,
+      "prop_elderly": 0.0584782149,
+      "prop_male": 0.486478104,
+      "prop_comorbidity": 0.3079688047
+    },
+    "Campeche": {
+      "n": 25030,
+      "deaths": 2068,
+      "mortality_rate": 0.082620855,
+      "prop_elderly": 0.0699560527,
+      "prop_male": 0.5453855374,
+      "prop_comorbidity": 0.3783459848
+    },
+    "Chiapas": {
+      "n": 22307,
+      "deaths": 2134,
+      "mortality_rate": 0.0956650379,
+      "prop_elderly": 0.0789886583,
+      "prop_male": 0.5298785135,
+      "prop_comorbidity": 0.3513246963
+    },
+    "Chihuahua": {
+      "n": 81063,
+      "deaths": 8757,
+      "mortality_rate": 0.10802709,
+      "prop_elderly": 0.0828614781,
+      "prop_male": 0.4821065098,
+      "prop_comorbidity": 0.3907207974
+    },
+    "Coahuila": {
+      "n": 102613,
+      "deaths": 7826,
+      "mortality_rate": 0.0762671396,
+      "prop_elderly": 0.0708389775,
+      "prop_male": 0.4872189684,
+      "prop_comorbidity": 0.2977985246
+    },
+    "Colima": {
+      "n": 34054,
+      "deaths": 2229,
+      "mortality_rate": 0.0654548658,
+      "prop_elderly": 0.0618135902,
+      "prop_male": 0.4930698303,
+      "prop_comorbidity": 0.3536735773
+    },
+    "Durango": {
+      "n": 50686,
+      "deaths": 3094,
+      "mortality_rate": 0.0610424969,
+      "prop_elderly": 0.0626405714,
+      "prop_male": 0.4594759894,
+      "prop_comorbidity": 0.2908100856
+    },
+    "Guanajuato": {
+      "n": 204282,
+      "deaths": 13334,
+      "mortality_rate": 0.0652725154,
+      "prop_elderly": 0.0682438981,
+      "prop_male": 0.4759009604,
+      "prop_comorbidity": 0.3314242077
+    },
+    "Guerrero": {
+      "n": 76480,
+      "deaths": 6125,
+      "mortality_rate": 0.0800862971,
+      "prop_elderly": 0.0821783473,
+      "prop_male": 0.4981956067,
+      "prop_comorbidity": 0.3387421548
+    },
+    "Hidalgo": {
+      "n": 61663,
+      "deaths": 7781,
+      "mortality_rate": 0.1261858813,
+      "prop_elderly": 0.0781992443,
+      "prop_male": 0.5159982485,
+      "prop_comorbidity": 0.4100676256
+    },
+    "Jalisco": {
+      "n": 166123,
+      "deaths": 17634,
+      "mortality_rate": 0.1061502622,
+      "prop_elderly": 0.0890605154,
+      "prop_male": 0.4964092871,
+      "prop_comorbidity": 0.3949784196
+    },
+    "Mexico (state)": {
+      "n": 245313,
+      "deaths": 33095,
+      "mortality_rate": 0.1349092792,
+      "prop_elderly": 0.072217942,
+      "prop_male": 0.5243953643,
+      "prop_comorbidity": 0.3170439398
+    },
+    "Michoacan": {
+      "n": 73196,
+      "deaths": 8058,
+      "mortality_rate": 0.1100879829,
+      "prop_elderly": 0.089540412,
+      "prop_male": 0.5052325264,
+      "prop_comorbidity": 0.3828624515
+    },
+    "Morelos": {
+      "n": 49968,
+      "deaths": 4916,
+      "mortality_rate": 0.0983829651,
+      "prop_elderly": 0.0924391611,
+      "prop_male": 0.5019212296,
+      "prop_comorbidity": 0.3454610951
+    },
+    "Nayarit": {
+      "n": 34670,
+      "deaths": 3021,
+      "mortality_rate": 0.0871358523,
+      "prop_elderly": 0.085289876,
+      "prop_male": 0.4885203346,
+      "prop_comorbidity": 0.339803865
+    },
+    "Nuevo Leon": {
+      "n": 211101,
+      "deaths": 13843,
+      "mortality_rate": 0.065575246,
+      "prop_elderly": 0.0629414356,
+      "prop_male": 0.50943861,
+      "prop_comorbidity": 0.3203916609
+    },
+    "Oaxaca": {
+      "n": 83247,
+      "deaths": 5423,
+      "mortality_rate": 0.0651434887,
+      "prop_elderly": 0.0743690463,
+      "prop_male": 0.5181568105,
+      "prop_comorbidity": 0.289475897
+    },
+    "Puebla": {
+      "n": 129232,
+      "deaths": 15756,
+      "mortality_rate": 0.1219202674,
+      "prop_elderly": 0.0789665098,
+      "prop_male": 0.53160208,
+      "prop_comorbidity": 0.3510817754
+    },
+    "Queretaro": {
+      "n": 101452,
+      "deaths": 5881,
+      "mortality_rate": 0.0579683003,
+      "prop_elderly": 0.0502405078,
+      "prop_male": 0.4905275401,
+      "prop_comorbidity": 0.3214919371
+    },
+    "Quintana Roo": {
+      "n": 62324,
+      "deaths": 4028,
+      "mortality_rate": 0.0646299981,
+      "prop_elderly": 0.0358930749,
+      "prop_male": 0.5378184969,
+      "prop_comorbidity": 0.2725755728
+    },
+    "San Luis Potosi": {
+      "n": 110068,
+      "deaths": 6811,
+      "mortality_rate": 0.0618799288,
+      "prop_elderly": 0.0726823418,
+      "prop_male": 0.4902151397,
+      "prop_comorbidity": 0.3516644256
+    },
+    "Sinaloa": {
+      "n": 75629,
+      "deaths": 9048,
+      "mortality_rate": 0.1196366473,
+      "prop_elderly": 0.0932446548,
+      "prop_male": 0.4802522842,
+      "prop_comorbidity": 0.3726348358
+    },
+    "Sonora": {
+      "n": 124098,
+      "deaths": 9261,
+      "mortality_rate": 0.0746265049,
+      "prop_elderly": 0.0755290174,
+      "prop_male": 0.4615545778,
+      "prop_comorbidity": 0.3762671437
+    },
+    "Tabasco": {
+      "n": 146002,
+      "deaths": 5925,
+      "mortality_rate": 0.0405816359,
+      "prop_elderly": 0.0500404104,
+      "prop_male": 0.4920617526,
+      "prop_comorbidity": 0.3115847728
+    },
+    "Tamaulipas": {
+      "n": 105769,
+      "deaths": 7367,
+      "mortality_rate": 0.0696517883,
+      "prop_elderly": 0.0645179589,
+      "prop_male": 0.5079938356,
+      "prop_comorbidity": 0.3439854778
+    },
+    "Tlaxcala": {
+      "n": 27143,
+      "deaths": 2813,
+      "mortality_rate": 0.1036362967,
+      "prop_elderly": 0.0725417235,
+      "prop_male": 0.5211656781,
+      "prop_comorbidity": 0.3125299341
+    },
+    "Veracruz": {
+      "n": 121775,
+      "deaths": 14803,
+      "mortality_rate": 0.1215602546,
+      "prop_elderly": 0.0846314925,
+      "prop_male": 0.5275384931,
+      "prop_comorbidity": 0.3660603572
+    },
+    "Yucatan": {
+      "n": 76590,
+      "deaths": 5869,
+      "mortality_rate": 0.0766288027,
+      "prop_elderly": 0.0694215955,
+      "prop_male": 0.527196762,
+      "prop_comorbidity": 0.2929233581
+    },
+    "Zacatecas": {
+      "n": 43332,
+      "deaths": 3387,
+      "mortality_rate": 0.0781639435,
+      "prop_elderly": 0.08404874,
+      "prop_male": 0.4826456199,
+      "prop_comorbidity": 0.3651804671
+    }
+  },
+  "matches_primary_analysis": true,
+  "problems": []
+}
