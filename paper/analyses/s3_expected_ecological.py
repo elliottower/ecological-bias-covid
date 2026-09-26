@@ -1,236 +1,232 @@
 """
-Supplementary Analysis S3: Expected Ecological Coefficient Under No Bias
+Supplementary Analysis S3: Model-Implied Ecological Slope
 
-For each of Mexico's 32 states, predicts site-level mortality by
-integrating the fitted individual-level logistic model over the state's
-observed covariate distribution. Regresses predicted mortality on elderly
-proportion to get the "expected ecological slope" absent aggregation bias.
+For each of Mexico's 32 treating-unit states, the fitted patient-level logistic
+model (age 70+, sex, any of nine comorbidities) gives every patient a predicted
+probability of death; averaging those within a state gives the state mortality the
+model implies for the state's observed covariate distribution. Regressing implied
+state mortality on elderly share gives the model-implied ecological slope, beside
+the observed one.
+
+The gap between them is the observed-minus-model-implied ecological discrepancy.
+It is not aggregation bias alone: state context, omitted patient variables,
+differences in baseline mortality, ascertainment, coding and model misspecification
+all land in it. The slope difference is the primary quantity, with a residual
+regression and a bootstrap over states for uncertainty; the ratio, unstable across
+32 units, is secondary. The product-of-marginals approximation, which treats age,
+sex and comorbidity as independent within a state, is reported as a sensitivity
+analysis. The registered 20% rule is applied as frozen.
 """
 
 import json
-import csv
-import numpy as np
-from scipy import stats
-from pathlib import Path
 from datetime import datetime
 
-DATA_DIR = Path(__file__).parent.parent.parent / "data"
-OUTPUT_DIR = Path(__file__).parent / "results"
-OUTPUT_DIR.mkdir(exist_ok=True)
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+from scipy import stats
 
-MEXICO_CSV = DATA_DIR / "mexico_covid/COVID19MEXICO.csv"
-AGE_THRESHOLD = 70
+import mexico_confirmed_cases
+from paths import RESULTS
 
-
-def load_state_data():
-    """Load individual data and compute per-state covariate distributions."""
-    print("  Loading Mexico individual-level data...")
-    state_data = {}
-
-    with open(MEXICO_CSV, encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            try:
-                age = int(row["EDAD"])
-            except (ValueError, KeyError):
-                continue
-
-            state = row.get("ENTIDAD_RES", "").strip()
-            if not state:
-                continue
-
-            fecha_def = row.get("FECHA_DEF", "").strip()
-            died = 0 if fecha_def in ("", "9999-99-99") else 1
-            elderly = 1 if age >= AGE_THRESHOLD else 0
-            male = 1 if row.get("SEXO", "").strip() == "1" else 0
-
-            has_comorbidity = 0
-            for comorb_col in ["DIABETES", "EPOC", "ASMA", "INMUSUPR",
-                               "HIPERTENSION", "CARDIOVASCULAR", "OBESIDAD",
-                               "RENAL_CRONICA"]:
-                if row.get(comorb_col, "").strip() == "1":
-                    has_comorbidity = 1
-                    break
-
-            if state not in state_data:
-                state_data[state] = {"elderly": [], "male": [], "comorb": [],
-                                     "died": []}
-            state_data[state]["elderly"].append(elderly)
-            state_data[state]["male"].append(male)
-            state_data[state]["comorb"].append(has_comorbidity)
-            state_data[state]["died"].append(died)
-
-    result = {}
-    for state, d in state_data.items():
-        n = len(d["died"])
-        result[state] = {
-            "n": n,
-            "prop_elderly": sum(d["elderly"]) / n,
-            "prop_male": sum(d["male"]) / n,
-            "prop_comorb": sum(d["comorb"]) / n,
-            "mortality_rate": sum(d["died"]) / n,
-        }
-
-    print(f"  Loaded {sum(v['n'] for v in result.values()):,} records "
-          f"across {len(result)} states")
-    return result
+OUTPUT_DIR = RESULTS
+AGE_THRESHOLD = mexico_confirmed_cases.AGE_THRESHOLD
+COVARIATES = ["elderly", "male", "has_comorbidity"]
+BOOTSTRAP_DRAWS = 2000
+BOOTSTRAP_SEED = 20260922
 
 
-def fit_individual_model():
-    """Fit individual-level logistic and return coefficients."""
-    print("  Fitting individual-level logistic model...")
-    records = []
-
-    with open(MEXICO_CSV, encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            try:
-                age = int(row["EDAD"])
-            except (ValueError, KeyError):
-                continue
-
-            state = row.get("ENTIDAD_RES", "").strip()
-            if not state:
-                continue
-
-            fecha_def = row.get("FECHA_DEF", "").strip()
-            died = 0 if fecha_def in ("", "9999-99-99") else 1
-            elderly = 1 if age >= AGE_THRESHOLD else 0
-            male = 1 if row.get("SEXO", "").strip() == "1" else 0
-
-            has_comorbidity = 0
-            for comorb_col in ["DIABETES", "EPOC", "ASMA", "INMUSUPR",
-                               "HIPERTENSION", "CARDIOVASCULAR", "OBESIDAD",
-                               "RENAL_CRONICA"]:
-                if row.get(comorb_col, "").strip() == "1":
-                    has_comorbidity = 1
-                    break
-
-            records.append((died, elderly, male, has_comorbidity))
-
-    y = np.array([r[0] for r in records], dtype=np.float64)
-    X = np.column_stack([
-        np.ones(len(records)),
-        np.array([r[1] for r in records], dtype=np.float64),
-        np.array([r[2] for r in records], dtype=np.float64),
-        np.array([r[3] for r in records], dtype=np.float64),
-    ])
-
-    from statsmodels.discrete.discrete_model import Logit
-    model = Logit(y, X)
-    result = model.fit(method="lbfgs", maxiter=100, disp=False)
-
+def fit_patient_model(cells):
+    """Binomial GLM on covariate cells; the covariates are binary, so this is the
+    patient-level fit."""
+    pooled = cells.groupby(COVARIATES, as_index=False).agg(
+        deaths=("deaths", "sum"), alive=("alive", "sum"), n=("n", "sum"))
+    X = np.column_stack([np.ones(len(pooled))] +
+                        [pooled[c].to_numpy(dtype=float) for c in COVARIATES])
+    fit = sm.GLM(pooled[["deaths", "alive"]].to_numpy(dtype=float), X,
+                 family=sm.families.Binomial()).fit()
+    if not fit.converged:
+        raise RuntimeError("patient-level logistic regression did not converge")
     return {
-        "intercept": float(result.params[0]),
-        "beta_elderly": float(result.params[1]),
-        "beta_male": float(result.params[2]),
-        "beta_comorb": float(result.params[3]),
+        "intercept": float(fit.params[0]),
+        "beta_elderly": float(fit.params[1]),
+        "beta_male": float(fit.params[2]),
+        "beta_comorb": float(fit.params[3]),
     }
 
 
-def predict_state_mortality(state_info, coefficients):
-    """Predict state-level mortality by integrating individual model
-    over the state's covariate distribution."""
-    intercept = coefficients["intercept"]
-    b_e = coefficients["beta_elderly"]
-    b_m = coefficients["beta_male"]
-    b_c = coefficients["beta_comorb"]
+def predicted_probability(cells, coefficients):
+    logit = (coefficients["intercept"]
+             + coefficients["beta_elderly"] * cells["elderly"]
+             + coefficients["beta_male"] * cells["male"]
+             + coefficients["beta_comorb"] * cells["has_comorbidity"])
+    return 1.0 / (1.0 + np.exp(-logit))
 
-    p_e = state_info["prop_elderly"]
-    p_m = state_info["prop_male"]
-    p_c = state_info["prop_comorb"]
 
+def state_table(cells, coefficients):
+    """Per-state size, observed mortality, model-implied mortality and covariate shares."""
+    predicted = predicted_probability(cells, coefficients)
+    weighted = cells.assign(predicted_deaths=predicted * cells["n"])
+    table = weighted.groupby("site").apply(
+        lambda g: pd.Series({
+            "n": g["n"].sum(),
+            "observed_mortality": g["deaths"].sum() / g["n"].sum(),
+            "model_implied_mortality": g["predicted_deaths"].sum() / g["n"].sum(),
+            "prop_elderly": (g["n"] * g["elderly"]).sum() / g["n"].sum(),
+            "prop_male": (g["n"] * g["male"]).sum() / g["n"].sum(),
+            "prop_comorb": (g["n"] * g["has_comorbidity"]).sum() / g["n"].sum(),
+        }), include_groups=False)
+    return table
+
+
+def marginal_prediction(row, coefficients):
+    """Product-of-marginals approximation: the covariates treated as independent."""
     predicted = 0.0
-    for elderly in [0, 1]:
-        for male in [0, 1]:
-            for comorb in [0, 1]:
-                prob_cell = ((p_e if elderly else 1 - p_e) *
-                             (p_m if male else 1 - p_m) *
-                             (p_c if comorb else 1 - p_c))
-
-                logit = intercept + b_e * elderly + b_m * male + b_c * comorb
-                p_death = 1.0 / (1.0 + np.exp(-logit))
-                predicted += prob_cell * p_death
-
+    for elderly in (0, 1):
+        for male in (0, 1):
+            for comorb in (0, 1):
+                weight = ((row["prop_elderly"] if elderly else 1 - row["prop_elderly"]) *
+                          (row["prop_male"] if male else 1 - row["prop_male"]) *
+                          (row["prop_comorb"] if comorb else 1 - row["prop_comorb"]))
+                logit = (coefficients["intercept"] + coefficients["beta_elderly"] * elderly
+                         + coefficients["beta_male"] * male + coefficients["beta_comorb"] * comorb)
+                predicted += weight / (1.0 + np.exp(-logit))
     return predicted
+
+
+def slopes(table):
+    observed = stats.linregress(table["prop_elderly"], table["observed_mortality"])
+    implied = stats.linregress(table["prop_elderly"], table["model_implied_mortality"])
+    residual = stats.linregress(table["prop_elderly"],
+                                table["observed_mortality"] - table["model_implied_mortality"])
+    return observed, implied, residual
+
+
+def bootstrap(cells, table, draws, seed):
+    """Resample states with replacement, refitting the patient model each draw."""
+    rng = np.random.default_rng(seed)
+    sites = np.array(sorted(cells["site"].unique()))
+    observed_slopes, implied_slopes, differences, ratios = [], [], [], []
+    for _ in range(draws):
+        drawn = rng.choice(sites, size=len(sites), replace=True)
+        resampled = pd.concat([cells[cells["site"] == s].assign(site=f"{s}_{i}")
+                               for i, s in enumerate(drawn)], ignore_index=True)
+        coefficients = fit_patient_model(resampled)
+        drawn_table = state_table(resampled, coefficients)
+        observed = stats.linregress(drawn_table["prop_elderly"],
+                                    drawn_table["observed_mortality"]).slope
+        implied = stats.linregress(drawn_table["prop_elderly"],
+                                   drawn_table["model_implied_mortality"]).slope
+        observed_slopes.append(observed)
+        implied_slopes.append(implied)
+        differences.append(observed - implied)
+        ratios.append(observed / implied if implied != 0 else np.nan)
+
+    def interval(values):
+        return [float(np.nanpercentile(values, 2.5)), float(np.nanpercentile(values, 97.5))]
+
+    return {
+        "draws": draws,
+        "seed": seed,
+        "resampling_unit": "state",
+        "observed_slope_ci": interval(observed_slopes),
+        "model_implied_slope_ci": interval(implied_slopes),
+        "slope_difference_ci": interval(differences),
+        "ratio_ci": interval(ratios),
+    }
 
 
 def main():
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print("=" * 70)
-    print(f"S3: Expected Ecological Coefficient  [{ts}]")
+    print(f"S3: Model-Implied Ecological Slope  [{ts}]")
     print(f"  Age threshold: {AGE_THRESHOLD}+")
     print("=" * 70)
 
-    state_data = load_state_data()
-    coefficients = fit_individual_model()
+    df = mexico_confirmed_cases.load()
+    cells = mexico_confirmed_cases.collapsed_cells(df)
+    coefficients = fit_patient_model(cells)
+    print("\n  Patient-level model:")
+    for name, key in [("elderly", "beta_elderly"), ("male", "beta_male"),
+                      ("comorbidity", "beta_comorb")]:
+        print(f"    {name}: OR = {np.exp(coefficients[key]):.2f}")
 
-    print(f"\n  Individual-level model coefficients:")
-    print(f"    intercept = {coefficients['intercept']:.4f}")
-    print(f"    beta_elderly = {coefficients['beta_elderly']:.4f} "
-          f"(OR = {np.exp(coefficients['beta_elderly']):.2f})")
-    print(f"    beta_male = {coefficients['beta_male']:.4f} "
-          f"(OR = {np.exp(coefficients['beta_male']):.2f})")
-    print(f"    beta_comorb = {coefficients['beta_comorb']:.4f} "
-          f"(OR = {np.exp(coefficients['beta_comorb']):.2f})")
+    table = state_table(cells, coefficients)
+    table["model_implied_mortality_independent_marginals"] = table.apply(
+        marginal_prediction, axis=1, coefficients=coefficients)
 
-    states = sorted(state_data.keys())
-    elderly_props = []
-    observed_mortalities = []
-    predicted_mortalities = []
+    observed, implied, residual = slopes(table)
+    marginal = stats.linregress(table["prop_elderly"],
+                                table["model_implied_mortality_independent_marginals"])
+    difference = observed.slope - implied.slope
+    ratio = observed.slope / implied.slope
+    t_critical = stats.t.ppf(0.975, len(table) - 2)
 
-    for state in states:
-        info = state_data[state]
-        predicted = predict_state_mortality(info, coefficients)
-        elderly_props.append(info["prop_elderly"])
-        observed_mortalities.append(info["mortality_rate"])
-        predicted_mortalities.append(predicted)
+    print(f"\n  Observed ecological slope:      {observed.slope:+.4f} (p={observed.pvalue:.2e})")
+    print(f"  Model-implied ecological slope: {implied.slope:+.4f} (p={implied.pvalue:.2e})")
+    print(f"  Difference:                     {difference:+.4f} "
+          f"(residual-slope p={residual.pvalue:.2e})")
+    print(f"  Ratio (observed/implied):       {ratio:.2f}")
 
-    observed_slope, obs_intercept, _, obs_p, obs_se = stats.linregress(
-        elderly_props, observed_mortalities)
-    expected_slope, exp_intercept, _, exp_p, exp_se = stats.linregress(
-        elderly_props, predicted_mortalities)
+    print(f"\n  Bootstrapping {BOOTSTRAP_DRAWS} state resamples...")
+    intervals = bootstrap(cells, table, BOOTSTRAP_DRAWS, BOOTSTRAP_SEED)
+    print(f"    slope difference 95% CI: [{intervals['slope_difference_ci'][0]:+.4f}, "
+          f"{intervals['slope_difference_ci'][1]:+.4f}]")
+    print(f"    ratio 95% CI:            [{intervals['ratio_ci'][0]:.2f}, "
+          f"{intervals['ratio_ci'][1]:.2f}]")
 
-    ratio = observed_slope / expected_slope if expected_slope != 0 else float("inf")
-
-    print(f"\n  Observed ecological slope:  {observed_slope:+.4f} (p={obs_p:.2e})")
-    print(f"  Expected ecological slope:  {expected_slope:+.4f} (p={exp_p:.2e})")
-    print(f"  Ratio (observed/expected):  {ratio:.2f}")
-
-    agreement = bool(abs(1 - ratio) < 0.20)
-
-    if agreement:
-        conclusion = ("FALSIFICATION: Observed and expected ecological slopes "
-                       f"agree within 20% (ratio={ratio:.2f}). The ecological "
-                       "regression is a valid summary of the individual-level "
-                       "relationship.")
+    registered_agreement = bool(abs(1 - ratio) < 0.20)
+    if registered_agreement:
+        conclusion = ("FALSIFICATION under the registered 20% rule: the observed and "
+                       f"model-implied ecological slopes agree within 20% (ratio={ratio:.2f}).")
     else:
-        direction = "amplified" if ratio > 1 else "attenuated"
-        conclusion = (f"Ecological regression is {direction} relative to "
-                       f"expectation (ratio={ratio:.2f}). Aggregation bias "
-                       f"distorts the ecological estimate by {abs(1-ratio):.0%}.")
-
+        direction = "above" if ratio > 1 else "below"
+        conclusion = (f"The observed ecological slope is {direction} the slope this patient "
+                       f"model implies for the observed state compositions: "
+                       f"{observed.slope:+.4f} against {implied.slope:+.4f}, a difference of "
+                       f"{difference:+.4f} (ratio {ratio:.2f}). The registered 20% rule is not "
+                       f"met, so the registered falsification does not fire.")
     print(f"\n  {conclusion}")
 
     output = {
         "timestamp": ts,
         "age_threshold": AGE_THRESHOLD,
         "coefficients": coefficients,
-        "n_states": len(states),
-        "observed_ecological_slope": float(observed_slope),
-        "observed_ecological_p": float(obs_p),
-        "expected_ecological_slope": float(expected_slope),
-        "expected_ecological_p": float(exp_p),
-        "ratio_observed_expected": float(ratio),
-        "within_20_percent": agreement,
-        "per_state": {
-            state: {
-                "elderly_prop": elderly_props[i],
-                "observed_mortality": observed_mortalities[i],
-                "predicted_mortality": predicted_mortalities[i],
-            }
-            for i, state in enumerate(states)
+        "n_states": int(len(table)),
+        "observed_ecological_slope": float(observed.slope),
+        "observed_ecological_se": float(observed.stderr),
+        "observed_ecological_p": float(observed.pvalue),
+        "model_implied_ecological_slope": float(implied.slope),
+        "model_implied_ecological_se": float(implied.stderr),
+        "model_implied_ecological_p": float(implied.pvalue),
+        "model_implied_slope_method": ("mean over each state's patients of the model's predicted "
+                                        "probability, i.e. the observed joint covariate "
+                                        "distribution"),
+        "slope_difference": float(difference),
+        "slope_difference_residual_regression": {
+            "slope": float(residual.slope),
+            "se": float(residual.stderr),
+            "ci": [float(residual.slope - t_critical * residual.stderr),
+                   float(residual.slope + t_critical * residual.stderr)],
+            "p": float(residual.pvalue),
+            "note": ("state residual, observed minus model-implied mortality, regressed on "
+                      "elderly share; its slope is the difference of the two slopes"),
         },
+        "ratio_observed_implied": float(ratio),
+        "bootstrap": intervals,
+        "sensitivity_independent_marginals": {
+            "model_implied_slope": float(marginal.slope),
+            "ratio_observed_implied": float(observed.slope / marginal.slope),
+            "note": "covariates treated as independent within a state",
+        },
+        "registered_rule": {
+            "criterion": ("observed and expected ecological slopes agree within 20% "
+                           "(ANALYSIS_PROTOCOL.md, S3)"),
+            "agreement_within_20_percent": registered_agreement,
+            "note": ("a frozen decision rule, not an equivalence test; the interval on the "
+                      "slope difference is the quantity to read"),
+        },
+        "per_state": json.loads(table.to_json(orient="index")),
         "conclusion": conclusion,
     }
 

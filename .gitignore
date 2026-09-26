@@ -39,3 +39,9 @@ COVER_LETTER*
 fee_waiver*
 fee-waiver*
 *_submission.zip
+
+# provenance ledger (see results-cli); regenerable intermediates
+.results/
+paper/analyses/results/mexico_cells.csv
+paper/analyses/results/mexico_per_state.csv
+paper/analyses/logs/

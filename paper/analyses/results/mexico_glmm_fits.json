@@ -1,0 +1,82 @@
+{
+  "r_version": "R version 4.1.2 (2021-11-01)",
+  "lme4_version": "1.1.33",
+  "fitted_at": "2026-09-24 12:35:04",
+  "s2_within_between_random_intercept": {
+    "elderly_within": {
+      "log_or": 2.422506363512,
+      "se": 0.004681445460267,
+      "or": 11.274080878305,
+      "ci": [11.171107195433, 11.378003757991],
+      "p": 0
+    },
+    "elderly_between": {
+      "log_or": 18.100733704012,
+      "se": 3.324793281588,
+      "or": 72618749.498842835,
+      "ci": [107381.03602044683, 49110000929.508095],
+      "p": 5.20480353287e-08
+    },
+    "random_effects_sd": [
+      {
+        "grp": "site",
+        "var1": "(Intercept)",
+        "sdcor": 0.2578214154188
+      }
+    ],
+    "converged": true,
+    "convergence_messages": [],
+    "n_cells": 256,
+    "n_patients": 3993464
+  },
+  "s9_one_stage_random_intercept": {
+    "elderly": {
+      "log_or": 2.422566814489,
+      "se": 0.00468144192298,
+      "or": 11.274762428112,
+      "ci": [11.171782597647, 11.378691511339],
+      "p": 0
+    },
+    "random_effects_sd": [
+      {
+        "grp": "site",
+        "var1": "(Intercept)",
+        "sdcor": 0.3394586398752
+      }
+    ],
+    "converged": true,
+    "convergence_messages": [],
+    "n_cells": 256,
+    "n_patients": 3993464
+  },
+  "s9_one_stage_random_slope": {
+    "elderly": {
+      "log_or": 2.462767706631,
+      "se": 0.0354570783871,
+      "or": 11.73725189648,
+      "ci": [10.949259550226, 12.581954190553],
+      "p": 0
+    },
+    "random_effects_sd": [
+      {
+        "grp": "site",
+        "var1": "(Intercept)",
+        "sdcor": 0.3559237074296
+      },
+      {
+        "grp": "site",
+        "var1": "elderly",
+        "sdcor": 0.1974417235875
+      },
+      {
+        "grp": "site",
+        "var1": "(Intercept)",
+        "sdcor": -0.4453956508602
+      }
+    ],
+    "converged": true,
+    "convergence_messages": [],
+    "n_cells": 256,
+    "n_patients": 3993464
+  }
+}

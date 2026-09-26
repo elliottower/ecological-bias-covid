@@ -1,0 +1,100 @@
+{
+  "timestamp": "2026-09-24 12:34:11",
+  "age_threshold": 70,
+  "registered_analysis": {
+    "estimator": "Mundlak fixed-effects approximation (logistic + state dummies)",
+    "status": "not_identified",
+    "completed": true,
+    "reason": "the between-state exposure is constant within each state and therefore lies in the span of the intercept and the 31 state dummies",
+    "between_coefficient_reported": false,
+    "within_state": {
+      "coef": 2.4225525257027636,
+      "se": 0.004681558539366373,
+      "or": 11.274601326589117,
+      "ci": [
+        11.171620414093903,
+        11.378531525575033
+      ],
+      "p": 0.0,
+      "n_cells": 64,
+      "n_patients": 3993464
+    }
+  },
+  "exploratory_correction": {
+    "estimator": "correlated-random-effects within-between binomial model, logit P(death) = a + u_state + bW (elderly - state mean) + bB (state mean), fitted on site x elderly x sex x comorbidity cells with lme4::glmer",
+    "within_state": {
+      "log_or": 2.422506363512,
+      "se": 0.004681445460267,
+      "or": 11.274080878305,
+      "ci": [
+        11.171107195433,
+        11.378003757991
+      ],
+      "p": 0
+    },
+    "between_state": {
+      "log_or": 18.100733704012,
+      "se": 3.324793281588,
+      "or": 72618749.49884284,
+      "ci": [
+        107381.03602044683,
+        49110000929.508095
+      ],
+      "p": 5.20480353287e-08
+    },
+    "between_state_rescaled": {
+      "state_elderly_share": {
+        "min": 0.03589307489891535,
+        "max": 0.09324465482817437,
+        "sd": 0.014320517381504853
+      },
+      "note": "the between-state coefficient is per unit change in a state's elderly share, a contrast from 0 to 1 that no state approaches; these rescalings use contrasts the data contain",
+      "per_percentage_point": {
+        "scale": 0.01,
+        "log_or": 0.18100733704012,
+        "se": 0.03324793281588,
+        "or": 1.1984239721457073,
+        "ci": [
+          1.1228177664468173,
+          1.279121207316167
+        ]
+      },
+      "per_sd_of_state_share": {
+        "scale": 0.014320517381504853,
+        "log_or": 0.25921187162629455,
+        "se": 0.047612759978891514,
+        "or": 1.295908341951646,
+        "ci": [
+          1.1804442634466856,
+          1.4226664339376602
+        ]
+      },
+      "across_the_observed_range": {
+        "scale": 0.057351579929259024,
+        "log_or": 1.038105675803877,
+        "se": 0.1906821476372576,
+        "or": 2.8238626331732677,
+        "ci": [
+          1.9432632866415895,
+          4.103509918521403
+        ]
+      }
+    },
+    "random_effects_sd": [
+      {
+        "grp": "site",
+        "var1": "(Intercept)",
+        "sdcor": 0.2578214154188
+      }
+    ],
+    "converged": true,
+    "convergence_messages": [],
+    "software": {
+      "r_version": "R version 4.1.2 (2021-11-01)",
+      "lme4_version": "1.1.33"
+    }
+  },
+  "n_obs": 3993464,
+  "n_states": 32,
+  "conclusion": "The registered specification cannot identify the between-state coefficient: the state mean of the age indicator is collinear with the state dummies. No between-state coefficient, no within-between difference and no aggregation-bias ratio follows from it. The within-state coefficient is identified and reported. The registered CI-overlap criterion does not apply to a quantity that cannot be estimated."
+}

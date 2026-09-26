@@ -1,0 +1,352 @@
+{
+  "timestamp": "2026-09-24 12:24:09",
+  "age_threshold": 70,
+  "coefficients": {
+    "intercept": -3.7952702573142463,
+    "beta_elderly": 2.076233837869408,
+    "beta_male": 0.5465855745715338,
+    "beta_comorb": 1.3377875174140201
+  },
+  "n_states": 32,
+  "observed_ecological_slope": 1.310530561199809,
+  "observed_ecological_se": 0.2372937790724849,
+  "observed_ecological_p": 5.324808408832103e-06,
+  "model_implied_ecological_slope": 0.45373416986380866,
+  "model_implied_ecological_se": 0.03614987238273381,
+  "model_implied_ecological_p": 1.800905362468284e-13,
+  "model_implied_slope_method": "mean over each state's patients of the model's predicted probability, i.e. the observed joint covariate distribution",
+  "slope_difference": 0.8567963913360004,
+  "slope_difference_residual_regression": {
+    "slope": 0.8567963913360003,
+    "se": 0.22560158719436885,
+    "ci": [
+      0.39605648371109875,
+      1.3175362989609019
+    ],
+    "p": 0.0006634575045236774,
+    "note": "state residual, observed minus model-implied mortality, regressed on elderly share; its slope is the difference of the two slopes"
+  },
+  "ratio_observed_implied": 2.8883223884001805,
+  "bootstrap": {
+    "draws": 2000,
+    "seed": 20260922,
+    "resampling_unit": "state",
+    "observed_slope_ci": [
+      0.9481606028025135,
+      1.75868655369045
+    ],
+    "model_implied_slope_ci": [
+      0.389762764276878,
+      0.536433408315449
+    ],
+    "slope_difference_ci": [
+      0.47783090164509556,
+      1.2850621932284854
+    ],
+    "ratio_ci": [
+      2.0009719597006748,
+      3.8518795521252875
+    ]
+  },
+  "sensitivity_independent_marginals": {
+    "model_implied_slope": 0.37274396574182317,
+    "ratio_observed_implied": 3.5159001396350784,
+    "note": "covariates treated as independent within a state"
+  },
+  "registered_rule": {
+    "criterion": "observed and expected ecological slopes agree within 20% (ANALYSIS_PROTOCOL.md, S3)",
+    "agreement_within_20_percent": false,
+    "note": "a frozen decision rule, not an equivalence test; the interval on the slope difference is the quantity to read"
+  },
+  "per_state": {
+    "1": {
+      "n": 39537.0,
+      "observed_mortality": 0.0788375446,
+      "model_implied_mortality": 0.0782672888,
+      "prop_elderly": 0.069479222,
+      "prop_male": 0.4882009257,
+      "prop_comorb": 0.3543010345,
+      "model_implied_mortality_independent_marginals": 0.0720633589
+    },
+    "2": {
+      "n": 91278.0,
+      "observed_mortality": 0.1199193672,
+      "model_implied_mortality": 0.0859641806,
+      "prop_elderly": 0.074913999,
+      "prop_male": 0.4889349022,
+      "prop_comorb": 0.4263349328,
+      "model_implied_mortality_independent_marginals": 0.0797959482
+    },
+    "3": {
+      "n": 63163.0,
+      "observed_mortality": 0.038123585,
+      "model_implied_mortality": 0.0632385565,
+      "prop_elderly": 0.0370311733,
+      "prop_male": 0.5007836867,
+      "prop_comorb": 0.3010939949,
+      "model_implied_mortality_independent_marginals": 0.0604240861
+    },
+    "4": {
+      "n": 25030.0,
+      "observed_mortality": 0.082620855,
+      "model_implied_mortality": 0.0812059536,
+      "prop_elderly": 0.0699560527,
+      "prop_male": 0.5453855374,
+      "prop_comorb": 0.3783459848,
+      "model_implied_mortality_independent_marginals": 0.0762248687
+    },
+    "5": {
+      "n": 102613.0,
+      "observed_mortality": 0.0762671396,
+      "model_implied_mortality": 0.0718122522,
+      "prop_elderly": 0.0708389775,
+      "prop_male": 0.4872189684,
+      "prop_comorb": 0.2977985246,
+      "model_implied_mortality_independent_marginals": 0.0673642003
+    },
+    "6": {
+      "n": 34054.0,
+      "observed_mortality": 0.0654548658,
+      "model_implied_mortality": 0.0756485069,
+      "prop_elderly": 0.0618135902,
+      "prop_male": 0.4930698303,
+      "prop_comorb": 0.3536735773,
+      "model_implied_mortality_independent_marginals": 0.070354619
+    },
+    "7": {
+      "n": 22307.0,
+      "observed_mortality": 0.0956650379,
+      "model_implied_mortality": 0.0822758061,
+      "prop_elderly": 0.0789886583,
+      "prop_male": 0.5298785135,
+      "prop_comorb": 0.3513246963,
+      "model_implied_mortality_independent_marginals": 0.0754370141
+    },
+    "8": {
+      "n": 81063.0,
+      "observed_mortality": 0.10802709,
+      "model_implied_mortality": 0.0848643844,
+      "prop_elderly": 0.0828614781,
+      "prop_male": 0.4821065098,
+      "prop_comorb": 0.3907207974,
+      "model_implied_mortality_independent_marginals": 0.0783177431
+    },
+    "9": {
+      "n": 1154276.0,
+      "observed_mortality": 0.0457628851,
+      "model_implied_mortality": 0.0692869407,
+      "prop_elderly": 0.0584782149,
+      "prop_male": 0.486478104,
+      "prop_comorb": 0.3079688047,
+      "model_implied_mortality_independent_marginals": 0.0654367478
+    },
+    "10": {
+      "n": 50686.0,
+      "observed_mortality": 0.0610424969,
+      "model_implied_mortality": 0.0691775351,
+      "prop_elderly": 0.0626405714,
+      "prop_male": 0.4594759894,
+      "prop_comorb": 0.2908100856,
+      "model_implied_mortality_independent_marginals": 0.0640827269
+    },
+    "11": {
+      "n": 204282.0,
+      "observed_mortality": 0.0652725154,
+      "model_implied_mortality": 0.0747774541,
+      "prop_elderly": 0.0682438981,
+      "prop_male": 0.4759009604,
+      "prop_comorb": 0.3314242077,
+      "model_implied_mortality_independent_marginals": 0.0693703428
+    },
+    "12": {
+      "n": 76480.0,
+      "observed_mortality": 0.0800862971,
+      "model_implied_mortality": 0.0802363559,
+      "prop_elderly": 0.0821783473,
+      "prop_male": 0.4981956067,
+      "prop_comorb": 0.3387421548,
+      "model_implied_mortality_independent_marginals": 0.0739863295
+    },
+    "13": {
+      "n": 61663.0,
+      "observed_mortality": 0.1261858813,
+      "model_implied_mortality": 0.0860329919,
+      "prop_elderly": 0.0781992443,
+      "prop_male": 0.5159982485,
+      "prop_comorb": 0.4100676256,
+      "model_implied_mortality_independent_marginals": 0.0801201398
+    },
+    "14": {
+      "n": 166123.0,
+      "observed_mortality": 0.1061502622,
+      "model_implied_mortality": 0.088459342,
+      "prop_elderly": 0.0890605154,
+      "prop_male": 0.4964092871,
+      "prop_comorb": 0.3949784196,
+      "model_implied_mortality_independent_marginals": 0.0807288378
+    },
+    "15": {
+      "n": 245313.0,
+      "observed_mortality": 0.1349092792,
+      "model_implied_mortality": 0.0751729782,
+      "prop_elderly": 0.072217942,
+      "prop_male": 0.5243953643,
+      "prop_comorb": 0.3170439398,
+      "model_implied_mortality_independent_marginals": 0.070557704
+    },
+    "16": {
+      "n": 73196.0,
+      "observed_mortality": 0.1100879829,
+      "model_implied_mortality": 0.0871058226,
+      "prop_elderly": 0.089540412,
+      "prop_male": 0.5052325264,
+      "prop_comorb": 0.3828624515,
+      "model_implied_mortality_independent_marginals": 0.0800386427
+    },
+    "17": {
+      "n": 49968.0,
+      "observed_mortality": 0.0983829651,
+      "model_implied_mortality": 0.0837779982,
+      "prop_elderly": 0.0924391611,
+      "prop_male": 0.5019212296,
+      "prop_comorb": 0.3454610951,
+      "model_implied_mortality_independent_marginals": 0.0771392203
+    },
+    "18": {
+      "n": 34670.0,
+      "observed_mortality": 0.0871358523,
+      "model_implied_mortality": 0.0824763652,
+      "prop_elderly": 0.085289876,
+      "prop_male": 0.4885203346,
+      "prop_comorb": 0.339803865,
+      "model_implied_mortality_independent_marginals": 0.0744871124
+    },
+    "19": {
+      "n": 211101.0,
+      "observed_mortality": 0.065575246,
+      "model_implied_mortality": 0.0723962985,
+      "prop_elderly": 0.0629414356,
+      "prop_male": 0.50943861,
+      "prop_comorb": 0.3203916609,
+      "model_implied_mortality_independent_marginals": 0.0682400551
+    },
+    "20": {
+      "n": 83247.0,
+      "observed_mortality": 0.0651434887,
+      "model_implied_mortality": 0.0739529283,
+      "prop_elderly": 0.0743690463,
+      "prop_male": 0.5181568105,
+      "prop_comorb": 0.289475897,
+      "model_implied_mortality_independent_marginals": 0.0683722764
+    },
+    "21": {
+      "n": 129232.0,
+      "observed_mortality": 0.1219202674,
+      "model_implied_mortality": 0.0807127094,
+      "prop_elderly": 0.0789665098,
+      "prop_male": 0.53160208,
+      "prop_comorb": 0.3510817754,
+      "model_implied_mortality_independent_marginals": 0.0754671434
+    },
+    "22": {
+      "n": 101452.0,
+      "observed_mortality": 0.0579683003,
+      "model_implied_mortality": 0.0690379485,
+      "prop_elderly": 0.0502405078,
+      "prop_male": 0.4905275401,
+      "prop_comorb": 0.3214919371,
+      "model_implied_mortality_independent_marginals": 0.064828196
+    },
+    "23": {
+      "n": 62324.0,
+      "observed_mortality": 0.0646299981,
+      "model_implied_mortality": 0.0623079166,
+      "prop_elderly": 0.0358930749,
+      "prop_male": 0.5378184969,
+      "prop_comorb": 0.2725755728,
+      "model_implied_mortality_independent_marginals": 0.058856387
+    },
+    "24": {
+      "n": 110068.0,
+      "observed_mortality": 0.0618799288,
+      "model_implied_mortality": 0.0776429036,
+      "prop_elderly": 0.0726823418,
+      "prop_male": 0.4902151397,
+      "prop_comorb": 0.3516644256,
+      "model_implied_mortality_independent_marginals": 0.0726529138
+    },
+    "25": {
+      "n": 75629.0,
+      "observed_mortality": 0.1196366473,
+      "model_implied_mortality": 0.0871960918,
+      "prop_elderly": 0.0932446548,
+      "prop_male": 0.4802522842,
+      "prop_comorb": 0.3726348358,
+      "model_implied_mortality_independent_marginals": 0.0791023955
+    },
+    "26": {
+      "n": 124098.0,
+      "observed_mortality": 0.0746265049,
+      "model_implied_mortality": 0.0801353988,
+      "prop_elderly": 0.0755290174,
+      "prop_male": 0.4615545778,
+      "prop_comorb": 0.3762671437,
+      "model_implied_mortality_independent_marginals": 0.0745457906
+    },
+    "27": {
+      "n": 146002.0,
+      "observed_mortality": 0.0405816359,
+      "model_implied_mortality": 0.0676594957,
+      "prop_elderly": 0.0500404104,
+      "prop_male": 0.4920617526,
+      "prop_comorb": 0.3115847728,
+      "model_implied_mortality_independent_marginals": 0.0639945048
+    },
+    "28": {
+      "n": 105769.0,
+      "observed_mortality": 0.0696517883,
+      "model_implied_mortality": 0.0753055611,
+      "prop_elderly": 0.0645179589,
+      "prop_male": 0.5079938356,
+      "prop_comorb": 0.3439854778,
+      "model_implied_mortality_independent_marginals": 0.0706287888
+    },
+    "29": {
+      "n": 27143.0,
+      "observed_mortality": 0.1036362967,
+      "model_implied_mortality": 0.0755859395,
+      "prop_elderly": 0.0725417235,
+      "prop_male": 0.5211656781,
+      "prop_comorb": 0.3125299341,
+      "model_implied_mortality_independent_marginals": 0.0701245304
+    },
+    "30": {
+      "n": 121775.0,
+      "observed_mortality": 0.1215602546,
+      "model_implied_mortality": 0.0839771318,
+      "prop_elderly": 0.0846314925,
+      "prop_male": 0.5275384931,
+      "prop_comorb": 0.3660603572,
+      "model_implied_mortality_independent_marginals": 0.0780693044
+    },
+    "31": {
+      "n": 76590.0,
+      "observed_mortality": 0.0766288027,
+      "model_implied_mortality": 0.0734218144,
+      "prop_elderly": 0.0694215955,
+      "prop_male": 0.527196762,
+      "prop_comorb": 0.2929233581,
+      "model_implied_mortality_independent_marginals": 0.067842139
+    },
+    "32": {
+      "n": 43332.0,
+      "observed_mortality": 0.0781639435,
+      "model_implied_mortality": 0.0832819795,
+      "prop_elderly": 0.08404874,
+      "prop_male": 0.4826456199,
+      "prop_comorb": 0.3651804671,
+      "model_implied_mortality_independent_marginals": 0.0763059568
+    }
+  },
+  "conclusion": "The observed ecological slope is above the slope this patient model implies for the observed state compositions: +1.3105 against +0.4537, a difference of +0.8568 (ratio 2.89). The registered 20% rule is not met, so the registered falsification does not fire."
+}

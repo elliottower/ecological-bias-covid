@@ -1,0 +1,475 @@
+{
+  "timestamp": "2026-09-24 12:33:01",
+  "age_threshold": 70,
+  "ecological": {
+    "method": "ecological",
+    "beta": 1.310530561199809,
+    "se": 0.23729377907248492,
+    "p_value": 5.324808408832103e-06,
+    "r_squared": 0.5041447571974051,
+    "n_sites": 32,
+    "note": "slope is in mortality-rate units per unit elderly-proportion"
+  },
+  "two_stage_ipd": {
+    "log_or": 2.462085950393754,
+    "se": 0.029986983053519035,
+    "or": 11.729252678860796,
+    "ci": [
+      11.059739733774594,
+      12.439295292314249
+    ],
+    "method": "two_stage_ipd_dersimonian_laird",
+    "tau2": 0.027538200763387487,
+    "I2": 0.9741374461763538,
+    "Q": 1198.644194667915,
+    "n_states_included": 32
+  },
+  "two_stage_other_estimators": {
+    "r_version": "R version 4.1.2 (2021-11-01)",
+    "metafor_version": "5.0.1",
+    "fitted_at": "2026-09-24 12:34:04",
+    "dersimonian_laird": {
+      "log_or": 2.462085950394,
+      "se": 0.02998698305352,
+      "or": 11.729252678861,
+      "ci": [
+        11.059751678245,
+        12.439281857945
+      ],
+      "p": 0,
+      "tau2": 0.02753820076339,
+      "i2": 97.413744617635,
+      "q": 1198.644194667915,
+      "q_p": 3.017012425072e-232,
+      "k": 32
+    },
+    "prediction_interval_or": [
+      8.428083631315,
+      16.323446043345
+    ],
+    "common_effect": {
+      "log_or": 2.422702466285,
+      "se": 0.004677449879716,
+      "or": 11.276291973625,
+      "ci": [
+        11.173387479838,
+        11.380144195652
+      ],
+      "p": 0,
+      "tau2": 0,
+      "i2": 97.413744617635,
+      "q": 1198.644194667915,
+      "q_p": 3.017012425072e-232,
+      "k": 32
+    },
+    "reml_hartung_knapp": {
+      "log_or": 2.462704960788,
+      "se": 0.03612280574853,
+      "or": 11.736515455822,
+      "ci": [
+        10.902934931288,
+        12.63382712204
+      ],
+      "p": 2.414979549312e-35,
+      "tau2": 0.0402854974097,
+      "i2": 98.217510731466,
+      "q": 1198.644194667915,
+      "q_p": 3.017012425072e-232,
+      "k": 32
+    }
+  },
+  "one_stage_random_intercept_registered": {
+    "log_or": 2.422566814489,
+    "se": 0.00468144192298,
+    "or": 11.274762428112,
+    "ci": [
+      11.171782597647,
+      11.378691511339
+    ],
+    "p": 0
+  },
+  "one_stage_random_slope": {
+    "log_or": 2.462767706631,
+    "se": 0.0354570783871,
+    "or": 11.73725189648,
+    "ci": [
+      10.949259550226,
+      12.581954190553
+    ],
+    "p": 0
+  },
+  "one_stage_state_fixed_effects": {
+    "log_or": 2.4225525257027654,
+    "se": 0.004681558539366377,
+    "or": 11.274601326589138,
+    "ci": [
+      11.171620414093919,
+      11.37853152557506
+    ],
+    "method": "one_stage_state_fixed_effects"
+  },
+  "pooled_individual_level": {
+    "log_or": 2.4216013991400733,
+    "se": 0.004583571966160082,
+    "or": 11.263882851904679,
+    "ci": [
+      11.163143557703696,
+      11.365531245352095
+    ],
+    "method": "pooled_individual_level_ignoring_state"
+  },
+  "per_state": [
+    {
+      "site": 1,
+      "log_or": 2.6591358056,
+      "se": 0.0450563363,
+      "or": 14.2839396628,
+      "n": 39537,
+      "deaths": 3117,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 2,
+      "log_or": 2.4958941676,
+      "se": 0.027162463,
+      "or": 12.1325772267,
+      "n": 91278,
+      "deaths": 10946,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 3,
+      "log_or": 2.5947306848,
+      "se": 0.0519128763,
+      "or": 13.3929799427,
+      "n": 63163,
+      "deaths": 2408,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 4,
+      "log_or": 2.4616877869,
+      "se": 0.0560558282,
+      "or": 11.7245834486,
+      "n": 25030,
+      "deaths": 2068,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 5,
+      "log_or": 2.5056064738,
+      "se": 0.0280642499,
+      "or": 12.2509866159,
+      "n": 102613,
+      "deaths": 7826,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 6,
+      "log_or": 2.8508387536,
+      "se": 0.0522124336,
+      "or": 17.3022881129,
+      "n": 34054,
+      "deaths": 2229,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 7,
+      "log_or": 2.4427169869,
+      "se": 0.0555946788,
+      "or": 11.50425523,
+      "n": 22307,
+      "deaths": 2134,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 8,
+      "log_or": 2.3424525121,
+      "se": 0.0281137577,
+      "or": 10.4067279174,
+      "n": 81063,
+      "deaths": 8757,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 9,
+      "log_or": 2.4111610341,
+      "se": 0.0102552896,
+      "or": 11.1468955608,
+      "n": 1154276,
+      "deaths": 52823,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 10,
+      "log_or": 2.6133046417,
+      "se": 0.0435507611,
+      "or": 13.6440651791,
+      "n": 50686,
+      "deaths": 3094,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 11,
+      "log_or": 2.4490334794,
+      "se": 0.0209546649,
+      "or": 11.5771517542,
+      "n": 204282,
+      "deaths": 13334,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 12,
+      "log_or": 2.3607369825,
+      "se": 0.0309710832,
+      "or": 10.5987596748,
+      "n": 76480,
+      "deaths": 6125,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 13,
+      "log_or": 2.1257978,
+      "se": 0.0321441399,
+      "or": 8.3795800508,
+      "n": 61663,
+      "deaths": 7781,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 14,
+      "log_or": 2.5032674408,
+      "se": 0.0193052308,
+      "or": 12.2223646402,
+      "n": 166123,
+      "deaths": 17634,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 15,
+      "log_or": 2.3009320639,
+      "se": 0.0165599877,
+      "or": 9.9834833642,
+      "n": 245313,
+      "deaths": 33095,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 16,
+      "log_or": 2.3142262269,
+      "se": 0.0287844483,
+      "or": 10.1170915563,
+      "n": 73196,
+      "deaths": 8058,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 17,
+      "log_or": 2.3107024583,
+      "se": 0.0353367374,
+      "or": 10.0815040042,
+      "n": 49968,
+      "deaths": 4916,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 18,
+      "log_or": 2.7868607447,
+      "se": 0.0447538338,
+      "or": 16.2299896636,
+      "n": 34670,
+      "deaths": 3021,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 19,
+      "log_or": 2.5896116673,
+      "se": 0.0209322275,
+      "or": 13.3245962213,
+      "n": 211101,
+      "deaths": 13843,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 20,
+      "log_or": 2.1429997891,
+      "se": 0.0326910403,
+      "or": 8.5249724292,
+      "n": 83247,
+      "deaths": 5423,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 21,
+      "log_or": 2.0777864774,
+      "se": 0.0222399914,
+      "or": 7.9867704367,
+      "n": 129232,
+      "deaths": 15756,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 22,
+      "log_or": 2.5221069723,
+      "se": 0.033369098,
+      "or": 12.4548109796,
+      "n": 101452,
+      "deaths": 5881,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 23,
+      "log_or": 2.8954905144,
+      "se": 0.0463351309,
+      "or": 18.0923738344,
+      "n": 62324,
+      "deaths": 4028,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 24,
+      "log_or": 2.3559017884,
+      "se": 0.0286709928,
+      "or": 10.54763631,
+      "n": 110068,
+      "deaths": 6811,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 25,
+      "log_or": 2.6105483409,
+      "se": 0.0278260977,
+      "or": 13.6065098125,
+      "n": 75629,
+      "deaths": 9048,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 26,
+      "log_or": 2.576372504,
+      "se": 0.0252026658,
+      "or": 13.1493523174,
+      "n": 124098,
+      "deaths": 9261,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 27,
+      "log_or": 2.3778184785,
+      "se": 0.0313794134,
+      "or": 10.781357428,
+      "n": 146002,
+      "deaths": 5925,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 28,
+      "log_or": 2.3517160777,
+      "se": 0.0291980476,
+      "or": 10.5035792254,
+      "n": 105769,
+      "deaths": 7367,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 29,
+      "log_or": 2.2214087917,
+      "se": 0.0511820397,
+      "or": 9.220311218,
+      "n": 27143,
+      "deaths": 2813,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 30,
+      "log_or": 2.3066302774,
+      "se": 0.022375707,
+      "or": 10.0405337724,
+      "n": 121775,
+      "deaths": 14803,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 31,
+      "log_or": 2.8425405557,
+      "se": 0.0326288415,
+      "or": 17.1593043761,
+      "n": 76590,
+      "deaths": 5869,
+      "zero_cell": false,
+      "converged": true
+    },
+    {
+      "site": 32,
+      "log_or": 2.4519317301,
+      "se": 0.0411205358,
+      "or": 11.6107539129,
+      "n": 43332,
+      "deaths": 3387,
+      "zero_cell": false,
+      "converged": true
+    }
+  ],
+  "per_state_flags": {
+    "any_zero_cell": false,
+    "all_converged": true,
+    "max_se": 0.05605582815493177
+  },
+  "comparisons": {
+    "common_effect_two_stage_vs_one_stage_random_intercept": {
+      "two_stage_log_or": 2.422702466285,
+      "one_stage_log_or": 2.422566814489,
+      "log_or_difference": 0.00013565179600005806,
+      "note": "both impose one age coefficient on every state"
+    },
+    "random_effects_two_stage_vs_one_stage_random_slope": {
+      "two_stage_log_or": 2.462085950393754,
+      "one_stage_log_or": 2.462767706631,
+      "log_or_difference": -0.0006817562372458674,
+      "note": "both let the age coefficient vary across states"
+    },
+    "registered_falsification": {
+      "criterion": "two-stage IPD OR differs from the pooled individual-level OR by more than 50% (ANALYSIS_PROTOCOL.md, S9)",
+      "two_stage_or": 11.729252678860796,
+      "pooled_individual_level_or": 11.263882851904679,
+      "difference_fraction": 0.04131522256354296,
+      "fires": false,
+      "note": "the registered comparator ignores state, so it carries between-state confounding and noncollapsibility; a gap between it and a state-conditioned estimate is not evidence that heterogeneity distorts all pooling"
+    }
+  },
+  "software": {
+    "r_version": "R version 4.1.2 (2021-11-01)",
+    "lme4_version": "1.1.33",
+    "metafor_version": "5.0.1"
+  }
+}

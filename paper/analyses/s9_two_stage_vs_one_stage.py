@@ -1,200 +1,153 @@
 """
 Supplementary Analysis S9: Two-Stage vs. One-Stage IPD on Mexico
 
-Compares three estimators on Mexico's 32 states:
-  (a) Ecological: mortality ~ elderly proportion (existing beta=+1.31)
-  (b) Two-stage IPD: per-state logistic, pooled via RE meta-analysis
-  (c) One-stage IPD: logistic with state fixed effects on all records
+Registered comparison on Mexico's 32 treating-unit states:
+  (a) Ecological: state mortality rate on state elderly proportion
+  (b) Two-stage IPD: per-state logistic, pooled by DerSimonian-Laird random effects
+  (c) One-stage IPD: death ~ elderly + (1 | state)
 
-Uses Mundlak fixed-effects approximation for (c) to avoid GLMM
-convergence issues at 4M rows.
+(c) is the registered random-intercept model, fitted with lme4 on site x elderly
+cells (r/glmm_fits.R); the covariates are binary, so the cell fit carries the
+patient-level likelihood. Two estimators are aligned before they are compared: a
+common-effect two-stage pooling belongs beside the random-intercept model, which
+imposes one age coefficient on every state, and DerSimonian-Laird pooling belongs
+beside a random-slope model, which lets the age coefficient vary. The registered
+falsification criterion compares two-stage pooling with the pooled individual-level
+odds ratio, which ignores state; that comparison is reported as registered, beside
+the aligned ones.
 """
 
 import json
-import csv
-import numpy as np
-from scipy import stats as scipy_stats
-from pathlib import Path
+import subprocess
 from datetime import datetime
 
-DATA_DIR = Path(__file__).parent.parent.parent / "data"
-OUTPUT_DIR = Path(__file__).parent / "results"
-OUTPUT_DIR.mkdir(exist_ok=True)
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+from scipy import stats as scipy_stats
 
-MEXICO_CSV = DATA_DIR / "mexico_covid/COVID19MEXICO.csv"
-AGE_THRESHOLD = 70
+import mexico_confirmed_cases
+from paths import PROJECT_ROOT, RESULTS
 
-
-def load_by_state():
-    """Load data grouped by state."""
-    print("  Loading Mexico individual-level data...")
-    state_data = {}
-
-    with open(MEXICO_CSV, encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            try:
-                age = int(row["EDAD"])
-            except (ValueError, KeyError):
-                continue
-
-            state = row.get("ENTIDAD_RES", "").strip()
-            if not state:
-                continue
-
-            fecha_def = row.get("FECHA_DEF", "").strip()
-            died = 0 if fecha_def in ("", "9999-99-99") else 1
-            elderly = 1 if age >= AGE_THRESHOLD else 0
-
-            if state not in state_data:
-                state_data[state] = {"elderly": [], "died": []}
-            state_data[state]["elderly"].append(elderly)
-            state_data[state]["died"].append(died)
-
-    total = sum(len(v["died"]) for v in state_data.values())
-    print(f"  Loaded {total:,} records across {len(state_data)} states")
-    return state_data
+OUTPUT_DIR = RESULTS
+AGE_THRESHOLD = mexico_confirmed_cases.AGE_THRESHOLD
+R_DIR = PROJECT_ROOT / "paper" / "analyses" / "r"
 
 
-def ecological_regression(state_data):
-    """(a) Ecological: mortality rate ~ elderly proportion."""
-    elderly_props = []
-    mortality_rates = []
-    for state in sorted(state_data.keys()):
-        d = state_data[state]
-        n = len(d["died"])
-        elderly_props.append(sum(d["elderly"]) / n)
-        mortality_rates.append(sum(d["died"]) / n)
+def by_site_and_age(cells):
+    """Deaths and patients per site x elderly cell."""
+    return cells.groupby(["site", "elderly"], as_index=False).agg(
+        deaths=("deaths", "sum"), alive=("alive", "sum"), n=("n", "sum"))
 
+
+def logistic_on_cells(table, covariate_columns):
+    """Binomial GLM on aggregated cells; raises unless it converges."""
+    X = np.column_stack([np.ones(len(table))] +
+                        [table[c].to_numpy(dtype=float) for c in covariate_columns])
+    endog = table[["deaths", "alive"]].to_numpy(dtype=float)
+    fit = sm.GLM(endog, X, family=sm.families.Binomial()).fit()
+    if not fit.converged:
+        raise RuntimeError(f"binomial GLM on {covariate_columns} did not converge")
+    return fit
+
+
+def estimate(log_or, se, extra=None):
+    out = {
+        "log_or": float(log_or),
+        "se": float(se),
+        "or": float(np.exp(log_or)),
+        "ci": [float(np.exp(log_or - 1.96 * se)), float(np.exp(log_or + 1.96 * se))],
+    }
+    if extra:
+        out.update(extra)
+    return out
+
+
+def ecological_regression(site_age):
+    """(a) Ecological: state mortality rate on state elderly proportion."""
+    per_site = site_age.groupby("site").apply(
+        lambda g: pd.Series({
+            "prop_elderly": float((g["n"] * g["elderly"]).sum() / g["n"].sum()),
+            "mortality_rate": float(g["deaths"].sum() / g["n"].sum()),
+        }), include_groups=False)
     slope, intercept, r, p, se = scipy_stats.linregress(
-        elderly_props, mortality_rates)
-
+        per_site["prop_elderly"], per_site["mortality_rate"])
     return {
         "method": "ecological",
         "beta": float(slope),
         "se": float(se),
         "p_value": float(p),
         "r_squared": float(r ** 2),
-        "n_sites": len(elderly_props),
+        "n_sites": int(len(per_site)),
         "note": "slope is in mortality-rate units per unit elderly-proportion",
     }
 
 
-def two_stage_ipd(state_data):
-    """(b) Two-stage: per-state logistic, then RE meta-analysis."""
-    from statsmodels.discrete.discrete_model import Logit
+def per_state_estimates(site_age):
+    """Per-state logistic of death on age, with separation and convergence flags.
 
-    log_ors = []
-    ses = []
-    state_results = {}
+    Each state contributes two cells and the model has two parameters, so the fit is
+    saturated: statsmodels warns about zero residual degrees of freedom and perfect
+    prediction. The coefficient is the 2x2 log odds ratio, which the check below
+    confirms.
+    """
+    rows = []
+    for site, g in site_age.groupby("site"):
+        g = g.sort_values("elderly")
+        counts = {(int(e), "deaths"): int(d) for e, d in zip(g["elderly"], g["deaths"])}
+        counts.update({(int(e), "alive"): int(a) for e, a in zip(g["elderly"], g["alive"])})
+        zero_cell = any(v == 0 for v in counts.values())
+        closed_form = np.log(counts[(1, "deaths")] * counts[(0, "alive")] /
+                             (counts[(1, "alive")] * counts[(0, "deaths")])) if not zero_cell else np.nan
+        fit = logistic_on_cells(g, ["elderly"])
+        if not zero_cell and not np.isclose(fit.params[1], closed_form, atol=1e-8):
+            raise RuntimeError(f"state {site}: fitted log odds ratio {fit.params[1]} differs from "
+                                f"the 2x2 value {closed_form}")
+        rows.append({
+            "site": int(site),
+            "log_or": float(fit.params[1]),
+            "se": float(fit.bse[1]),
+            "or": float(np.exp(fit.params[1])),
+            "n": int(g["n"].sum()),
+            "deaths": int(g["deaths"].sum()),
+            "zero_cell": zero_cell,
+            "converged": bool(fit.converged),
+        })
+    return pd.DataFrame(rows)
 
-    for state in sorted(state_data.keys()):
-        d = state_data[state]
-        y = np.array(d["died"], dtype=np.float64)
-        x = np.column_stack([np.ones(len(y)),
-                              np.array(d["elderly"], dtype=np.float64)])
 
-        if y.sum() == 0 or y.sum() == len(y):
-            continue
-        if sum(d["elderly"]) == 0 or sum(d["elderly"]) == len(d["elderly"]):
-            continue
-
-        try:
-            model = Logit(y, x)
-            result = model.fit(method="lbfgs", maxiter=50, disp=False)
-            log_or = float(result.params[1])
-            se = float(result.bse[1])
-            log_ors.append(log_or)
-            ses.append(se)
-            state_results[state] = {
-                "log_or": log_or,
-                "or": float(np.exp(log_or)),
-                "se": se,
-                "n": len(y),
-            }
-        except Exception:
-            continue
-
-    log_ors = np.array(log_ors)
-    ses = np.array(ses)
-    variances = ses ** 2
+def dersimonian_laird(per_state):
+    """(b) Two-stage IPD as registered: per-state logistic pooled by DerSimonian-Laird."""
+    log_ors = per_state["log_or"].to_numpy()
+    variances = per_state["se"].to_numpy() ** 2
     weights_fe = 1.0 / variances
-    w_sum = np.sum(weights_fe)
-    fe_est = np.sum(weights_fe * log_ors) / w_sum
+    w_sum = weights_fe.sum()
+    fe_est = float((weights_fe * log_ors).sum() / w_sum)
 
-    q = np.sum(weights_fe * (log_ors - fe_est) ** 2)
+    q = float((weights_fe * (log_ors - fe_est) ** 2).sum())
     k = len(log_ors)
-    c = w_sum - np.sum(weights_fe ** 2) / w_sum
-    tau2 = max(0, (q - (k - 1)) / c)
+    c = w_sum - (weights_fe ** 2).sum() / w_sum
+    tau2 = max(0.0, (q - (k - 1)) / c)
 
     weights_re = 1.0 / (variances + tau2)
-    w_sum_re = np.sum(weights_re)
-    re_est = np.sum(weights_re * log_ors) / w_sum_re
-    re_se = 1.0 / np.sqrt(w_sum_re)
+    re_est = float((weights_re * log_ors).sum() / weights_re.sum())
+    re_se = float(1.0 / np.sqrt(weights_re.sum()))
 
-    return {
-        "method": "two_stage_ipd",
-        "pooled_log_or": float(re_est),
-        "pooled_or": float(np.exp(re_est)),
-        "pooled_se": float(re_se),
-        "pooled_ci": [float(np.exp(re_est - 1.96 * re_se)),
-                       float(np.exp(re_est + 1.96 * re_se))],
+    return estimate(re_est, re_se, {
+        "method": "two_stage_ipd_dersimonian_laird",
         "tau2": float(tau2),
-        "I2": float(max(0, (q - (k - 1)) / q)) if q > 0 else 0.0,
-        "n_states_included": k,
-        "per_state": state_results,
-    }
+        "I2": float(max(0.0, (q - (k - 1)) / q)) if q > 0 else 0.0,
+        "Q": q,
+        "n_states_included": int(k),
+    })
 
 
-def one_stage_ipd(state_data):
-    """(c) One-stage: logistic with state fixed effects."""
-    from statsmodels.discrete.discrete_model import Logit
-
-    print("  Fitting one-stage logistic with state fixed effects...")
-    all_y = []
-    all_elderly = []
-    all_state_idx = []
-
-    states = sorted(state_data.keys())
-    for i, state in enumerate(states):
-        d = state_data[state]
-        n = len(d["died"])
-        all_y.extend(d["died"])
-        all_elderly.extend(d["elderly"])
-        all_state_idx.extend([i] * n)
-
-    y = np.array(all_y, dtype=np.float64)
-    elderly = np.array(all_elderly, dtype=np.float64)
-    state_idx = np.array(all_state_idx)
-    n = len(y)
-    n_states = len(states)
-
-    state_dummies = np.zeros((n, n_states - 1), dtype=np.float64)
-    for i in range(n):
-        idx = state_idx[i]
-        if idx > 0:
-            state_dummies[i, idx - 1] = 1.0
-
-    X = np.column_stack([np.ones(n), elderly, state_dummies])
-
-    model = Logit(y, X)
-    result = model.fit(method="lbfgs", maxiter=100, disp=False)
-
-    log_or = float(result.params[1])
-    se = float(result.bse[1])
-
-    return {
-        "method": "one_stage_ipd",
-        "log_or": log_or,
-        "or": float(np.exp(log_or)),
-        "se": se,
-        "ci": [float(np.exp(log_or - 1.96 * se)),
-               float(np.exp(log_or + 1.96 * se))],
-        "p_value": float(result.pvalues[1]),
-        "n_obs": n,
-        "n_states": n_states,
-        "converged": bool(result.mle_retvals.get("converged", True)),
-    }
+def run_r(script, table, out_name, **files):
+    in_path = OUTPUT_DIR / files["in_name"]
+    out_path = OUTPUT_DIR / out_name
+    table.to_csv(in_path, index=False)
+    subprocess.run(["Rscript", str(R_DIR / script), str(in_path), str(out_path)], check=True)
+    return json.load(open(out_path))
 
 
 def main():
@@ -204,51 +157,102 @@ def main():
     print(f"  Age threshold: {AGE_THRESHOLD}+")
     print("=" * 70)
 
-    state_data = load_by_state()
+    df = mexico_confirmed_cases.load()
+    cells = mexico_confirmed_cases.collapsed_cells(df)
+    site_age = by_site_and_age(cells)
 
     print("\n  (a) Ecological regression...")
-    eco = ecological_regression(state_data)
-    print(f"      beta = {eco['beta']:+.4f}, p = {eco['p_value']:.2e}")
+    eco = ecological_regression(site_age)
+    print(f"      beta = {eco['beta']:+.4f}, p = {eco['p_value']:.2e}, R2 = {eco['r_squared']:.3f}")
 
-    print("\n  (b) Two-stage IPD (per-state logistic + RE meta-analysis)...")
-    two = two_stage_ipd(state_data)
-    print(f"      Pooled OR = {two['pooled_or']:.2f} "
-          f"(95% CI [{two['pooled_ci'][0]:.2f}, {two['pooled_ci'][1]:.2f}]), "
-          f"I²={two['I2']:.3f}")
+    print("\n  (b) Two-stage IPD...")
+    per_state = per_state_estimates(site_age)
+    two_stage = dersimonian_laird(per_state)
+    print(f"      DerSimonian-Laird OR = {two_stage['or']:.2f} "
+          f"[{two_stage['ci'][0]:.2f}, {two_stage['ci'][1]:.2f}], I2 = {two_stage['I2']:.3f}")
+    meta = run_r("meta_pool.R", per_state[["site", "log_or", "se"]],
+                 "mexico_meta_pool.json", in_name="mexico_per_state.csv")
+    print(f"      common-effect OR = {np.exp(meta['common_effect']['log_or']):.2f}; "
+          f"REML + Hartung-Knapp OR = {np.exp(meta['reml_hartung_knapp']['log_or']):.2f}")
 
-    print("\n  (c) One-stage IPD (logistic + state fixed effects)...")
-    one = one_stage_ipd(state_data)
-    print(f"      OR = {one['or']:.2f} "
-          f"(95% CI [{one['ci'][0]:.2f}, {one['ci'][1]:.2f}]), "
-          f"p = {one['p_value']:.2e}")
+    print("\n  (c) One-stage IPD...")
+    glmm = run_r("glmm_fits.R", cells, "mexico_glmm_fits.json", in_name="mexico_cells.csv")
+    one_stage_ri = glmm["s9_one_stage_random_intercept"]["elderly"]
+    one_stage_rs = glmm["s9_one_stage_random_slope"]["elderly"]
+    print(f"      random intercept (registered) OR = {one_stage_ri['or']:.2f} "
+          f"[{one_stage_ri['ci'][0]:.2f}, {one_stage_ri['ci'][1]:.2f}]")
+    print(f"      random slope OR = {one_stage_rs['or']:.2f} "
+          f"[{one_stage_rs['ci'][0]:.2f}, {one_stage_rs['ci'][1]:.2f}]")
 
-    print("\n  --- Comparison ---")
-    print(f"  Ecological beta:      {eco['beta']:+.4f} (mortality-rate scale)")
-    print(f"  Two-stage pooled OR:  {two['pooled_or']:.2f}")
-    print(f"  One-stage OR:         {one['or']:.2f}")
+    fixed_effects = logistic_on_cells(
+        site_age.assign(**{f"site_{s}": (site_age["site"] == s).astype(float)
+                           for s in sorted(site_age["site"].unique())[1:]}),
+        ["elderly"] + [f"site_{s}" for s in sorted(site_age["site"].unique())[1:]])
+    one_stage_fe = estimate(fixed_effects.params[1], fixed_effects.bse[1],
+                            {"method": "one_stage_state_fixed_effects"})
+    print(f"      state fixed effects OR = {one_stage_fe['or']:.2f}")
 
-    or_diff = abs(two["pooled_or"] - one["or"]) / one["or"]
-    if or_diff > 0.50:
-        conclusion = (f"FALSIFICATION: Two-stage OR ({two['pooled_or']:.2f}) "
-                       f"differs from one-stage OR ({one['or']:.2f}) by "
-                       f"{or_diff:.0%}. Heterogeneity distorts all pooling, "
-                       f"not just ecological aggregation.")
-    else:
-        conclusion = (f"Two-stage ({two['pooled_or']:.2f}) and one-stage "
-                       f"({one['or']:.2f}) agree within {or_diff:.0%}. "
-                       f"Proper IPD methods recover the individual-level "
-                       f"effect. Ecological regression is the problem.")
+    crude = logistic_on_cells(site_age.groupby("elderly", as_index=False).agg(
+        deaths=("deaths", "sum"), alive=("alive", "sum"), n=("n", "sum")), ["elderly"])
+    pooled = estimate(crude.params[1], crude.bse[1],
+                      {"method": "pooled_individual_level_ignoring_state"})
+    print(f"\n  Pooled individual-level OR (ignores state): {pooled['or']:.2f}")
 
-    print(f"\n  {conclusion}")
+    registered_difference = abs(two_stage["or"] - pooled["or"]) / pooled["or"]
+    registered_fires = bool(registered_difference > 0.50)
+
+    comparisons = {
+        "common_effect_two_stage_vs_one_stage_random_intercept": {
+            "two_stage_log_or": meta["common_effect"]["log_or"],
+            "one_stage_log_or": one_stage_ri["log_or"],
+            "log_or_difference": meta["common_effect"]["log_or"] - one_stage_ri["log_or"],
+            "note": "both impose one age coefficient on every state",
+        },
+        "random_effects_two_stage_vs_one_stage_random_slope": {
+            "two_stage_log_or": two_stage["log_or"],
+            "one_stage_log_or": one_stage_rs["log_or"],
+            "log_or_difference": two_stage["log_or"] - one_stage_rs["log_or"],
+            "note": "both let the age coefficient vary across states",
+        },
+        "registered_falsification": {
+            "criterion": ("two-stage IPD OR differs from the pooled individual-level OR by more "
+                           "than 50% (ANALYSIS_PROTOCOL.md, S9)"),
+            "two_stage_or": two_stage["or"],
+            "pooled_individual_level_or": pooled["or"],
+            "difference_fraction": float(registered_difference),
+            "fires": registered_fires,
+            "note": ("the registered comparator ignores state, so it carries between-state "
+                      "confounding and noncollapsibility; a gap between it and a "
+                      "state-conditioned estimate is not evidence that heterogeneity distorts "
+                      "all pooling"),
+        },
+    }
+    for key in ["common_effect_two_stage_vs_one_stage_random_intercept",
+                "random_effects_two_stage_vs_one_stage_random_slope"]:
+        d = comparisons[key]["log_or_difference"]
+        print(f"  {key}: log-OR difference {d:+.4f}")
+    print(f"  Registered falsification fires: {registered_fires} "
+          f"({registered_difference:.0%} difference)")
 
     output = {
         "timestamp": ts,
         "age_threshold": AGE_THRESHOLD,
         "ecological": eco,
-        "two_stage_ipd": two,
-        "one_stage_ipd": one,
-        "or_difference_fraction": float(or_diff),
-        "conclusion": conclusion,
+        "two_stage_ipd": two_stage,
+        "two_stage_other_estimators": meta,
+        "one_stage_random_intercept_registered": one_stage_ri,
+        "one_stage_random_slope": one_stage_rs,
+        "one_stage_state_fixed_effects": one_stage_fe,
+        "pooled_individual_level": pooled,
+        "per_state": json.loads(per_state.to_json(orient="records")),
+        "per_state_flags": {
+            "any_zero_cell": bool(per_state["zero_cell"].any()),
+            "all_converged": bool(per_state["converged"].all()),
+            "max_se": float(per_state["se"].max()),
+        },
+        "comparisons": comparisons,
+        "software": {k: glmm[k] for k in ["r_version", "lme4_version"]} |
+                    {"metafor_version": meta["metafor_version"]},
     }
 
     outpath = OUTPUT_DIR / "s9_two_stage_vs_one_stage.json"
