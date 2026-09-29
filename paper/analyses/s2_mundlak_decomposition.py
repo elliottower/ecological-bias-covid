@@ -19,7 +19,7 @@ import pandas as pd
 import statsmodels.api as sm
 
 import mexico_confirmed_cases
-from paths import PROJECT_ROOT, RESULTS
+from paths import PROJECT_ROOT, RESULTS, write_result
 
 OUTPUT_DIR = RESULTS
 AGE_THRESHOLD = mexico_confirmed_cases.AGE_THRESHOLD
@@ -172,9 +172,7 @@ def main():
         "conclusion": conclusion,
     }
 
-    outpath = OUTPUT_DIR / "s2_mundlak_decomposition.json"
-    with open(outpath, "w") as f:
-        json.dump(output, f, indent=2)
+    outpath = write_result(output, OUTPUT_DIR / "s2_mundlak_decomposition.json")
     print(f"\n  Saved to {outpath}")
 
 

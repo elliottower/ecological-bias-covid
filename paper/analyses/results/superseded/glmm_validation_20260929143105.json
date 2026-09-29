@@ -1,0 +1,320 @@
+{
+  "timestamp": "2026-09-29 14:31:05",
+  "run": {
+    "run_id": "glmm_validation_2026-09-29T14:31:05",
+    "commit": "unknown",
+    "analysis_tree_dirty": null,
+    "snapshot_sha256": "25ccc890d190bf66a90aae98507f78f6bfe8b0e9be10767936a0e929512dbc6d",
+    "started_at": "2026-09-29T14:31:05",
+    "environment": {
+      "python": "3.13.3",
+      "platform": "Linux-4.19.0-gvisor-x86_64-with-glibc2.36",
+      "packages": {
+        "numpy": "2.5.1",
+        "scipy": "1.18.0",
+        "pandas": "3.0.3",
+        "patsy": "1.0.2",
+        "statsmodels": "0.14.6"
+      },
+      "analysis_source_sha256_prefixes": {
+        "glmm.py": "6dd4486cc9d7ef06",
+        "paths.py": "d201319188332a70",
+        "validate_glmm.py": "07423a1407ccb155"
+      }
+    }
+  },
+  "estimator_fingerprint": "6dd4486cc9d7ef06",
+  "units_completed": [
+    "reduced_design",
+    "s9_against_lme4"
+  ],
+  "units_expected": [
+    "s9_against_lme4",
+    "reduced_design",
+    "node_07",
+    "node_11",
+    "node_15",
+    "node_21",
+    "node_25",
+    "coverage_g032_s035_b00",
+    "coverage_g032_s035_b01",
+    "coverage_g032_s035_b02",
+    "coverage_g032_s035_b03",
+    "coverage_g032_s035_b04",
+    "coverage_g032_s035_b05",
+    "coverage_g032_s035_b06",
+    "coverage_g032_s035_b07",
+    "coverage_g032_s035_b08",
+    "coverage_g032_s035_b09",
+    "coverage_g032_s035_b10",
+    "coverage_g032_s035_b11",
+    "coverage_g032_s000_b00",
+    "coverage_g032_s000_b01",
+    "coverage_g032_s000_b02",
+    "coverage_g032_s000_b03",
+    "coverage_g032_s000_b04",
+    "coverage_g032_s000_b05",
+    "coverage_g032_s000_b06",
+    "coverage_g032_s000_b07",
+    "coverage_g032_s000_b08",
+    "coverage_g032_s000_b09",
+    "coverage_g032_s000_b10",
+    "coverage_g032_s000_b11",
+    "coverage_g012_s035_b00",
+    "coverage_g012_s035_b01",
+    "coverage_g012_s035_b02",
+    "coverage_g012_s035_b03",
+    "coverage_g012_s035_b04",
+    "coverage_g012_s035_b05",
+    "coverage_g012_s035_b06",
+    "coverage_g012_s035_b07",
+    "coverage_g012_s035_b08",
+    "coverage_g012_s035_b09",
+    "coverage_g012_s035_b10",
+    "coverage_g012_s035_b11",
+    "coverage_g120_s035_b00",
+    "coverage_g120_s035_b01",
+    "coverage_g120_s035_b02",
+    "coverage_g120_s035_b03",
+    "coverage_g120_s035_b04",
+    "coverage_g120_s035_b05",
+    "coverage_g120_s035_b06",
+    "coverage_g120_s035_b07",
+    "coverage_g120_s035_b08",
+    "coverage_g120_s035_b09",
+    "coverage_g120_s035_b10",
+    "coverage_g120_s035_b11",
+    "h6_shape"
+  ],
+  "s9_against_lme4": {
+    "model": "logit P(death) = intercept + elderly + (1 | treating-unit state)",
+    "n_cells": 64,
+    "n_states": 32,
+    "python_quadrature": {
+      "log_or": 2.4225671626914265,
+      "se": 0.0046814844881565175,
+      "or": 11.274766354008662,
+      "ci": [
+        11.171785555648954,
+        11.378696422722513
+      ],
+      "p": 0.0,
+      "sigma": 0.3394978285709863,
+      "quadrature_nodes": 15,
+      "profile_ci": [
+        11.171778417034833,
+        11.378685331179588
+      ],
+      "se_conditional_on_sigma": 0.004681402625712202,
+      "boundary_lrt": 45492.17277318798,
+      "singular": false,
+      "hessian": {
+        "steps": [
+          0.0001,
+          0.0003
+        ],
+        "max_relative_difference_between_steps": 4.43567147797967e-05,
+        "asymmetry_before_symmetrization": 0.0,
+        "positive_definite": true,
+        "condition_number": 715.7678721430727
+      },
+      "max_absolute_gradient": 0.007136259227991103,
+      "relative_gradient": 7.72311610006184e-09,
+      "variance_starts": {
+        "tried": [
+          0.1,
+          0.3,
+          1.0
+        ],
+        "converged": [
+          0.1,
+          0.3,
+          1.0
+        ],
+        "failed": [],
+        "largest_log_likelihood_spread": 2.912711352109909e-07,
+        "largest_sigma_spread": 8.634494827253203e-05
+      }
+    },
+    "lme4_reference": {
+      "or": 11.274762428112,
+      "ci": [
+        11.171782597647,
+        11.378691511339
+      ],
+      "se": 0.00468144192298,
+      "source": "results/mexico_glmm_fits.json",
+      "note": "fitted by glmer before lme4 began segfaulting at scale"
+    },
+    "log_or_absolute_difference": 3.4820210226271797e-07,
+    "se_absolute_difference": 4.2565176517142533e-08,
+    "tolerance": 0.0001,
+    "agrees": true
+  },
+  "reduced_design": {
+    "python": {
+      "beta": [
+        -4.148599588830109,
+        0.06433905882150673,
+        0.38472369272528023,
+        0.2683392960944724,
+        -0.7161367919502628,
+        -0.0233017485200448,
+        -0.884640413014806,
+        0.019410603518120007,
+        -0.1451872392913687,
+        0.28517553273419416,
+        -0.35757096353607903,
+        -0.7684907219670724,
+        -0.22510153940193225,
+        -0.03564796959179018,
+        0.19912479529457072,
+        0.40652530081741434
+      ],
+      "se": [
+        0.09153124423149253,
+        0.018550158945340844,
+        0.019136075363298782,
+        0.017971900847766023,
+        0.018832473036130143,
+        0.017913860945659926,
+        0.019117235517611998,
+        0.017159951161611772,
+        0.01951742292070028,
+        0.01824955656916002,
+        0.019083367709121588,
+        0.019129841358066835,
+        0.017987267018604647,
+        0.018204945182640417,
+        0.017858702276621882,
+        0.01828519702988977
+      ],
+      "sigma": 0.29834059566891086,
+      "log_likelihood": -12051.251943067356,
+      "quadrature_nodes": 15,
+      "hessian": {
+        "steps": [
+          0.0001,
+          0.0003
+        ],
+        "max_relative_difference_between_steps": 8.6654759528853e-07,
+        "asymmetry_before_symmetrization": 0.0,
+        "positive_definite": true,
+        "condition_number": 181.5926273100581
+      },
+      "variance_starts": {
+        "tried": [
+          0.1,
+          0.3,
+          1.0
+        ],
+        "converged": [
+          0.1,
+          0.3,
+          1.0
+        ],
+        "failed": [],
+        "largest_log_likelihood_spread": 4.2928149923682213e-10,
+        "largest_sigma_spread": 1.4672851166852574e-06
+      }
+    },
+    "lme4": {
+      "r_version": "R version 4.2.2 Patched (2022-11-10 r83330)",
+      "lme4_version": "1.1.31",
+      "seconds": 4.641403436661,
+      "nAGQ": 15,
+      "formula": "cbind(deaths, alive) ~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12 + x13 + x14 + x15 + (1 | group)",
+      "terms": [
+        "(Intercept)",
+        "x1",
+        "x2",
+        "x3",
+        "x4",
+        "x5",
+        "x6",
+        "x7",
+        "x8",
+        "x9",
+        "x10",
+        "x11",
+        "x12",
+        "x13",
+        "x14",
+        "x15"
+      ],
+      "estimate": [
+        -4.148601769181,
+        0.06433902902985,
+        0.3847238109624,
+        0.2683393513655,
+        -0.7161368821963,
+        -0.02330169729407,
+        -0.8846404842566,
+        0.01941071062105,
+        -0.145187221725,
+        0.2851756321756,
+        -0.3575710198694,
+        -0.7684907293795,
+        -0.2251013531851,
+        -0.03564793862584,
+        0.1991247484854,
+        0.4065254881756
+      ],
+      "se": [
+        0.09153143317189,
+        0.01855015973529,
+        0.01913607518722,
+        0.01797190275088,
+        0.01883247449453,
+        0.01791386182456,
+        0.01911723442034,
+        0.01715995157493,
+        0.01951742443885,
+        0.01824955740268,
+        0.01908336726298,
+        0.01912984137214,
+        0.01798726790343,
+        0.0182049459804,
+        0.01785870363571,
+        0.018285198283
+      ],
+      "random_intercept_sd": 0.2983416130414,
+      "log_likelihood": -1184.06480258655,
+      "singular": false,
+      "converged": true,
+      "convergence_messages": [],
+      "completed": true
+    },
+    "true_beta": [
+      -4.0,
+      0.08073605659202697,
+      0.392935687141383,
+      0.27720266786485703,
+      -0.7223593727051093,
+      -0.02936039488865519,
+      -0.8762815693746541,
+      0.024312933292647276,
+      -0.1550272945067284,
+      0.2903286876914705,
+      -0.37575377412394856,
+      -0.7852132229850683,
+      -0.21044522667800986,
+      -0.054066444929689345,
+      0.18215800740594795,
+      0.4128025585609743
+    ],
+    "python_max_absolute_error_against_truth": 0.14859958883010904,
+    "python_largest_z_against_truth": 1.6234848556661639,
+    "max_absolute_log_or_difference": 2.1803508909457037e-06,
+    "max_absolute_se_difference": 1.8894039746641944e-07,
+    "sigma_difference": 1.0173724891426872e-06,
+    "log_likelihood_difference": 10867.187140480806,
+    "agrees": true,
+    "lme4_max_absolute_error_against_truth": 0.148601769181,
+    "n_cells": 3000,
+    "n_terms": 16,
+    "n_groups": 12,
+    "true_sigma": 0.35,
+    "python_seconds": 39.8
+  }
+}

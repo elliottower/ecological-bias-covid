@@ -27,7 +27,7 @@ import statsmodels.api as sm
 from scipy import stats
 
 import mexico_confirmed_cases
-from paths import RESULTS
+from paths import RESULTS, write_result
 
 OUTPUT_DIR = RESULTS
 AGE_THRESHOLD = mexico_confirmed_cases.AGE_THRESHOLD
@@ -230,9 +230,7 @@ def main():
         "conclusion": conclusion,
     }
 
-    outpath = OUTPUT_DIR / "s3_expected_ecological.json"
-    with open(outpath, "w") as f:
-        json.dump(output, f, indent=2)
+    outpath = write_result(output, OUTPUT_DIR / "s3_expected_ecological.json")
     print(f"\n  Saved to {outpath}")
 
 

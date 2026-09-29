@@ -27,7 +27,7 @@ import statsmodels.api as sm
 from scipy import stats as scipy_stats
 
 import mexico_confirmed_cases
-from paths import PROJECT_ROOT, RESULTS
+from paths import PROJECT_ROOT, RESULTS, write_result
 
 OUTPUT_DIR = RESULTS
 AGE_THRESHOLD = mexico_confirmed_cases.AGE_THRESHOLD
@@ -255,9 +255,7 @@ def main():
                     {"metafor_version": meta["metafor_version"]},
     }
 
-    outpath = OUTPUT_DIR / "s9_two_stage_vs_one_stage.json"
-    with open(outpath, "w") as f:
-        json.dump(output, f, indent=2)
+    outpath = write_result(output, OUTPUT_DIR / "s9_two_stage_vs_one_stage.json")
     print(f"\n  Saved to {outpath}")
 
 

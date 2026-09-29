@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-09-26 21:15:19",
+  "run": {
+    "run_id": "glmm_validation_2026-09-26T21:15:19",
+    "commit": "6ecc8b1a213ecdb2705d4cddd8ef851cc8cd8016",
+    "analysis_tree_dirty": true,
+    "snapshot_sha256": "25ccc890d190bf66a90aae98507f78f6bfe8b0e9be10767936a0e929512dbc6d",
+    "started_at": "2026-09-26T21:15:19"
+  },
+  "model": "logit P(death) = intercept + elderly + (1 | treating-unit state)",
+  "n_cells": 64,
+  "n_states": 32,
+  "python_quadrature": {
+    "log_or": 2.4225664146146313,
+    "se": 0.0046814026805924,
+    "or": 11.274757919620738,
+    "ci": [
+      11.171778989613012,
+      11.378686086096117
+    ],
+    "p": 0.0,
+    "sigma": 0.33945885435906753,
+    "quadrature_nodes": 15,
+    "boundary_lrt": 45492.172773926985,
+    "singular": false,
+    "iterations": 14
+  },
+  "lme4_reference": {
+    "or": 11.274762428112,
+    "ci": [
+      11.171782597647,
+      11.378691511339
+    ],
+    "se": 0.00468144192298,
+    "source": "results/mexico_glmm_fits.json",
+    "note": "fitted by glmer before lme4 began segfaulting at scale"
+  },
+  "log_or_absolute_difference": 3.998746929134711e-07,
+  "se_absolute_difference": 3.924238760073112e-08,
+  "tolerance": 0.0001,
+  "agrees": true
+}

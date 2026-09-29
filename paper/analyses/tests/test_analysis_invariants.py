@@ -1,0 +1,569 @@
+"""Invariants the S11/S12 machinery has to satisfy before it runs on the snapshot.
+
+Each test fails if the underlying feature is wrong, not merely absent: the cell
+collapse has to reproduce a record-level fit, the quota partition has to preserve
+the quantity it claims to preserve, a failed mixed-model fit must not reach a
+result file as a number, and a results path must never be written twice.
+"""
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+import statsmodels.api as sm
+from scipy import optimize
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+import glmm  # noqa: E402
+import mexico_confirmed_cases  # noqa: E402
+import paths  # noqa: E402
+import s11_site_definitions as s11  # noqa: E402
+import s12_composition_ladder as s12  # noqa: E402
+
+
+def synthetic_records(n_records=40_000, n_sites=12):
+    """Records with the three binary covariates, site-varying composition and mortality."""
+    rng = np.random.default_rng()
+    site = rng.integers(0, n_sites, n_records)
+    elderly_rate = np.linspace(0.05, 0.45, n_sites)[site]
+    elderly = rng.random(n_records) < elderly_rate
+    male = rng.random(n_records) < 0.5
+    comorbidity = rng.random(n_records) < (0.15 + 0.35 * elderly)
+    logit = -4.0 + 2.6 * elderly + 0.35 * male + 0.8 * comorbidity + 0.4 * (site / n_sites)
+    died = rng.random(n_records) < 1 / (1 + np.exp(-logit))
+    return pd.DataFrame({
+        "site": site, "site_residence": site,
+        "municipality": site * 100 + rng.integers(0, 4, n_records),
+        "elderly": elderly.astype(int), "male": male.astype(int),
+        "has_comorbidity": comorbidity.astype(int), "died": died.astype(int),
+    })
+
+
+def test_cell_collapsed_fit_equals_record_level_fit():
+    df = synthetic_records()
+    cells = s11.cells_by(df, "site")
+    _, collapsed = s11.fit_record_model(cells)
+
+    design = np.column_stack([np.ones(len(df))] +
+                             [df[c].to_numpy(dtype=float) for c in s11.COVARIATES])
+    record_level = sm.GLM(df["died"].to_numpy(dtype=float), design,
+                          family=sm.families.Binomial()).fit()
+
+    assert collapsed["intercept"] == pytest.approx(record_level.params[0], abs=1e-8)
+    for i, covariate in enumerate(s11.COVARIATES):
+        assert collapsed[f"beta_{covariate}"] == pytest.approx(record_level.params[i + 1],
+                                                               abs=1e-8)
+
+
+def test_quota_partition_preserves_size_and_elderly_count(tmp_path, monkeypatch):
+    monkeypatch.setattr(s11, "OUTPUT_DIR", tmp_path)
+    df = synthetic_records()
+    rng = np.random.default_rng()
+
+    preserving = s11.partition_scheme(df, rng, replications=20, preserve_composition=True)
+    assert preserving["realized_quota_deviations"]["size_deviations"] == 0
+    assert preserving["realized_quota_deviations"]["elderly_deviations"] == 0
+
+    unrestricted = s11.partition_scheme(df, rng, replications=20, preserve_composition=False)
+    assert unrestricted["realized_quota_deviations"]["size_deviations"] == 0
+
+    observed_sd = float(df.groupby("site")["elderly"].mean().std(ddof=1))
+    assert preserving["mean_elderly_share_sd"] == pytest.approx(observed_sd, rel=1e-9)
+    assert unrestricted["mean_elderly_share_sd"] < 0.2 * observed_sd
+
+
+def test_partition_draws_are_written_for_every_replication(tmp_path, monkeypatch):
+    monkeypatch.setattr(s11, "OUTPUT_DIR", tmp_path)
+    s11.partition_scheme(synthetic_records(), np.random.default_rng(), replications=15,
+                         preserve_composition=True)
+    draws = pd.read_csv(tmp_path / "s11_partition_composition_preserving_draws.csv")
+    assert len(draws) == 15
+    assert draws["slope_difference"].notna().all()
+
+
+def test_degenerate_exposure_is_counted_as_a_failure_not_a_slope():
+    """Sites that share one elderly share carry no ecological slope; the draw fails."""
+    df = synthetic_records(n_records=6_000, n_sites=6)
+    df["site"] = np.arange(len(df)) % 6  # equal-sized sites
+    df["site_residence"] = df["site"]
+    df["elderly"] = (df.groupby("site").cumcount() % 5 == 0).astype(int)
+    assert df.groupby("site")["elderly"].mean().nunique() == 1
+    cells = s11.cells_by(df, "site")
+    groups = np.array(sorted(cells["group"].unique()))
+    differences, _, _, failures = s11.bootstrap_sites(cells, groups, np.random.default_rng(),
+                                                      draws=25)
+    assert np.isnan(differences).all()
+    assert failures["no_exposure_variation"] + failures["fit"] == 25
+    assert s11.failure_summary(differences, failures, 25)["unstable"] is True
+
+
+def test_archive_existing_keeps_every_superseded_payload(tmp_path):
+    target = tmp_path / "result.json"
+    for value in range(5):
+        paths.write_result({"timestamp": "2026-09-26 12:00:00", "value": value}, target)
+
+    assert json.loads(target.read_text())["value"] == 4
+    archived = sorted((tmp_path / "superseded").glob("result_*.json"))
+    assert len(archived) == 4
+    assert {json.loads(p.read_text())["value"] for p in archived} == {0, 1, 2, 3}
+
+
+def test_write_table_archives_rather_than_overwrites(tmp_path):
+    target = tmp_path / "table.csv"
+    paths.write_table(pd.DataFrame({"a": [1]}), target)
+    paths.write_table(pd.DataFrame({"a": [2]}), target)
+    assert pd.read_csv(target)["a"].tolist() == [2]
+    archived = list((tmp_path / "superseded").glob("table_*.csv"))
+    assert len(archived) == 1
+    assert pd.read_csv(archived[0])["a"].tolist() == [1]
+
+
+def grouped_binomial(n_groups=120, cells_per_group=20, sigma=0.4):
+    rng = np.random.default_rng()
+    groups = np.repeat(np.arange(n_groups), cells_per_group)
+    x = rng.normal(size=len(groups))
+    u = rng.normal(0, sigma, n_groups)
+    n = rng.integers(20, 200, len(groups)).astype(float)
+    probability = 1 / (1 + np.exp(-(-2.0 + 0.75 * x + u[groups])))
+    deaths = rng.binomial(n.astype(int), probability).astype(float)
+    design = np.column_stack([np.ones(len(groups)), x])
+    return design, deaths, n, groups
+
+
+def test_glmm_recovers_the_fixed_effect_and_the_variance_component():
+    errors, sigmas = [], []
+    for _ in range(8):
+        design, deaths, n, groups = grouped_binomial()
+        fit = glmm.fit_random_intercept(design, deaths, n, groups)
+        errors.append((fit["beta"][1] - 0.75) / fit["se"][1])
+        sigmas.append(fit["sigma"])
+    assert abs(np.mean(errors)) < 2.0
+    assert np.mean(sigmas) == pytest.approx(0.4, rel=0.15)
+
+
+def test_glmm_separates_a_null_variance_component_from_a_real_one():
+    null = [glmm.fit_random_intercept(*grouped_binomial(sigma=0.0)) for _ in range(4)]
+    real = [glmm.fit_random_intercept(*grouped_binomial(sigma=0.5)) for _ in range(4)]
+    assert max(f["sigma"] for f in null) < 0.08
+    assert min(f["sigma"] for f in real) > 0.35
+    assert np.mean([f["sigma"] for f in real]) == pytest.approx(0.5, rel=0.15)
+    assert max(f["boundary_lrt"] for f in null) < 20
+    assert min(f["boundary_lrt"] for f in real) > 500
+    assert not any(f["singular"] for f in real)
+
+
+def test_glmm_approaches_the_plain_binomial_fit_when_the_variance_vanishes():
+    design, deaths, n, groups = grouped_binomial(sigma=0.0)
+    fit = glmm.fit_random_intercept(design, deaths, n, groups)
+    plain = sm.GLM(np.column_stack([deaths, n - deaths]), design,
+                   family=sm.families.Binomial()).fit()
+    assert fit["beta"][1] == pytest.approx(plain.params[1], abs=0.01)
+    assert fit["se"][1] == pytest.approx(plain.bse[1], rel=0.05)
+
+
+def test_glmm_raises_rather_than_returning_a_number_when_the_optimizer_fails(monkeypatch):
+    design, deaths, n, groups = grouped_binomial(n_groups=8, cells_per_group=5)
+
+    def failed(*args, **kwargs):
+        return optimize.OptimizeResult(x=np.zeros(design.shape[1] + 1), success=False,
+                                       message="forced failure", fun=np.nan, nit=0)
+
+    monkeypatch.setattr(glmm.optimize, "minimize", failed)
+    with pytest.raises(glmm.ConvergenceError):
+        glmm.fit_random_intercept(design, deaths, n, groups)
+
+
+def contextual_frame(n_records=9_000, n_sites=8):
+    """A frame with the columns `contextual_model` reads, and its spline knots."""
+    rng = np.random.default_rng()
+    site = rng.integers(0, n_sites, n_records)
+    age = rng.integers(20, 90, n_records)
+    elderly = (age >= s12.mexico_confirmed_cases.AGE_THRESHOLD).astype(int)
+    frame = pd.DataFrame({"site": site, "age": age, "elderly": elderly,
+                          "male": rng.integers(0, 2, n_records),
+                          "age_band": (age // 10 * 10).astype(str),
+                          "comorbidity_unknown": rng.random(n_records) < 0.02})
+    for column in s12.COMORBIDITIES:
+        frame[column] = (rng.random(n_records) < 0.1).astype(int)
+    state_effect = rng.normal(0, 0.5, n_sites)[site]  # states differ, so sigma is not zero
+    logit = -4.0 + 2.5 * elderly + 0.3 * frame["male"] + state_effect
+    frame["died"] = (rng.random(n_records) < 1 / (1 + np.exp(-logit))).astype(int)
+    knots = np.percentile(frame["age"], s12.SPLINE_PERCENTILES).round(1)
+    return frame, knots
+
+
+def test_h6_reports_no_odds_ratio_when_the_fit_does_not_converge(monkeypatch):
+    def refuse(*args, **kwargs):
+        raise glmm.ConvergenceError("forced failure")
+
+    monkeypatch.setattr(s12.glmm, "fit_random_intercept", refuse)
+    result = s12.contextual_model(*contextual_frame())
+    assert result["converged"] is False
+    assert result["evaluable"] is False
+    assert result["elderly_share_per_sd"] is None
+
+
+def test_h6_reports_an_estimate_and_no_decision_when_the_fit_is_at_the_boundary(monkeypatch):
+    """At the boundary there is no interior gradient; H6 must report, not abort."""
+    real = s12.glmm.fit_random_intercept
+
+    def at_the_boundary(*args, **kwargs):
+        fit = real(*args, **kwargs)
+        return {**fit, "sigma": 0.0, "singular": True, "boundary_lrt": 0.0,
+                "hessian": None, "params": None, "se_conditional_on_sigma": None}
+
+    monkeypatch.setattr(s12.glmm, "fit_random_intercept", at_the_boundary)
+    result = s12.contextual_model(*contextual_frame(n_records=3_000, n_sites=5))
+    assert result["converged"] is True
+    assert result["evaluable"] is False
+    assert result["failed_gates"] == ["variance_component_off_the_boundary",
+                                      "hessian_positive_definite",
+                                      "hessian_agrees_across_steps",
+                                      "hessian_well_conditioned",
+                                      "gradient_at_the_optimum",
+                                      "profile_interval_available"]
+    assert result["max_absolute_gradient"] is None
+    assert result["elderly_share_per_sd"]["or"] > 0
+
+
+def test_h6_is_not_evaluable_when_the_random_intercept_is_singular(monkeypatch):
+    real = s12.glmm.fit_random_intercept
+
+    def singular(*args, **kwargs):
+        fit = real(*args, **kwargs)
+        return {**fit, "sigma": 1e-9, "singular": True}
+
+    monkeypatch.setattr(s12.glmm, "fit_random_intercept", singular)
+    result = s12.contextual_model(*contextual_frame())
+    assert result["singular"] is True
+    assert result["evaluable"] is False
+    assert result["elderly_share_per_sd"]["or"] > 0
+
+
+def test_h6_fits_the_registered_spline_and_finds_the_state_share():
+    result = s12.contextual_model(*contextual_frame())
+    assert result["registered_covariates"] is True
+    assert result["age_representation"] == "model-5 centered spline basis"
+    assert "elderly_share_z" in result["terms"]
+    assert result["elderly_share_per_sd"]["ci"][0] < result["elderly_share_per_sd"]["or"]
+
+
+def test_sentinel_codes_carry_no_municipality_or_sector():
+    rng = np.random.default_rng()
+    n = 400
+    raw = pd.DataFrame({
+        "ENTIDAD_UM": rng.integers(1, 33, n), "ENTIDAD_RES": rng.integers(1, 33, n),
+        "MUNICIPIO_RES": rng.choice([1, 5, 570, 997, 998, 999], n),
+        "SECTOR": rng.choice([4, 6, 9, 12, 99], n),
+        "FECHA_DEF": "9999-99-99", "FECHA_SINTOMAS": "2021-01-15",
+        "EDAD": rng.integers(0, 100, n), "SEXO": rng.integers(1, 3, n),
+    })
+    for column in mexico_confirmed_cases.COMORBIDITY_COLS:
+        raw[column] = rng.choice([1, 2, 98], n)
+
+    frame = mexico_confirmed_cases.records(raw)
+    sentinel = raw["MUNICIPIO_RES"].isin([997, 998, 999])
+    assert frame.loc[sentinel, "municipality"].isna().all()
+    assert frame.loc[~sentinel, "municipality"].notna().all()
+    assert frame.loc[raw["SECTOR"] == 99, "sector"].isna().all()
+    assert frame.loc[raw["SECTOR"] != 99, "sector"].notna().all()
+
+    valid = frame[frame["municipality"].notna()]
+    assert (valid["municipality"] // 1000 == valid["site_residence"]).all()
+    assert valid["municipality"].nunique() == len(
+        raw.loc[~sentinel, ["ENTIDAD_RES", "MUNICIPIO_RES"]].drop_duplicates())
+
+
+def test_fitting_the_record_model_once_is_the_same_as_refitting_per_partition():
+    """The partition reassigns records, which leaves the pooled covariate cells alone."""
+    df = synthetic_records()
+    _, pooled = s11.fit_record_model(s11.cells_by(df, "site"))
+    regrouped = df.assign(site=np.random.default_rng().permutation(df["site"].to_numpy()))
+    _, refitted = s11.fit_record_model(s11.cells_by(regrouped, "site"))
+    for key, value in pooled.items():
+        assert refitted[key] == pytest.approx(value, abs=1e-12)
+
+
+def test_paired_municipality_contrast_matches_a_brute_force_regrouping():
+    df = synthetic_records(n_records=30_000, n_sites=8)
+    df["municipality"] = df["site"] * 1000 + np.arange(len(df)) % 3
+    point = s11.paired_municipality_state(df, np.random.default_rng(), draws=2, threshold=50)
+
+    known = df[df["municipality"].notna()]
+    sizes = known.groupby("municipality").size()
+    matched = known[known["municipality"].isin(sizes[sizes >= 50].index)]
+    predicted, _ = s11.fit_record_model(s11.cells_by(matched, "municipality"))
+    municipality = s11.discrepancy(
+        s11.site_table(s11.cells_by(matched, "municipality"), predicted))["slope_difference"]
+    state = s11.discrepancy(
+        s11.site_table(s11.cells_by(matched, "site_residence"), predicted))["slope_difference"]
+
+    assert point["municipality"] == pytest.approx(municipality, abs=1e-9)
+    assert point["state_of_residence"] == pytest.approx(state, abs=1e-9)
+    assert point["paired_difference"] == pytest.approx(municipality - state, abs=1e-9)
+
+
+def test_clustered_municipality_draws_keep_duplicated_states_apart():
+    df = synthetic_records(n_records=12_000, n_sites=5)
+    df["municipality"] = df["site"] * 1000 + np.arange(len(df)) % 2
+    draws = s11.MINIMUM_VALID_DRAWS + 20
+    result = s11.clustered_municipality_interval(df, np.random.default_rng(), draws=draws)
+    assert result["failed_draws"] < 20
+    assert result["valid_draws"] == draws - result["failed_draws"]
+    assert np.isfinite(result["slope_difference_ci"]).all()
+    assert result["failed_draws"] == sum(result["failure_reasons"].values())
+
+
+def test_every_valid_municipality_reaches_the_no_threshold_analysis():
+    df = synthetic_records(n_records=40_000, n_sites=6)
+    df["municipality"] = df["site"] * 1000 + np.arange(len(df)) % 2
+    df.loc[df.index[:100], "municipality"] = np.nan
+    streams = s11.substreams(1, s11.ANALYSES)
+    out = s11.analyse_municipalities(df, streams, draws=5)
+    assert out["records_without_a_municipality_code"] == 100
+    assert out["all_valid_municipalities"]["n_sites"] == df["municipality"].nunique()
+    assert out["all_valid_municipalities"]["n_records"] == int(df["municipality"].notna().sum())
+
+
+def test_var_weights_projection_reproduces_a_grouped_binomial_fit():
+    """With an integer response the weighted projection is the grouped-binomial fit."""
+    df = synthetic_records()
+    cells = s11.cells_by(df, "site")
+    predicted, _ = s11.fit_record_model(cells)
+    table = s11.site_table(cells, predicted)
+    result = s11.discrepancy(table)
+
+    exog = sm.add_constant(table["prop_elderly"])
+    grouped = sm.GLM(np.column_stack([table["deaths"], table["n"] - table["deaths"]]),
+                     exog, family=sm.families.Binomial()).fit()
+    weighted = sm.GLM(table["deaths"] / table["n"], exog, family=sm.families.Binomial(),
+                      var_weights=table["n"]).fit()
+    assert weighted.params.iloc[1] == pytest.approx(grouped.params.iloc[1], rel=1e-8)
+    assert result["binomial_log_odds_slope"] == pytest.approx(grouped.params.iloc[1], rel=1e-8)
+
+
+def test_s12_bootstrap_draw_equals_an_explicit_refit_on_duplicated_states():
+    frame, _ = contextual_frame(n_records=6_000, n_sites=6)
+    frame["has_comorbidity"] = frame[s12.COMORBIDITIES].max(axis=1)
+    model = s12.BootstrapModel(frame, "elderly + male", ["elderly", "male"], False)
+    weights = np.array([2, 0, 1, 1, 3, 1], dtype=np.float32)[:len(model.states)]
+    value, reason = model.draw(weights)
+    assert reason is None
+
+    duplicated = pd.concat([frame[frame["site"] == state].assign(site=f"{state}_{copy}")
+                            for index, state in enumerate(model.states)
+                            for copy in range(int(weights[index]))], ignore_index=True)
+    cells, _ = s12.fit_and_predict(s12.build_cells(duplicated, ["elderly", "male"]),
+                                   "elderly + male")
+    assert value == pytest.approx(s12.slopes(s12.state_table(cells))["slope_difference"],
+                                  rel=1e-6)
+
+
+def test_every_s12_model_sees_the_same_state_multiplicities():
+    frame, knots = contextual_frame(n_records=6_000, n_sites=6)
+    frame["has_comorbidity"] = frame[s12.COMORBIDITIES].max(axis=1)
+    frame["onset_month"] = "2021-01"
+    formulas = s12.model_specifications(knots)[:3]
+    covariate_sets = [s12.covariates_for(f, o) for _, f, o in formulas]
+
+    seen = []
+    real = s12.BootstrapModel.draw
+
+    def record(self, weights):
+        seen.append(np.asarray(weights).copy())
+        return real(self, weights)
+
+    original = s12.BootstrapModel.draw
+    s12.BootstrapModel.draw = record
+    try:
+        s12.bootstrap_ladder(frame, formulas, covariate_sets, seed=7, draws=4)
+    finally:
+        s12.BootstrapModel.draw = original
+
+    per_model = [seen[i * 4:(i + 1) * 4] for i in range(len(formulas))]
+    for draw in range(4):
+        for other in per_model[1:]:
+            assert np.array_equal(per_model[0][draw], other[draw])
+
+
+def test_s12_counts_a_failed_draw_instead_of_aborting(monkeypatch):
+    frame, _ = contextual_frame(n_records=4_000, n_sites=5)
+    frame["has_comorbidity"] = frame[s12.COMORBIDITIES].max(axis=1)
+    formulas = [("model_1", "elderly", False)]
+    covariate_sets = [["elderly"]]
+
+    calls = {"n": 0}
+    real = s12.sm.GLM
+
+    class Exploding(real):
+        def fit(self, *args, **kwargs):
+            calls["n"] += 1
+            if calls["n"] % 2 == 0:
+                raise np.linalg.LinAlgError("forced failure")
+            return real.fit(self, *args, **kwargs)
+
+    monkeypatch.setattr(s12.sm, "GLM", Exploding)
+    values, failures = s12.bootstrap_ladder(frame, formulas, covariate_sets, seed=3, draws=6)
+    monkeypatch.undo()
+
+    failed = int(np.isnan(values["model_1"]).sum())
+    assert 0 < failed < 6
+    assert sum(failures["model_1"].values()) == failed
+    assert "fit: LinAlgError" in failures["model_1"]
+
+
+def test_the_quadrature_objective_does_not_depend_on_the_path_to_it():
+    design, deaths, n, groups = grouped_binomial(n_groups=30, cells_per_group=10)
+    model = glmm.RandomIntercept(design, deaths, n, groups)
+    params = np.array([-2.0, 0.75, np.log(0.4)])
+
+    cold = model.loglik(params, warm_start=False)
+    model.loglik(params + np.array([1.5, -1.0, 1.0]))
+    warm = model.loglik(params)
+    model.loglik(params - np.array([2.0, 2.0, -2.0]))
+    again = model.loglik(params)
+    assert warm == pytest.approx(cold, rel=1e-12)
+    assert again == pytest.approx(cold, rel=1e-12)
+
+
+def test_the_fit_is_stable_as_the_quadrature_is_refined():
+    design, deaths, n, groups = grouped_binomial(n_groups=30, cells_per_group=10)
+    fits = {nodes: glmm.fit_random_intercept(design, deaths, n, groups, nodes=nodes)
+            for nodes in (7, 15, 25)}
+    reference = fits[25]
+    for nodes in (7, 15):
+        assert fits[nodes]["beta"][1] == pytest.approx(reference["beta"][1], abs=1e-4)
+        assert fits[nodes]["sigma"] == pytest.approx(reference["sigma"], rel=1e-3)
+
+
+def test_the_profile_interval_agrees_with_the_marginal_hessian_when_groups_are_many():
+    design, deaths, n, groups = grouped_binomial(n_groups=120, cells_per_group=20)
+    fit = glmm.fit_random_intercept(design, deaths, n, groups)
+    profile = glmm.profile_interval(fit, 1)
+    wald = glmm.wald(fit["beta"][1], fit["se"][1])
+    assert np.log(wald["ci"][0]) == pytest.approx(profile[0], abs=0.02 * fit["se"][1] * 10)
+    assert np.log(wald["ci"][1]) == pytest.approx(profile[1], abs=0.02 * fit["se"][1] * 10)
+    assert fit["hessian"]["positive_definite"]
+    assert fit["hessian"]["max_relative_difference_between_steps"] < 1e-3
+    assert abs(glmm.gradient_check(fit)) / abs(fit["log_likelihood"]) < 1e-6
+
+
+def test_a_dirty_analysis_tree_stops_a_reported_run(tmp_path, monkeypatch):
+    run = lambda *args: subprocess.run(args, cwd=tmp_path, check=True,
+                                       capture_output=True)
+    run("git", "init", "-q")
+    run("git", "config", "user.email", "test@example.com")
+    run("git", "config", "user.name", "test")
+    (tmp_path / "paper" / "analyses").mkdir(parents=True)
+    (tmp_path / "paper" / "analyses" / "s0.py").write_text("x = 1\n")
+    run("git", "add", "paper/analyses/s0.py")
+    run("git", "commit", "-q", "-m", "first", "--no-gpg-sign")
+
+    monkeypatch.setattr(paths, "PROJECT_ROOT", tmp_path)
+    paths.require_clean_tree()
+
+    (tmp_path / "paper" / "analyses" / "s0.py").write_text("x = 2\n")
+    with pytest.raises(RuntimeError, match="uncommitted"):
+        paths.require_clean_tree()
+
+
+def test_the_unknown_rate_covariate_is_state_constant_unrounded_and_clustered():
+    frame, knots = contextual_frame(n_records=12_000, n_sites=6)
+    frame["has_comorbidity"] = frame[s12.COMORBIDITIES].max(axis=1)
+    frame["onset_month"] = "2021-01"
+    formulas = s12.model_specifications(knots)
+    entry = s12.unknown_comorbidity_sensitivity(frame, formulas)
+
+    rates = frame.groupby("site")["comorbidity_unknown"].mean()
+    assert set(entry["per_state_unknown_rate"].values()) == set(rates.astype(float))
+    assert any(value not in (0.0, round(value, 3)) for value in rates)  # unrounded
+    assert entry["unknown_rate_coefficient"]["clusters"] == frame["site"].nunique()
+    assert "unknown_rate" not in formulas[4][1]  # absent from the registered primary model
+
+
+def test_invalid_onset_dates_leave_the_month_missing_and_the_cohorts_matched():
+    rng = np.random.default_rng()
+    dates = ["2021-01-15", "9999-99-99", "2019-06-01", "2022-06-01"] * 40
+    n = len(dates)
+    raw = pd.DataFrame({
+        "ENTIDAD_UM": rng.integers(1, 33, n), "ENTIDAD_RES": rng.integers(1, 33, n),
+        "MUNICIPIO_RES": rng.integers(1, 100, n), "SECTOR": 4,
+        "FECHA_DEF": "9999-99-99", "FECHA_SINTOMAS": dates,
+        "EDAD": rng.integers(0, 100, n), "SEXO": rng.integers(1, 3, n),
+    })
+    for column in mexico_confirmed_cases.COMORBIDITY_COLS:
+        raw[column] = 2
+
+    frame = mexico_confirmed_cases.records(raw)
+    inside = pd.Series(dates).isin(["2021-01-15"])
+    assert frame["onset_month"].notna().tolist() == inside.tolist()
+    assert not frame["onset_month"].astype("string").eq("NaT").any()
+    assert len(frame.dropna(subset=["onset_month"])) == int(inside.sum())
+
+
+def test_codes_outside_the_catalogue_carry_no_site():
+    rng = np.random.default_rng()
+    n = 200
+    raw = pd.DataFrame({
+        "ENTIDAD_UM": rng.integers(1, 33, n),
+        "ENTIDAD_RES": rng.choice([1, 15, 32, 97, 99], n),
+        "MUNICIPIO_RES": rng.choice([1, 570, 571, 996, 999], n),
+        "SECTOR": 4, "FECHA_DEF": "9999-99-99", "FECHA_SINTOMAS": "2021-01-15",
+        "EDAD": rng.integers(0, 100, n), "SEXO": rng.integers(1, 3, n),
+    })
+    for column in mexico_confirmed_cases.COMORBIDITY_COLS:
+        raw[column] = 2
+
+    frame = mexico_confirmed_cases.records(raw)
+    assert frame.loc[raw["ENTIDAD_RES"].isin([97, 99]), "site_residence"].isna().all()
+    assert frame.loc[raw["ENTIDAD_RES"].isin([1, 15, 32]), "site_residence"].notna().all()
+    outside = raw["MUNICIPIO_RES"].isin([571, 996, 999]) | raw["ENTIDAD_RES"].isin([97, 99])
+    assert frame.loc[outside, "municipality"].isna().all()
+    assert frame.loc[~outside, "municipality"].notna().all()
+
+
+def test_a_failed_h6_gate_makes_the_hypothesis_not_evaluable(monkeypatch):
+    real = s12.glmm.fit_random_intercept
+
+    def ill_conditioned(*args, **kwargs):
+        fit = real(*args, **kwargs)
+        assert fit["hessian"] is not None, "the fixture must not sit at the boundary"
+        return {**fit, "hessian": {**fit["hessian"], "condition_number": 1e12}}
+
+    monkeypatch.setattr(s12.glmm, "fit_random_intercept", ill_conditioned)
+    result = s12.contextual_model(*contextual_frame())
+    assert result["gates"]["hessian_well_conditioned"] is False
+    assert result["failed_gates"] == ["hessian_well_conditioned"]
+    assert result["evaluable"] is False
+    assert result["elderly_share_per_sd"]["or"] > 0  # reported, not used
+
+
+def test_the_fit_agrees_across_its_prespecified_variance_starts():
+    design, deaths, n, groups = grouped_binomial(n_groups=40, cells_per_group=20)
+    fit = glmm.fit_random_intercept(design, deaths, n, groups, nodes=11)
+    assert len(fit["variance_starts"]["converged"]) >= 2
+    assert fit["variance_starts"]["largest_log_likelihood_spread"] < 1e-4
+    assert fit["variance_starts"]["largest_sigma_spread"] < 1e-3
+
+
+def test_a_profile_that_cannot_bracket_the_cutoff_reports_no_interval(monkeypatch):
+    design, deaths, n, groups = grouped_binomial(n_groups=30, cells_per_group=10)
+    fit = glmm.fit_random_intercept(design, deaths, n, groups, nodes=11)
+    monkeypatch.setattr(glmm.optimize, "brentq",
+                        lambda *args, **kwargs: float("nan"))
+    assert glmm.profile_interval(fit, 1) is None
+
+
+def test_too_few_valid_draws_suppress_the_interval():
+    values = np.full(2000, np.nan)
+    values[:10] = np.linspace(0.1, 0.2, 10)
+    assert s11.interval_or_none(values) is None
+    summary = s11.failure_summary(values, {"fit: LinAlgError": 1990}, 2000)
+    assert summary["valid_draws"] == 10
+    assert summary["unstable"] is True
+    assert summary["interval_is_conditional_on_valid_draws"] is True

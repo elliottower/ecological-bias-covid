@@ -22,7 +22,8 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from paths import MEXICO_DIR, MEXICO_MAIN_RESULTS, MEXICO_SNAPSHOT_CSV, RESULTS
+from paths import (EXPECTED_SNAPSHOT_SHA256, MEXICO_DIR, MEXICO_MAIN_RESULTS,
+                   MEXICO_SNAPSHOT_CSV, RESULTS, write_result)
 
 COMORBIDITY_COLS = [
     "DIABETES", "HIPERTENSION", "OBESIDAD", "CARDIOVASCULAR",
@@ -33,9 +34,17 @@ USECOLS = (["ID_REGISTRO", "SEXO", "EDAD", "FECHA_DEF", "FECHA_SINTOMAS", "CLASI
            + SITE_COLS + COMORBIDITY_COLS)
 AGE_THRESHOLD = 70
 ALIVE_CODE = "9999-99-99"
-MUNICIPALITY_UNKNOWN = 999
+# Sentinel codes, read from the Secretaría de Salud catalogue shipped with the open data
+# (diccionario_datos_abiertos.zip, sheet "Catálogo MUNICIPIOS" and "Catálogo SECTOR"). Real
+# municipality keys run to 570; real sector codes to 15.
+MUNICIPALITY_SENTINELS = {997: "NO APLICA", 998: "SE IGNORA", 999: "NO ESPECIFICADO"}
+VALID_STATES = range(1, 33)          # the catalogue's 32 federal entities
+VALID_MUNICIPALITIES = range(1, 571)  # municipality codes within a state
+SECTOR_SENTINELS = {99: "NO ESPECIFICADO"}
+DICTIONARY = ("diccionario_datos_abiertos.zip, Secretaría de Salud, catalogue dated 2024-07-08; "
+              "archived beside the snapshot")
 ONSET_RANGE = ("2020-01-01", "2022-01-03")
-EXPECTED_CSV_SHA256 = "25ccc890d190bf66a90aae98507f78f6bfe8b0e9be10767936a0e929512dbc6d"
+EXPECTED_CSV_SHA256 = EXPECTED_SNAPSHOT_SHA256
 SOURCE_URL = ("https://datosabiertos.salud.gob.mx/gobmx/salud/datos_abiertos/"
               "historicos/2022/01/datos_abiertos_covid19_03.01.2022.zip")
 TOLERANCE = 1e-9
@@ -97,6 +106,51 @@ def _compare_with_primary(df, site_table) -> tuple[dict, list[str]]:
     return {"expected_from_primary_analysis": expected, "observed": observed}, problems
 
 
+def records(raw: pd.DataFrame) -> pd.DataFrame:
+    """One row per confirmed case, from the snapshot's raw columns.
+
+    Sentinel codes carry no value rather than a wrong one: a municipality coded 997, 998
+    or 999, and a sector coded 99, become missing, so those records fall outside the site
+    definition that uses them instead of forming a pseudo-site of their own.
+    """
+    onset = pd.to_datetime(raw["FECHA_SINTOMAS"], format="%Y-%m-%d", errors="coerce")
+    onset_valid = onset.between(*ONSET_RANGE)
+
+    # A code outside its catalogue carries no site, in the same way a sentinel does, so
+    # the cohort is what the catalogue admits rather than what the file happens to hold.
+    treating = raw["ENTIDAD_UM"].astype(int)
+    residence = raw["ENTIDAD_RES"].astype(int)
+    municipality_code = raw["MUNICIPIO_RES"].astype(int)
+    sector_code = raw["SECTOR"].astype(int)
+    residence_valid = residence.isin(VALID_STATES)
+    municipality_valid = (residence_valid & municipality_code.isin(VALID_MUNICIPALITIES))
+
+    df = pd.DataFrame({
+        # A treating-unit state outside the catalogue would change the primary cohort, so
+        # the loader refuses the file rather than quietly dropping the record; residence
+        # and municipality only feed alternative site definitions, so they carry no value.
+        "site": treating,
+        "site_residence": residence.where(residence_valid).astype("Int64"),
+        "municipality": np.where(municipality_valid,
+                                 residence * 1000 + municipality_code, np.nan),
+        "sector": np.where(sector_code.isin(SECTOR_SENTINELS), np.nan, sector_code),
+        "died": (raw["FECHA_DEF"] != ALIVE_CODE).astype(int),
+        "age": raw["EDAD"].astype(int),
+        "elderly": (raw["EDAD"] >= AGE_THRESHOLD).astype(int),
+        "male": (raw["SEXO"] == 2).astype(int),
+        "has_comorbidity": ((raw[COMORBIDITY_COLS] == 1).sum(axis=1) > 0).astype(int),
+        "onset": onset.where(onset_valid),
+        # `astype(str)` renders a missing period as the string "NaT" in some pandas
+        # versions, which `dropna` then keeps as a calendar-month category, so the mask
+        # is applied after the conversion rather than relied on through it.
+        "onset_month": onset.dt.to_period("M").astype("string").where(onset_valid),
+    })
+    for col in COMORBIDITY_COLS:
+        df[col.lower()] = (raw[col] == 1).astype(int)
+    df["comorbidity_unknown"] = (~raw[COMORBIDITY_COLS].isin([1, 2])).all(axis=1).astype(int)
+    return df
+
+
 def load() -> pd.DataFrame:
     """Return one row per confirmed case: site, died, elderly, male, has_comorbidity."""
     csv_hash = sha256(MEXICO_SNAPSHOT_CSV)
@@ -116,24 +170,7 @@ def load() -> pd.DataFrame:
         frames.append(chunk[chunk["CLASIFICACION_FINAL"].isin([1, 2, 3])])
     raw = pd.concat(frames, ignore_index=True)
 
-    onset = pd.to_datetime(raw["FECHA_SINTOMAS"], format="%Y-%m-%d", errors="coerce")
-    onset_valid = onset.between(*ONSET_RANGE)
-
-    df = pd.DataFrame({
-        "site": raw["ENTIDAD_UM"].astype(int),
-        "site_residence": raw["ENTIDAD_RES"].astype(int),
-        "municipality": raw["ENTIDAD_RES"].astype(int) * 1000 + raw["MUNICIPIO_RES"].astype(int),
-        "sector": raw["SECTOR"].astype(int),
-        "died": (raw["FECHA_DEF"] != ALIVE_CODE).astype(int),
-        "age": raw["EDAD"].astype(int),
-        "elderly": (raw["EDAD"] >= AGE_THRESHOLD).astype(int),
-        "male": (raw["SEXO"] == 2).astype(int),
-        "has_comorbidity": ((raw[COMORBIDITY_COLS] == 1).sum(axis=1) > 0).astype(int),
-        "onset": onset.where(onset_valid),
-        "onset_month": onset.where(onset_valid).dt.to_period("M").astype(str),
-    })
-    for col in COMORBIDITY_COLS:
-        df[col.lower()] = (raw[col] == 1).astype(int)
+    df = records(raw)
 
     site_table = _site_table(df)
     counts, problems = _compare_with_primary(df, site_table)
@@ -144,7 +181,20 @@ def load() -> pd.DataFrame:
 
     death_dates = raw.loc[raw["FECHA_DEF"] != ALIVE_CODE, "FECHA_DEF"]
     unparseable_deaths = int(pd.to_datetime(death_dates, format="%Y-%m-%d", errors="coerce").isna().sum())
-    unknown_municipality = int((raw["MUNICIPIO_RES"].astype(int) == MUNICIPALITY_UNKNOWN).sum())
+    municipality_codes = raw["MUNICIPIO_RES"].astype(int)
+    unknown_municipality = int(municipality_codes.isin(MUNICIPALITY_SENTINELS).sum())
+    outside_catalogue = {
+        "ENTIDAD_UM_outside_1_32": int((~raw["ENTIDAD_UM"].astype(int).isin(VALID_STATES)).sum()),
+        "ENTIDAD_RES_outside_1_32": int((~raw["ENTIDAD_RES"].astype(int).isin(VALID_STATES)).sum()),
+        "MUNICIPIO_RES_outside_1_570_and_not_a_sentinel": int((
+            ~municipality_codes.isin(list(VALID_MUNICIPALITIES) + list(MUNICIPALITY_SENTINELS))
+        ).sum()),
+        "records_with_no_municipality": int(df["municipality"].isna().sum()),
+        "records_with_no_residence_state": int(df["site_residence"].isna().sum()),
+        "records_with_no_treating_state": int(df["site"].isna().sum()),
+        "records_with_no_onset_month": int(df["onset_month"].isna().sum()),
+    }
+    sector_codes = raw["SECTOR"].astype(int)
     duplicate_ids = int(raw["ID_REGISTRO"].duplicated().sum())
 
     audit = {
@@ -162,6 +212,10 @@ def load() -> pd.DataFrame:
             "male": "SEXO == 2 (1 is female, 99 unknown; unknown falls in the reference group)",
             "comorbidity": (f"any of {COMORBIDITY_COLS} == 1 (2 is no, 97/98/99 unknown; "
                              "unknown falls in the reference group)"),
+            "municipality": (f"ENTIDAD_RES x 1000 + MUNICIPIO_RES; codes "
+                              f"{dict(MUNICIPALITY_SENTINELS)} carry no municipality"),
+            "sector": f"SECTOR; codes {dict(SECTOR_SENTINELS)} carry no sector",
+            "catalogue": DICTIONARY,
         },
         "codes_among_confirmed_cases": {
             "EDAD_min": int(raw["EDAD"].min()),
@@ -172,8 +226,20 @@ def load() -> pd.DataFrame:
             "ENTIDAD_UM": _counts(raw["ENTIDAD_UM"]),
             "ENTIDAD_RES": _counts(raw["ENTIDAD_RES"]),
             "SECTOR": _counts(raw["SECTOR"]),
-            "MUNICIPIO_RES_unknown_999": unknown_municipality,
-            "MUNICIPIO_RES_distinct": int(df["municipality"].nunique()),
+            "MUNICIPIO_RES_sentinels": {
+                f"{code} ({label})": int((municipality_codes == code).sum())
+                for code, label in MUNICIPALITY_SENTINELS.items()},
+            "MUNICIPIO_RES_codes_above_570": {
+                str(code): int((municipality_codes == code).sum())
+                for code in sorted(set(municipality_codes[municipality_codes > 570]))},
+            "SECTOR_sentinels": {f"{code} ({label})": int((sector_codes == code).sum())
+                                  for code, label in SECTOR_SENTINELS.items()},
+            "outside_catalogue": outside_catalogue,
+            "MUNICIPIO_RES_sentinel_records": unknown_municipality,
+            "MUNICIPIO_RES_distinct_valid": int(df["municipality"].nunique()),
+            "MUNICIPIO_RES_max_sentinel_pseudo_site": int(
+                raw.loc[municipality_codes.isin(MUNICIPALITY_SENTINELS)]
+                .groupby("ENTIDAD_RES").size().max()) if unknown_municipality else 0,
             "FECHA_SINTOMAS_min": str(onset.min()),
             "FECHA_SINTOMAS_max": str(onset.max()),
             "FECHA_SINTOMAS_invalid_or_out_of_range": int((~onset_valid).sum()),
@@ -201,8 +267,7 @@ def load() -> pd.DataFrame:
         "problems": problems,
     }
     RESULTS.mkdir(exist_ok=True)
-    with open(RESULTS / "mexico_loader_audit.json", "w") as f:
-        json.dump(audit, f, indent=2)
+    write_result(audit, RESULTS / "mexico_loader_audit.json")
 
     if problems:
         raise LoaderMismatchError("; ".join(problems))
