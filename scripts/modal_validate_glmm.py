@@ -100,6 +100,19 @@ def assemble() -> dict:
         payloads, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 
+def _stamp(result):
+    """Provenance comes from the machine that holds the repository, not the container.
+
+    The image carries no git, so the commit an assembled result names is recorded here,
+    beside the shards it was built from.
+    """
+    import validate_glmm
+    from paths import run_metadata
+
+    result["run"] = run_metadata(result["run"]["run_id"])
+    return result
+
+
 @app.function(image=image, timeout=600)
 def r_probe() -> dict:
     """Does this image have a working lme4 at all, and which versions?"""
@@ -136,7 +149,7 @@ def main(units: str = "", probe: bool = False):
         else:
             print(f"  finished {outcome}", flush=True)
 
-    result = assemble.remote()
+    result = _stamp(assemble.remote())
     result["units_that_raised"] = dict(broken)
     destination = Path(validate_glmm.OUTPUT)
     saved = validate_glmm.write_result(result, destination)
@@ -151,7 +164,7 @@ def collect():
     """Write the result file from whatever the volume already holds."""
     import validate_glmm
 
-    result = assemble.remote()
+    result = _stamp(assemble.remote())
     saved = validate_glmm.write_result(result, validate_glmm.OUTPUT)
     print(f"assembled {len(result['units_completed'])} of "
           f"{len(result['units_expected'])} units into {saved}")

@@ -1,14 +1,14 @@
 {
-  "timestamp": "2026-09-29 16:17:01",
+  "timestamp": "2026-09-29 16:09:32",
   "run": {
-    "run_id": "glmm_validation_2026-09-29T16:17:01",
-    "commit": "746b8ce8097ffff2c796267ba64ba3f38d0f22bc",
-    "analysis_tree_dirty": false,
+    "run_id": "glmm_validation_2026-09-29T16:09:32",
+    "commit": "unknown",
+    "analysis_tree_dirty": null,
     "snapshot_sha256": "25ccc890d190bf66a90aae98507f78f6bfe8b0e9be10767936a0e929512dbc6d",
-    "started_at": "2026-09-29T12:17:02",
+    "started_at": "2026-09-29T16:09:32",
     "environment": {
-      "python": "3.13.12",
-      "platform": "macOS-26.5-x86_64-i386-64bit-Mach-O",
+      "python": "3.13.3",
+      "platform": "Linux-4.19.0-gvisor-x86_64-with-glibc2.36",
       "packages": {
         "numpy": "2.5.1",
         "scipy": "1.18.0",
@@ -18,21 +18,7 @@
       },
       "analysis_source_sha256_prefixes": {
         "glmm.py": "642266df884e5e76",
-        "mexico_confirmed_cases.py": "1d09b2ab8e4ad719",
         "paths.py": "d201319188332a70",
-        "s10_consistency_calibration.py": "db77ffa6e2e0a056",
-        "s11_site_definitions.py": "a9500504954518e0",
-        "s12_composition_ladder.py": "3134d62b8e27d278",
-        "s1_power_simulation.py": "a9c8050df9da5b06",
-        "s1_power_simulation_fast.py": "2ff3e7043966b8da",
-        "s2_mundlak_decomposition.py": "8bfa7a6a1946ddad",
-        "s3_expected_ecological.py": "7c272e800016de61",
-        "s4_ecological_bounds.py": "6ba57b29fb33e554",
-        "s5_positive_control.py": "0e067db0f5490708",
-        "s6_alternative_pseudosites.py": "e9760330a0026091",
-        "s7_evalue_sensitivity.py": "4f92e12d54c3bcab",
-        "s8_leave_one_out.py": "b2a2b4e1ecb66931",
-        "s9_two_stage_vs_one_stage.py": "40005e859f673fac",
         "validate_glmm.py": "f5cb6614dae03d03"
       }
     }
@@ -686,5 +672,6 @@
       "fits_at_the_boundary": 0,
       "profile_coverage_is_conditional_on_a_non_boundary_fit": false
     }
-  ]
+  ],
+  "units_that_raised": {}
 }
