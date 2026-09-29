@@ -197,60 +197,58 @@ def contextual_frame(n_records=9_000, n_sites=8):
     return frame, knots
 
 
-def test_h6_reports_no_odds_ratio_when_the_fit_does_not_converge(monkeypatch):
-    def refuse(*args, **kwargs):
-        raise glmm.ConvergenceError("forced failure")
-
-    monkeypatch.setattr(s12.glmm, "fit_random_intercept", refuse)
+def test_h6_reports_no_odds_ratio_when_glmer_does_not_complete(monkeypatch):
+    monkeypatch.setattr(s12, "fit_contextual_in_r",
+                        lambda *args: {"completed": False, "stderr_tail": "forced"})
     result = s12.contextual_model(*contextual_frame())
     assert result["converged"] is False
     assert result["evaluable"] is False
     assert result["elderly_share_per_sd"] is None
 
 
-def test_h6_reports_an_estimate_and_no_decision_when_the_fit_is_at_the_boundary(monkeypatch):
-    """At the boundary there is no interior gradient; H6 must report, not abort."""
-    real = s12.glmm.fit_random_intercept
-
-    def at_the_boundary(*args, **kwargs):
-        fit = real(*args, **kwargs)
-        return {**fit, "sigma": 0.0, "singular": True, "boundary_lrt": 0.0,
-                "hessian": None, "params": None, "se_conditional_on_sigma": None}
-
-    monkeypatch.setattr(s12.glmm, "fit_random_intercept", at_the_boundary)
-    result = s12.contextual_model(*contextual_frame(n_records=3_000, n_sites=5))
-    assert result["converged"] is True
+def test_h6_is_not_evaluable_when_the_variance_is_at_the_boundary(monkeypatch):
+    frame, knots = contextual_frame()
+    monkeypatch.setattr(s12, "fit_contextual_in_r",
+                        lambda cells, terms, index: r_payload_static(len(terms) + 1,
+                                                                    singular=True))
+    result = s12.contextual_model(frame, knots)
+    assert result["gates"]["variance_component_off_the_boundary"] is False
     assert result["evaluable"] is False
-    assert result["failed_gates"] == ["variance_component_off_the_boundary",
-                                      "hessian_positive_definite",
-                                      "hessian_agrees_across_steps",
-                                      "hessian_well_conditioned",
-                                      "gradient_at_the_optimum",
-                                      "profile_interval_available"]
-    assert result["max_absolute_gradient"] is None
-    assert result["elderly_share_per_sd"]["or"] > 0
+    assert result["elderly_share_per_sd"]["or"] > 0  # reported, not used
 
 
-def test_h6_is_not_evaluable_when_the_random_intercept_is_singular(monkeypatch):
-    real = s12.glmm.fit_random_intercept
+def r_payload_static(n_terms, **overrides):
+    estimate = [0.1] * n_terms
+    payload = {"completed": True, "converged": True, "singular": False,
+               "estimate": estimate, "se": [0.01] * n_terms,
+               "random_intercept_sd": 0.3, "lme4_version": "1.1.31",
+               "profile_ci": [0.05, 0.15]}
+    payload.update(overrides)
+    return payload
 
-    def singular(*args, **kwargs):
-        fit = real(*args, **kwargs)
-        return {**fit, "sigma": 1e-9, "singular": True}
 
-    monkeypatch.setattr(s12.glmm, "fit_random_intercept", singular)
-    result = s12.contextual_model(*contextual_frame())
-    assert result["singular"] is True
+def test_h6_requires_the_two_implementations_to_agree(monkeypatch):
+    """The gate the amendment adds: a fit nobody can reproduce is not evaluable."""
+    frame, knots = contextual_frame()
+
+    def disagreeing(cells, terms, index):
+        return r_payload_static(len(terms) + 1)
+
+    monkeypatch.setattr(s12, "fit_contextual_in_r", disagreeing)
+    result = s12.contextual_model(frame, knots)
+    assert result["reproduction"]["largest_absolute_coefficient_difference"] > 1e-4
+    assert result["gates"]["reproduced_independently"] is False
     assert result["evaluable"] is False
-    assert result["elderly_share_per_sd"]["or"] > 0
 
 
-def test_h6_fits_the_registered_spline_and_finds_the_state_share():
-    result = s12.contextual_model(*contextual_frame())
-    assert result["registered_covariates"] is True
-    assert result["age_representation"] == "model-5 centered spline basis"
-    assert "elderly_share_z" in result["terms"]
-    assert result["elderly_share_per_sd"]["ci"][0] < result["elderly_share_per_sd"]["or"]
+def test_h6_reports_the_profile_interval_glmer_returned(monkeypatch):
+    frame, knots = contextual_frame()
+    monkeypatch.setattr(s12, "fit_contextual_in_r",
+                        lambda cells, terms, index: r_payload_static(len(terms) + 1))
+    result = s12.contextual_model(frame, knots)
+    share = result["elderly_share_per_sd"]
+    assert share["interval_used"] == "profile likelihood"
+    assert share["profile_ci"] == [pytest.approx(np.exp(0.05)), pytest.approx(np.exp(0.15))]
 
 
 def test_sentinel_codes_carry_no_municipality_or_sector():
@@ -525,22 +523,6 @@ def test_codes_outside_the_catalogue_carry_no_site():
     outside = raw["MUNICIPIO_RES"].isin([571, 996, 999]) | raw["ENTIDAD_RES"].isin([97, 99])
     assert frame.loc[outside, "municipality"].isna().all()
     assert frame.loc[~outside, "municipality"].notna().all()
-
-
-def test_a_failed_h6_gate_makes_the_hypothesis_not_evaluable(monkeypatch):
-    real = s12.glmm.fit_random_intercept
-
-    def ill_conditioned(*args, **kwargs):
-        fit = real(*args, **kwargs)
-        assert fit["hessian"] is not None, "the fixture must not sit at the boundary"
-        return {**fit, "hessian": {**fit["hessian"], "condition_number": 1e12}}
-
-    monkeypatch.setattr(s12.glmm, "fit_random_intercept", ill_conditioned)
-    result = s12.contextual_model(*contextual_frame())
-    assert result["gates"]["hessian_well_conditioned"] is False
-    assert result["failed_gates"] == ["hessian_well_conditioned"]
-    assert result["evaluable"] is False
-    assert result["elderly_share_per_sd"]["or"] > 0  # reported, not used
 
 
 def test_the_fit_agrees_across_its_prespecified_variance_starts():

@@ -14,8 +14,11 @@ is model 5 against model 6. No monotonic ordering is required or predicted.
 
 import gc
 import json
+import subprocess
+import tempfile
 import time
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -26,7 +29,8 @@ from scipy import stats
 
 import glmm
 import mexico_confirmed_cases
-from paths import RESULTS, require_clean_tree, run_metadata, write_result, write_table
+from paths import (PROJECT_ROOT, RESULTS, require_clean_tree, run_metadata,
+                   write_result, write_table)
 
 OUTPUT_DIR = RESULTS
 COMORBIDITIES = [c.lower() for c in mexico_confirmed_cases.COMORBIDITY_COLS]
@@ -42,6 +46,11 @@ MINIMUM_EXPOSURE_SD = 1e-6  # a draw with no elderly-share variation carries no 
 FIT_FAILURES = (PerfectSeparationError, np.linalg.LinAlgError, ValueError)
 # Numerical acceptance thresholds for H6, fixed before the model is fitted. A fit that
 # fails any of them leaves H6 not evaluable, with every diagnostic still reported.
+ESTIMATOR = "lme4::glmer, nAGQ = 15, reproduced by glmm.py"
+QUADRATURE_NODES = 15
+GLMER_SCRIPT = PROJECT_ROOT / "paper" / "analyses" / "r" / "glmer_reference.R"
+GLMER_TIMEOUT = 21_600
+REPRODUCTION_TOLERANCE = 1e-4  # the two implementations must agree to this in every coefficient
 H6_GATES = {
     "hessian_step_agreement": 1e-3,   # relative change in the errors across step sizes
     "condition_number": 1e10,
@@ -334,87 +343,105 @@ def contextual_model(df, knots):
     print(f"    {len(cells):,} cells, {len(terms) + 1} terms, age as "
           f"{age_term.split(':')[0]}; fitting by quadrature...", flush=True)
 
+    index = terms.index("elderly_share_z") + 1  # the design's intercept comes first
     started = time.time()
+
+    primary = fit_contextual_in_r(cells, terms, index)
     try:
-        fit = glmm.fit_random_intercept(design, cells["deaths"], cells["n"], groups)
-        converged_flag, message = True, ""
+        reproduction = glmm.fit_random_intercept(design, cells["deaths"], cells["n"],
+                                                 groups, errors=False)
+        reproduced, message = True, ""
     except glmm.ConvergenceError as error:
-        fit, converged_flag, message = None, False, str(error)
+        reproduction, reproduced, message = None, False, str(error)
     elapsed = round(time.time() - started, 1)
 
-    if fit is None:
-        return {"converged": False, "convergence_message": message, "seconds": elapsed,
-                "n_cells": int(len(cells)), "age_term": age_term,
+    agreement = None
+    if primary.get("completed") and reproduction is not None:
+        agreement = float(np.max(np.abs(
+            np.array(primary["estimate"], dtype=float) - reproduction["beta"])))
+
+    if not primary.get("completed"):
+        return {"converged": False, "convergence_message": primary.get("stderr_tail", ""),
+                "seconds": elapsed, "n_cells": int(len(cells)), "age_term": age_term,
                 "registered_covariates": bool(registered_covariates), "evaluable": False,
-                "elderly_share_per_sd": None,
+                "elderly_share_per_sd": None, "estimator": ESTIMATOR,
                 "state_table": json.loads(state.to_json(orient="index"))}
 
-    index = terms.index("elderly_share_z") + 1
-    share = glmm.wald(fit["beta"][index], fit["se"][index])
-    profile = None if fit["singular"] else glmm.profile_interval(fit, index)
-    if profile is not None:
+    estimate = np.array(primary["estimate"], dtype=float)
+    share = glmm.wald(estimate[index], float(primary["se"][index]))
+    profile = primary.get("profile_ci")
+    if profile:
         share["profile_ci"] = [float(np.exp(profile[0])), float(np.exp(profile[1]))]
         share["profile_log_or_ci"] = [float(profile[0]), float(profile[1])]
     share["interval_used"] = "profile likelihood" if profile else "Wald"
 
-    gradient = glmm.gradient_check(fit)  # None at the boundary, where there is no interior
-    relative_gradient = (None if gradient is None
-                         else abs(gradient / fit["log_likelihood"]))
-    diagnostics = fit["hessian"] or {}
     gates = {
         "registered_covariates": bool(registered_covariates),
-        "converged": bool(converged_flag),
-        "variance_component_off_the_boundary": not fit["singular"],
-        "finite_estimate": bool(np.isfinite(fit["beta"]).all() and np.isfinite(fit["se"]).all()),
-        "hessian_positive_definite": bool(diagnostics.get("positive_definite", False)),
-        "hessian_agrees_across_steps": bool(
-            diagnostics.get("max_relative_difference_between_steps", np.inf)
-            < H6_GATES["hessian_step_agreement"]),
-        "hessian_well_conditioned": bool(
-            diagnostics.get("condition_number", np.inf) < H6_GATES["condition_number"]),
-        "gradient_at_the_optimum": bool(relative_gradient is not None
-                                        and relative_gradient < H6_GATES["relative_gradient"]),
-        "profile_interval_available": profile is not None,
+        "converged": bool(primary.get("converged")),
+        "variance_component_off_the_boundary": not bool(primary.get("singular")),
+        "finite_estimate": bool(np.isfinite(estimate).all()
+                                and np.isfinite(np.array(primary["se"], float)).all()),
+        "reproduced_independently": bool(agreement is not None
+                                         and agreement < REPRODUCTION_TOLERANCE),
+        "profile_interval_available": bool(profile),
     }
     return {
-        "estimator": ("binomial random intercept by adaptive Gauss-Hermite quadrature "
-                      f"({fit['quadrature_nodes']} nodes), glmm.py"),
+        "estimator": ESTIMATOR,
         "fitted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "seconds": elapsed,
         "n_cells": int(len(cells)),
         "n_records": int(cells["n"].sum()),
         "terms": ["intercept"] + terms,
         "elderly_share_per_sd": share,
-        "standard_error_source": fit["se_source"],
-        "gates": gates,
-        "gate_thresholds": H6_GATES,
-        "failed_gates": [name for name, passed in gates.items() if not passed],
-        "variance_starts": fit["variance_starts"],
-        "conditional_mode_step_at_the_solution": fit["conditional_mode_step_at_the_solution"],
-        "relative_gradient": relative_gradient,
-        "se_conditional_on_sigma": (None if fit["se_conditional_on_sigma"] is None
-                                    else float(fit["se_conditional_on_sigma"][index])),
-        "hessian_diagnostics": fit["hessian"],
-        "max_absolute_gradient": gradient,
-        "random_intercept_sd": fit["sigma"],
-        "boundary": {
-            "deviance_difference_against_zero_variance": fit["boundary_lrt"],
-            "p": fit["boundary_p"],
-            "reference": fit["boundary_reference"],
-            "at_boundary": fit["singular"],
+        "lme4": {k: v for k, v in primary.items() if k != "estimate" and k != "se"},
+        "lme4_estimates": {name: float(value) for name, value
+                           in zip(["intercept"] + terms, estimate)},
+        "reproduction": {
+            "implementation": "glmm.py, adaptive Gauss-Hermite quadrature",
+            "converged": reproduced,
+            "message": message,
+            "sigma": None if reproduction is None else reproduction["sigma"],
+            "largest_absolute_coefficient_difference": agreement,
+            "tolerance": REPRODUCTION_TOLERANCE,
         },
-        "log_likelihood": fit["log_likelihood"],
-        "iterations": fit["iterations"],
-        "singular": fit["singular"],
-        "converged": converged_flag,
+        "random_intercept_sd": float(primary["random_intercept_sd"]),
+        "singular": bool(primary.get("singular")),
+        "converged": bool(primary.get("converged")),
         "n_states": len(sites),
         "age_term": age_term,
         "age_representation": ("model-5 centered spline basis" if registered_covariates
                                else "ten-year age bands"),
         "registered_covariates": bool(registered_covariates),
+        "gates": gates,
+        "failed_gates": [name for name, passed in gates.items() if not passed],
         "evaluable": all(gates.values()),
         "state_table": json.loads(state.to_json(orient="index")),
     }
+
+
+def fit_contextual_in_r(cells, terms, index):
+    """H6's own fit: `lme4::glmer`, with a profile interval on the contextual term."""
+    frame = pd.DataFrame({"deaths": cells["deaths"].to_numpy(float),
+                          "alive": (cells["n"] - cells["deaths"]).to_numpy(float),
+                          "group": cells["site"].to_numpy()})
+    for position, name in enumerate(terms, start=1):
+        frame[f"x{position}"] = cells[name].to_numpy(float)
+    with tempfile.TemporaryDirectory() as folder:
+        cells_path, out_path = Path(folder) / "cells.csv", Path(folder) / "fit.json"
+        frame.to_csv(cells_path, index=False)
+        try:
+            attempt = subprocess.run(
+                ["Rscript", str(GLMER_SCRIPT), str(cells_path), str(out_path),
+                 str(QUADRATURE_NODES), f"x{index}"],
+                capture_output=True, text=True, check=False, timeout=GLMER_TIMEOUT)
+            message, code = attempt.stderr.strip()[-600:], attempt.returncode
+        except subprocess.TimeoutExpired:
+            message, code = f"no result after {GLMER_TIMEOUT} seconds", None
+        except FileNotFoundError:
+            message, code = "Rscript is not installed in this environment", None
+        if out_path.exists():
+            return {**json.load(open(out_path)), "completed": True}
+    return {"completed": False, "returncode": code, "stderr_tail": message}
 
 
 def unknown_comorbidity_sensitivity(df, formulas):

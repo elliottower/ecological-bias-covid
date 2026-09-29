@@ -251,8 +251,12 @@ def _marginal_covariance(model, params):
     }
 
 
-def fit_random_intercept(design, deaths, n, groups, nodes=15, start=None):
+def fit_random_intercept(design, deaths, n, groups, nodes=15, start=None, errors=True):
     """Fit logit P(death) = X beta + b_group by adaptive quadrature at `nodes` nodes.
+
+    With `errors=False` the numerical Hessian is skipped and no standard errors are
+    returned, which is what a reproduction check of another implementation's coefficients
+    needs and costs a fraction of the time.
 
     Returns the fixed effects with their marginal-likelihood standard errors, sigma, the
     deviance difference against the exactly fitted sigma = 0 solution, the Hessian
@@ -327,12 +331,24 @@ def fit_random_intercept(design, deaths, n, groups, nodes=15, start=None):
             "params": None,
         }
 
-    covariance, errors, diagnostics = _marginal_covariance(model, result.x)
     sigma = float(np.exp(result.x[-1]))
+    if not errors:
+        return {
+            **common,
+            "beta": result.x[:-1],
+            "se": None,
+            "sigma": sigma,
+            "log_likelihood": interior_loglik,
+            "se_source": "not computed; this fit was asked for coefficients only",
+            "se_conditional_on_sigma": None,
+            "hessian": None,
+            "params": result.x,
+        }
+    covariance, standard_errors, diagnostics = _marginal_covariance(model, result.x)
     return {
         **common,
         "beta": result.x[:-1],
-        "se": errors,
+        "se": standard_errors,
         "sigma": sigma,
         "log_likelihood": interior_loglik,
         "se_source": ("the Hessian of the adaptive-quadrature marginal log-likelihood in "

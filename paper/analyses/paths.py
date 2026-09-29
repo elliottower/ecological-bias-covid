@@ -3,6 +3,7 @@
 import hashlib
 import importlib.metadata
 import json
+import os
 import platform
 import re
 import subprocess
@@ -91,6 +92,10 @@ def _first_line(path):
 # Every path whose contents can change a reported number: the analyses themselves and the
 # wrappers that launch them. A file outside these cannot affect a run.
 TRACKED_FOR_RUNS = ("paper/analyses", "scripts")
+# A launcher that has the repository verifies the tree and passes the commit it verified.
+# A container holds copied files and no history, so it cannot do that check itself; what
+# it can do is refuse to invent one, and record where the commit it reports came from.
+SUPPLIED_COMMIT = "ANALYSIS_COMMIT"
 
 
 def _git(*arguments):
@@ -105,6 +110,8 @@ def _git(*arguments):
 
 def require_clean_tree():
     """Refuse to produce a reported result from an uncommitted analysis tree."""
+    if os.environ.get(SUPPLIED_COMMIT):
+        return
     status = _git("status", "--porcelain", *TRACKED_FOR_RUNS)
     if status.returncode != 0:
         raise RuntimeError(f"git could not report the state of {PROJECT_ROOT}: "
@@ -137,14 +144,18 @@ def environment():
 
 def run_metadata(run_id):
     """What every output of one run carries: the run, the code, the data and the clock."""
-    commit = _git("rev-parse", "HEAD").stdout.strip()
+    supplied = os.environ.get(SUPPLIED_COMMIT)
+    commit = supplied or _git("rev-parse", "HEAD").stdout.strip()
     status = _git("status", "--porcelain", *TRACKED_FOR_RUNS)
     dirty = status.stdout.strip()
     return {
         "run_id": run_id,
         "commit": commit or "unknown",
-        "analysis_tree_dirty": bool(dirty) if status.returncode == 0 else None,
+        "analysis_tree_dirty": (False if supplied
+                                else bool(dirty) if status.returncode == 0 else None),
         "paths_watched_for_changes": list(TRACKED_FOR_RUNS),
+        "commit_verified_by": ("the launcher, which held the repository" if supplied
+                               else "this process"),
         "snapshot_sha256": EXPECTED_SNAPSHOT_SHA256,
         "started_at": datetime.now().isoformat(timespec="seconds"),
         "environment": environment(),
