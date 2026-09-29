@@ -21,6 +21,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
 from paths import (EXPECTED_SNAPSHOT_SHA256, MEXICO_DIR, MEXICO_MAIN_RESULTS,
                    MEXICO_SNAPSHOT_CSV, RESULTS, write_result)
@@ -104,6 +105,15 @@ def _compare_with_primary(df, site_table) -> tuple[dict, list[str]]:
                     problems.append(f"{name}.{field}: loader {row[field]}, "
                                      f"primary analysis {primary_sites[name][field]}")
     return {"expected_from_primary_analysis": expected, "observed": observed}, problems
+
+
+def _catalogue_hash() -> str:
+    """The validity rules depend on the catalogue, so the catalogue is hashed too."""
+    archive = (Path.home() / "Documents" / "backup" / "ecological-bias-covid"
+               / "diccionario_datos_abiertos.zip")
+    if not archive.exists():
+        return "not present on this machine"
+    return sha256(archive)
 
 
 def records(raw: pd.DataFrame) -> pd.DataFrame:
@@ -216,6 +226,7 @@ def load() -> pd.DataFrame:
                               f"{dict(MUNICIPALITY_SENTINELS)} carry no municipality"),
             "sector": f"SECTOR; codes {dict(SECTOR_SENTINELS)} carry no sector",
             "catalogue": DICTIONARY,
+            "catalogue_sha256": _catalogue_hash(),
         },
         "codes_among_confirmed_cases": {
             "EDAD_min": int(raw["EDAD"].min()),

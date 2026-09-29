@@ -29,6 +29,7 @@ from scipy import stats
 
 import glmm
 import mexico_confirmed_cases
+import validate_glmm
 from paths import (PROJECT_ROOT, RESULTS, require_clean_tree, run_metadata,
                    write_result, write_table)
 
@@ -43,7 +44,10 @@ SNAPSHOT_DATE = "2022-01-03"
 IMPLAUSIBLE_AGE = 110
 INSTABILITY_RATE = 0.01  # a bootstrap with more than this share of failed draws is unstable
 MINIMUM_EXPOSURE_SD = 1e-6  # a draw with no elderly-share variation carries no slope
-FIT_FAILURES = (PerfectSeparationError, np.linalg.LinAlgError, ValueError)
+# fit_and_predict raises RuntimeError when neither IRLS nor lbfgs converges, so a draw
+# that hits it is a failed draw, not a reason to abandon the run.
+FIT_FAILURES = (PerfectSeparationError, np.linalg.LinAlgError, ValueError, RuntimeError)
+MINIMUM_VALID_DRAWS = 100  # below this an interval is not reported at all
 # Numerical acceptance thresholds for H6, fixed before the model is fitted. A fit that
 # fails any of them leaves H6 not evaluable, with every diagnostic still reported.
 ESTIMATOR = "lme4::glmer, nAGQ = 15, reproduced by glmm.py"
@@ -247,7 +251,37 @@ def bootstrap_ladder(df, formulas, covariate_sets, seed, draws):
 
 
 def interval(values):
+    values = np.asarray(values, dtype=float)
+    if not np.any(~np.isnan(values)):
+        return [float("nan"), float("nan")]
     return [float(np.nanpercentile(values, 2.5)), float(np.nanpercentile(values, 97.5))]
+
+
+def disposition(criterion, bootstrap, direction, extra=None):
+    """A hypothesis outcome that separates "does not hold" from "cannot be judged".
+
+    An unstable bootstrap, or one with too few valid draws to carry an interval, leaves
+    the hypothesis not evaluable; it does not quietly become a negative result.
+    """
+    interval_bounds = bootstrap.get("slope_difference_ci")
+    evaluable = bool(interval_bounds is not None and not bootstrap.get("unstable"))
+    return {
+        "criterion": criterion,
+        **(extra or {}),
+        "ci": interval_bounds,
+        "valid_draws": bootstrap.get("valid_draws"),
+        "unstable": bootstrap.get("unstable"),
+        "evaluable": evaluable,
+        "holds": bool(evaluable and direction and interval_bounds[0] > 0),
+    }
+
+
+def interval_or_none(values):
+    """A percentile interval, or nothing when too few draws survived to support one."""
+    values = np.asarray(values, dtype=float)
+    if int(np.sum(~np.isnan(values))) < MINIMUM_VALID_DRAWS:
+        return None
+    return interval(values)
 
 
 def covariates_for(formula, needs_onset):
@@ -304,12 +338,12 @@ def spline_basis(ages, knots):
 def contextual_model(df, knots):
     """H6: the state's elderly share beside the record-level covariates.
 
-    Age enters as the same centered spline as model 5, so the fitted covariates are
-    the registered ones. The random intercept over states is fitted by adaptive
-    Gauss-Hermite quadrature in `glmm.py`: `lme4::glmer` segfaults in `pwrssUpdate`
-    on this machine at this cell count, and on the one S9 fit `lme4` did complete the
-    two implementations agree to 3.1e-07 in the log odds ratio and to six decimals in
-    the standard error.
+    Age enters as the same centered spline as model 5, so the fitted covariates are the
+    registered ones. The fit is `lme4::glmer` at 15 adaptive Gauss-Hermite nodes, and the
+    reported interval is the profile interval lme4 computes for that one coefficient.
+    `glmm.py` refits the same design independently; its coefficients must agree with R's,
+    and its numerical diagnostics supply the Hessian and gradient gates that amendment A4
+    requires, so both fits are needed before H6 is evaluable.
     """
     state = df.groupby("site").agg(
         elderly_share=("elderly", "mean"), unknown_rate=("comorbidity_unknown", "mean"))
@@ -348,8 +382,10 @@ def contextual_model(df, knots):
 
     primary = fit_contextual_in_r(cells, terms, index)
     try:
+        # errors=True: the reproduction's Hessian and gradient are not decoration, they
+        # are the four numerical gates amendment A4 commits this analysis to.
         reproduction = glmm.fit_random_intercept(design, cells["deaths"], cells["n"],
-                                                 groups, errors=False)
+                                                 groups, errors=True)
         reproduced, message = True, ""
     except glmm.ConvergenceError as error:
         reproduction, reproduced, message = None, False, str(error)
@@ -375,14 +411,32 @@ def contextual_model(df, knots):
         share["profile_log_or_ci"] = [float(profile[0]), float(profile[1])]
     share["interval_used"] = "profile likelihood" if profile else "Wald"
 
+    # Every gate amendment A4 names, each evaluated from a number this run produced.
+    diagnostics = (reproduction or {}).get("hessian") or {}
+    gradient = None if reproduction is None else glmm.gradient_check(reproduction)
+    relative_gradient = (None if gradient is None or not reproduction["log_likelihood"]
+                         else abs(gradient / reproduction["log_likelihood"]))
+    names_match = list(primary.get("terms", [])) == ["(Intercept)"] + [
+        f"x{position}" for position in range(1, len(terms) + 1)]
     gates = {
         "registered_covariates": bool(registered_covariates),
-        "converged": bool(primary.get("converged")),
-        "variance_component_off_the_boundary": not bool(primary.get("singular")),
+        "converged": bool(primary.get("converged")) and reproduced,
+        "term_order_matches": names_match,
+        "variance_component_off_the_boundary": (
+            not bool(primary.get("singular"))
+            and bool(reproduction is not None and not reproduction["singular"])),
         "finite_estimate": bool(np.isfinite(estimate).all()
                                 and np.isfinite(np.array(primary["se"], float)).all()),
         "reproduced_independently": bool(agreement is not None
                                          and agreement < REPRODUCTION_TOLERANCE),
+        "hessian_positive_definite": bool(diagnostics.get("positive_definite", False)),
+        "hessian_agrees_across_steps": bool(
+            diagnostics.get("max_relative_difference_between_steps", np.inf)
+            < H6_GATES["hessian_step_agreement"]),
+        "hessian_well_conditioned": bool(
+            diagnostics.get("condition_number", np.inf) < H6_GATES["condition_number"]),
+        "gradient_at_the_optimum": bool(relative_gradient is not None
+                                        and relative_gradient < H6_GATES["relative_gradient"]),
         "profile_interval_available": bool(profile),
     }
     return {
@@ -403,7 +457,15 @@ def contextual_model(df, knots):
             "sigma": None if reproduction is None else reproduction["sigma"],
             "largest_absolute_coefficient_difference": agreement,
             "tolerance": REPRODUCTION_TOLERANCE,
+            "hessian_diagnostics": diagnostics or None,
+            "max_absolute_gradient": gradient,
+            "relative_gradient": relative_gradient,
+            "boundary_deviance_difference": (None if reproduction is None
+                                             else reproduction["boundary_lrt"]),
+            "infeasible_evaluations": (None if reproduction is None
+                                       else reproduction["infeasible_evaluations"]),
         },
+        "gate_thresholds": H6_GATES,
         "random_intercept_sd": float(primary["random_intercept_sd"]),
         "singular": bool(primary.get("singular")),
         "converged": bool(primary.get("converged")),
@@ -486,6 +548,11 @@ def unknown_comorbidity_sensitivity(df, formulas):
 
 def main():
     require_clean_tree()
+    # H6 is fitted by one implementation and checked by another; the check only means
+    # something if that implementation was itself validated, completely and by this code.
+    validation = validate_glmm.preflight()
+    print(f"  validation: {validation['units']} units, estimator "
+          f"{validation['validated_fingerprint']}")
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print("=" * 70)
     print(f"S12: composition ladder  [{ts}]")
@@ -538,17 +605,20 @@ def main():
     write_table(pd.DataFrame(draws), OUTPUT_DIR / "s12_bootstrap_draws.csv")
     for name, values in draws.items():
         failed = int(np.isnan(values).sum())
+        valid = int(len(values) - failed)
         primary[name]["bootstrap"] = {
             "draws": int(len(values)),
-            "valid_draws": int(len(values) - failed),
+            "valid_draws": valid,
             "failed_draws": failed,
             "failure_reasons": draw_failures[name],
-            "unstable": bool(failed > INSTABILITY_RATE * len(values)),
+            "unstable": bool(failed > INSTABILITY_RATE * len(values)
+                             or valid < MINIMUM_VALID_DRAWS),
+            "minimum_valid_draws": MINIMUM_VALID_DRAWS,
             "interval_is_conditional_on_valid_draws": bool(failed > 0),
-            "slope_difference_ci": interval(values),
+            "slope_difference_ci": interval_or_none(values),
             "mc_se": float(np.nanstd(values, ddof=1) / np.sqrt(np.sum(~np.isnan(values)))),
         }
-        print(f"    {name}: CI {[round(x, 4) for x in interval(values)]}")
+        print(f"    {name}: CI {interval_or_none(values)}")
 
     composition = primary["model_5_age_spline"]["slope_difference"]
     benchmark = primary["model_2_elderly_sex_any_comorbidity"]["slope_difference"]
@@ -566,17 +636,14 @@ def main():
         "bootstrap_draws_file": "results/s12_bootstrap_draws.csv",
         "sensitivity_recent_onset_excluded": recent_onset,
         "sensitivity_implausible_ages_excluded": age_sensitivity,
-        "h4_composition_contrast": {
-            "criterion": ("the model-5 difference is smaller than the model-2 difference and its "
-                           "bootstrap CI excludes 0"),
-            "model_2_difference": benchmark,
-            "model_5_difference": composition,
-            "smaller": bool(composition < benchmark),
-            "ci": primary["model_5_age_spline"]["bootstrap"]["slope_difference_ci"],
-            "holds": bool(composition < benchmark
-                           and primary["model_5_age_spline"]["bootstrap"]["slope_difference_ci"][0] > 0),
-            "share_of_model_2_difference_explained": float(1 - composition / benchmark),
-        },
+        "h4_composition_contrast": disposition(
+            criterion=("the model-5 difference is smaller than the model-2 difference and its "
+                        "bootstrap CI excludes 0"),
+            bootstrap=primary["model_5_age_spline"]["bootstrap"],
+            direction=bool(composition < benchmark),
+            extra={"model_2_difference": benchmark, "model_5_difference": composition,
+                   "smaller": bool(composition < benchmark),
+                   "share_of_model_2_difference_explained": float(1 - composition / benchmark)}),
         "h6_contextual_association": {
             "criterion": ("the per-standard-deviation state-level odds ratio under the "
                            "record-level covariates has a CI excluding 1"),
@@ -597,20 +664,18 @@ def main():
                       "PROTOCOL_CORRECTION_ADDENDUM.md section 11, because at sigma = 0 the "
                       "interval on a state-level covariate treats records as independent"),
         },
-        "h5_temporal_contrast": {
-            "criterion": ("the model-6 difference is smaller than the model-5 difference and its "
-                           "bootstrap CI excludes 0"),
-            "model_5_difference": composition,
-            "model_6_difference": temporal,
-            "smaller": bool(temporal < composition),
-            "ci": primary["model_6_age_spline_and_month"]["bootstrap"]["slope_difference_ci"],
-            "holds": bool(temporal < composition
-                           and primary["model_6_age_spline_and_month"]["bootstrap"]["slope_difference_ci"][0] > 0),
-        },
+        "h5_temporal_contrast": disposition(
+            criterion=("the model-6 difference is smaller than the model-5 difference and its "
+                        "bootstrap CI excludes 0"),
+            bootstrap=primary["model_6_age_spline_and_month"]["bootstrap"],
+            direction=bool(temporal < composition),
+            extra={"model_5_difference": composition, "model_6_difference": temporal,
+                   "smaller": bool(temporal < composition)}),
     }
-    print(f"\n  H4 holds: {output['h4_composition_contrast']['holds']}; "
-          f"H5 holds: {output['h5_temporal_contrast']['holds']}; "
-          f"H6 holds: {output['h6_contextual_association']['holds']}")
+    for name in ("h4_composition_contrast", "h5_temporal_contrast",
+                 "h6_contextual_association"):
+        entry = output[name]
+        print(f"  {name}: evaluable {entry['evaluable']}, holds {entry['holds']}")
 
     outpath = write_result(output, OUTPUT_DIR / "s12_composition_ladder.json")
     print(f"\n  Saved to {outpath}")

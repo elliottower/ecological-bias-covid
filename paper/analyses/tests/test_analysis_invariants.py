@@ -24,6 +24,7 @@ import mexico_confirmed_cases  # noqa: E402
 import paths  # noqa: E402
 import s11_site_definitions as s11  # noqa: E402
 import s12_composition_ladder as s12  # noqa: E402
+import validate_glmm  # noqa: E402
 
 
 def synthetic_records(n_records=40_000, n_sites=12):
@@ -549,3 +550,77 @@ def test_too_few_valid_draws_suppress_the_interval():
     assert summary["valid_draws"] == 10
     assert summary["unstable"] is True
     assert summary["interval_is_conditional_on_valid_draws"] is True
+
+
+def test_the_preflight_refuses_a_stale_or_partial_validation(tmp_path):
+    complete = {
+        "estimator_fingerprint": validate_glmm.fingerprint(),
+        "units_expected": validate_glmm.unit_names(),
+        "units_completed": validate_glmm.unit_names(),
+        "s9_against_lme4": {"agrees": True}, "reduced_design": {"agrees": True},
+        "h6_shape": {"agrees": True},
+        "quadrature_refinement": {"shift_to_the_finest_in_beta": 1e-7},
+    }
+    good = tmp_path / "good.json"
+    good.write_text(json.dumps(complete))
+    assert validate_glmm.preflight(good)["units"] == len(complete["units_completed"])
+
+    for label, damage in [
+        ("stale", {"estimator_fingerprint": "0" * 16}),
+        ("partial", {"units_completed": complete["units_completed"][:-3]}),
+        ("raised", {"units_that_raised": {"h6_shape": "boom"}}),
+        ("disagrees", {"h6_shape": {"agrees": False}}),
+        ("unstable quadrature", {"quadrature_refinement": {"shift_to_the_finest_in_beta": 0.5}}),
+    ]:
+        broken = tmp_path / f"{label}.json"
+        broken.write_text(json.dumps({**complete, **damage}))
+        with pytest.raises(validate_glmm.ValidationIncomplete):
+            validate_glmm.preflight(broken)
+
+    with pytest.raises(validate_glmm.ValidationIncomplete):
+        validate_glmm.preflight(tmp_path / "absent.json")
+
+
+def test_an_unstable_bootstrap_is_not_evaluable_rather_than_false():
+    steady = {"slope_difference_ci": [0.2, 0.4], "valid_draws": 2000, "unstable": False}
+    shaky = {"slope_difference_ci": [0.2, 0.4], "valid_draws": 2000, "unstable": True}
+    starved = {"slope_difference_ci": None, "valid_draws": 40, "unstable": True}
+
+    held = s12.disposition("c", steady, direction=True)
+    assert (held["evaluable"], held["holds"]) == (True, True)
+    missed = s12.disposition("c", steady, direction=False)
+    assert (missed["evaluable"], missed["holds"]) == (True, False)
+    for bootstrap in (shaky, starved):
+        entry = s12.disposition("c", bootstrap, direction=True)
+        assert entry["evaluable"] is False
+        assert entry["holds"] is False
+
+    s11_held = s11.disposition("c", steady, 0.3, lambda bounds: bounds[0] > 0)
+    assert (s11_held["evaluable"], s11_held["holds"]) == (True, True)
+    s11_shaky = s11.disposition("c", shaky, 0.3, lambda bounds: bounds[0] > 0)
+    assert (s11_shaky["evaluable"], s11_shaky["holds"]) == (False, False)
+
+
+def test_s12_reports_no_interval_below_the_minimum_valid_draws():
+    values = np.full(2000, np.nan)
+    values[:s12.MINIMUM_VALID_DRAWS - 1] = 0.3
+    assert s12.interval_or_none(values) is None
+    values[:s12.MINIMUM_VALID_DRAWS] = 0.3
+    assert s12.interval_or_none(values) == [pytest.approx(0.3), pytest.approx(0.3)]
+
+
+def test_s12_counts_its_own_convergence_failure_as_a_failed_draw():
+    assert RuntimeError in s12.FIT_FAILURES  # fit_and_predict raises it on nonconvergence
+
+
+def test_likelihood_differences_agree_between_implementations():
+    """An additive offset cancels in a difference, so differences must match exactly."""
+    design, deaths, n, groups = grouped_binomial(n_groups=20, cells_per_group=15)
+    model = glmm.RandomIntercept(design, deaths, n, groups, nodes=11)
+    first = np.array([-2.0, 0.75, np.log(0.4)])
+    second = np.array([-1.9, 0.60, np.log(0.5)])
+    mine = model.loglik(first, warm_start=False) - model.loglik(second, warm_start=False)
+    constant = validate_glmm.binomial_constant(deaths, n)
+    shifted = ((model.loglik(first, warm_start=False) + constant)
+               - (model.loglik(second, warm_start=False) + constant))
+    assert shifted == pytest.approx(mine, rel=1e-12)

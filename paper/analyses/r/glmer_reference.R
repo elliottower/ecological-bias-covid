@@ -23,25 +23,46 @@ formula <- as.formula(paste("cbind(deaths, alive) ~",
                             paste(terms, collapse = " + "), "+ (1 | group)"))
 cat("fitting:", deparse1(formula), "on", nrow(cells), "cells, nAGQ =", nagq, "\n")
 
+optimizer <- "bobyqa"
+maxfun <- 100000
 started <- Sys.time()
 fit <- glmer(formula, data = cells, family = binomial, nAGQ = nagq,
-             control = glmerControl(optimizer = "bobyqa",
-                                    optCtrl = list(maxfun = 100000)))
+             control = glmerControl(optimizer = optimizer,
+                                    optCtrl = list(maxfun = maxfun)))
 coefs <- summary(fit)$coefficients
 messages <- fit@optinfo$conv$lme4$messages
 
 # A profile interval on one coefficient, which is what the paper reports for H6; the
 # full profile over every term would cost far more and is not used.
 profile_ci <- NULL
+profile_messages <- character(0)
 if (!is.na(profile_parm)) {
-  profile_ci <- tryCatch({
-    as.numeric(confint(fit, parm = profile_parm, method = "profile", oldNames = FALSE))
-  }, error = function(e) NULL)
+  profile_ci <- withCallingHandlers(
+    tryCatch({
+      as.numeric(confint(fit, parm = profile_parm, method = "profile", oldNames = FALSE))
+    }, error = function(e) {
+      profile_messages <<- c(profile_messages, paste("error:", conditionMessage(e)))
+      NULL
+    }),
+    warning = function(w) {
+      profile_messages <<- c(profile_messages, paste("warning:", conditionMessage(w)))
+      invokeRestart("muffleWarning")
+    })
 }
+
+derivatives <- tryCatch(fit@optinfo$derivs, error = function(e) NULL)
 
 write(toJSON(list(
   r_version = R.version.string,
   lme4_version = as.character(packageVersion("lme4")),
+  matrix_version = as.character(packageVersion("Matrix")),
+  optimizer = optimizer,
+  maxfun = maxfun,
+  n_cells = nrow(cells),
+  n_groups = nlevels(cells$group),
+  n_records = sum(cells$deaths + cells$alive),
+  largest_absolute_gradient = if (is.null(derivatives)) NULL else
+    max(abs(derivatives$gradient)),
   seconds = as.numeric(difftime(Sys.time(), started, units = "secs")),
   nAGQ = nagq,
   formula = deparse1(formula),
@@ -54,6 +75,7 @@ write(toJSON(list(
   converged = is.null(messages),
   profile_parameter = if (is.na(profile_parm)) NULL else profile_parm,
   profile_ci = profile_ci,
+  profile_messages = profile_messages,
   convergence_messages = if (is.null(messages)) character(0) else messages
 ), auto_unbox = TRUE, digits = 12, pretty = TRUE), args[2])
 cat("wrote", args[2], "\n")

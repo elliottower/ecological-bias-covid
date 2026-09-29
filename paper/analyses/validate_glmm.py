@@ -55,6 +55,12 @@ SEED = 20260926
 COVERAGE_REPLICATIONS = 300
 COVERAGE_BATCH = 25
 PROFILE_PER_BATCH = 13  # about half of each batch, so profiles cover the whole scenario
+
+
+class ValidationIncomplete(RuntimeError):
+    """The estimator behind H6 was not validated, or not by this code."""
+
+
 COVERAGE_SCENARIOS = [
     {"groups": 32, "sigma": 0.35},
     {"groups": 32, "sigma": 0.00},
@@ -350,6 +356,39 @@ def assemble(payloads, started_at):
     if coverage:
         output["coverage"] = coverage
     return output
+
+
+def preflight(path=None):
+    """Refuse to fit H6 unless the estimator behind it was validated, and completely.
+
+    A validation that is partial, stale, or produced by different estimator code is not
+    a validation of the run about to happen, so this raises rather than warns.
+    """
+    path = Path(path or OUTPUT)
+    if not path.exists():
+        raise ValidationIncomplete(f"no validation artifact at {path}")
+    report = json.loads(path.read_text())
+    problems = []
+    if report.get("estimator_fingerprint") != fingerprint():
+        problems.append(f"validated {report.get('estimator_fingerprint')}, "
+                        f"glmm.py is now {fingerprint()}")
+    missing = set(report.get("units_expected", [])) - set(report.get("units_completed", []))
+    if missing:
+        problems.append(f"{len(missing)} units never completed: {sorted(missing)[:4]}")
+    if report.get("units_that_raised"):
+        problems.append(f"units raised: {sorted(report['units_that_raised'])}")
+    for unit in ("s9_against_lme4", "reduced_design", "h6_shape"):
+        entry = report.get(unit) or {}
+        if not entry.get("agrees"):
+            problems.append(f"{unit} does not agree with lme4")
+    ladder = (report.get("quadrature_refinement") or {}).get("shift_to_the_finest_in_beta")
+    if ladder is None or ladder > 1e-4:
+        problems.append(f"quadrature is not stable to the finest node count: {ladder}")
+    if problems:
+        raise ValidationIncomplete("; ".join(problems))
+    return {"validated_fingerprint": report["estimator_fingerprint"],
+            "units": len(report["units_completed"]),
+            "artifact": str(path)}
 
 
 def shard_path(name, folder):

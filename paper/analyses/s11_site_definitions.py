@@ -594,6 +594,21 @@ def partition_scheme(df, rng, replications, preserve_composition):
     }
 
 
+def disposition(criterion, bootstrap, estimate, holds_when):
+    """A hypothesis outcome that separates "does not hold" from "cannot be judged"."""
+    bounds = bootstrap.get("slope_difference_ci") or bootstrap.get("paired_difference_ci")
+    evaluable = bool(bounds is not None and not bootstrap.get("unstable"))
+    return {
+        "criterion": criterion,
+        "estimate": float(estimate),
+        "ci": bounds,
+        "valid_draws": bootstrap.get("valid_draws"),
+        "unstable": bootstrap.get("unstable"),
+        "evaluable": evaluable,
+        "holds": bool(evaluable and holds_when(bounds)),
+    }
+
+
 def substreams(seed, names):
     """One generator per analysis, so adding or reordering analyses moves no other result."""
     return dict(zip(names, [np.random.default_rng(s)
@@ -673,6 +688,25 @@ def main():
         "upper_percentile": composition["randomization_interval"][1],
         "holds": bool(composition["randomization_interval"][1] < H1_MARGIN),
     }
+    residence = output["definitions"]["residence_state"]
+    output["h2_residence_state"] = disposition(
+        criterion=("the discrepancy under residence states is of the same sign and order as "
+                    "under treating states, with a bootstrap CI excluding 0"),
+        bootstrap=residence["bootstrap"],
+        estimate=residence["slope_difference"],
+        holds_when=lambda bounds: bounds[0] > 0)
+    paired = output["paired_municipality_state"]
+    output["h3_paired_municipality_state"] = disposition(
+        criterion=("the municipality discrepancy is smaller than the residence-state "
+                    "discrepancy on the same records, with a paired CI excluding 0"),
+        bootstrap=paired["bootstrap"],
+        estimate=paired["paired_difference"],
+        holds_when=lambda bounds: bounds[1] < 0)
+    for name in ("h2_residence_state", "h3_paired_municipality_state"):
+        entry = output[name]
+        print(f"  {name}: evaluable {entry['evaluable']}, holds {entry['holds']}, "
+              f"estimate {entry['estimate']:+.4f}")
+
     print(f"\n  H1 holds: {output['h1']['holds']} "
           f"(97.5th percentile {output['h1']['upper_percentile']:+.4f} against margin {H1_MARGIN:.4f})")
 
