@@ -107,13 +107,21 @@ def _compare_with_primary(df, site_table) -> tuple[dict, list[str]]:
     return {"expected_from_primary_analysis": expected, "observed": observed}, problems
 
 
-def _catalogue_hash() -> str:
-    """The validity rules depend on the catalogue, so the catalogue is hashed too."""
+EXPECTED_CATALOGUE_SHA256 = "54289770794a81bcb87d15004ba0eee9f24900fd18c31d9d086114dc189c091e"
+
+
+def _catalogue_hash() -> dict:
+    """The validity rules depend on the catalogue, so the catalogue is pinned too.
+
+    The archive is not carried into a run environment, so the expected hash is recorded
+    here and the observed one reported where the file is present; a reader can check the
+    rules against the same catalogue either way.
+    """
     archive = (Path.home() / "Documents" / "backup" / "ecological-bias-covid"
                / "diccionario_datos_abiertos.zip")
-    if not archive.exists():
-        return "not present on this machine"
-    return sha256(archive)
+    observed = sha256(archive) if archive.exists() else None
+    return {"expected": EXPECTED_CATALOGUE_SHA256, "observed": observed,
+            "matches": None if observed is None else observed == EXPECTED_CATALOGUE_SHA256}
 
 
 def records(raw: pd.DataFrame) -> pd.DataFrame:
