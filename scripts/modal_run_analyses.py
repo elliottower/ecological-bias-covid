@@ -20,6 +20,8 @@ import modal
 ANALYSES = os.path.join(os.path.expanduser("~"),
                         "Documents/GitHub/ecological-bias-covid/paper/analyses")
 REMOTE = "/root/repo/paper/analyses"
+# Never copied, so never in the manifest the container checks itself against.
+IGNORED = ["__pycache__", "results", "tests", "logs", "attestations", ".DS_Store"]
 
 image = (
     modal.Image.debian_slim(python_version="3.13")
@@ -37,7 +39,7 @@ image = (
     )
     .env({"PYTHONPATH": REMOTE})
     .add_local_dir(ANALYSES, REMOTE, copy=True,
-                   ignore=["__pycache__", "results", "tests", "logs"])
+                   ignore=IGNORED)
 )
 
 app = modal.App("jamia-analyses", image=image)
@@ -49,26 +51,53 @@ OUT = "/root/repo/paper/analyses/results"
 TIMEOUT = 86_400
 
 
-def _prepare(commit):
-    """Record who verified the commit, and make sure results have somewhere to land.
+def _manifest(root):
+    """sha256 of every file that will be copied, keyed by its path inside the image."""
+    import hashlib
+    from pathlib import Path
 
-    The snapshot volume carries the CSV beside the primary analysis the loader checks
-    itself against, mounted at the path the loader already expects.
+    entries = {}
+    for path in sorted(Path(root).rglob("*")):
+        if not path.is_file() or any(part in IGNORED for part in path.parts):
+            continue
+        entries[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return entries
+
+
+def _prepare(commit, manifest):
+    """Prove the copied files are the commit the launcher verified, then let it run.
+
+    Being told a commit is not the same as holding it. The launcher hashes what it is
+    about to send; the container hashes what arrived and refuses to run on a difference,
+    which closes the gap between "the launcher verified X" and "this executed X".
     """
+    import hashlib
     import os
     from pathlib import Path
 
+    mismatched = []
+    for relative, expected in sorted(manifest.items()):
+        arrived = Path(REMOTE) / relative
+        if not arrived.exists():
+            mismatched.append(f"{relative}: missing")
+        elif hashlib.sha256(arrived.read_bytes()).hexdigest() != expected:
+            mismatched.append(f"{relative}: differs")
+    if mismatched:
+        raise RuntimeError("the container does not hold the verified commit: "
+                           + "; ".join(mismatched))
+
     os.environ["ANALYSIS_COMMIT"] = commit
     Path(OUT).mkdir(parents=True, exist_ok=True)
+    print(f"verified {len(manifest)} files against the launcher's manifest", flush=True)
 
 
 @app.function(cpu=4.0, memory=32_768, timeout=TIMEOUT,
               volumes={DATA: snapshot, OUT: results})
-def verify_loader(commit: str) -> dict:
+def verify_loader(commit: str, manifest: dict) -> dict:
     """Does the snapshot reproduce the primary analysis in this environment?"""
     import json
 
-    _prepare(commit)
+    _prepare(commit, manifest)
     import mexico_confirmed_cases
 
     frame = mexico_confirmed_cases.load()
@@ -85,11 +114,11 @@ def verify_loader(commit: str) -> dict:
 
 @app.function(cpu=8.0, memory=65_536, timeout=TIMEOUT,
               volumes={DATA: snapshot, OUT: results})
-def run_stage(stage: str, commit: str) -> str:
+def run_stage(stage: str, commit: str, manifest: dict) -> str:
     """One registered analysis, writing its result file to the results volume."""
     from datetime import datetime, timezone
 
-    _prepare(commit)
+    _prepare(commit, manifest)
     print(f"[{datetime.now(timezone.utc):%H:%M:%S}] {stage} starting", flush=True)
     if stage == "s11":
         import s11_site_definitions as analysis
@@ -115,13 +144,15 @@ def _verified_commit():
 def verify():
     import json
 
-    print(json.dumps(verify_loader.remote(_verified_commit()), indent=2))
+    print(json.dumps(verify_loader.remote(_verified_commit(), _manifest(ANALYSES)),
+                     indent=2))
 
 
 @app.local_entrypoint()
 def run(stages: str = "s11,s12"):
-    commit = _verified_commit()
-    print(f"running {stages} from {commit[:12]}")
-    for stage in run_stage.map(stages.split(","), kwargs={"commit": commit},
+    commit, manifest = _verified_commit(), _manifest(ANALYSES)
+    print(f"running {stages} from {commit[:12]}, {len(manifest)} files in the manifest")
+    for stage in run_stage.map(stages.split(","),
+                               kwargs={"commit": commit, "manifest": manifest},
                                return_exceptions=True):
         print(f"  {stage}", flush=True)
