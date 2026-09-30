@@ -1,16 +1,11 @@
 {
-  "timestamp": "2026-09-30 14:27:29",
+  "timestamp": "2026-09-29 16:17:01",
   "run": {
-    "run_id": "glmm_validation_2026-09-30T14:27:29",
-    "commit": "ac7bb474446b1a429ed58aa8832b4d337aca7282",
+    "run_id": "glmm_validation_2026-09-29T16:17:01",
+    "commit": "746b8ce8097ffff2c796267ba64ba3f38d0f22bc",
     "analysis_tree_dirty": false,
-    "paths_watched_for_changes": [
-      "paper/analyses",
-      "scripts"
-    ],
-    "commit_verified_by": "this process",
     "snapshot_sha256": "25ccc890d190bf66a90aae98507f78f6bfe8b0e9be10767936a0e929512dbc6d",
-    "started_at": "2026-09-30T10:27:29",
+    "started_at": "2026-09-29T12:17:02",
     "environment": {
       "python": "3.13.12",
       "platform": "macOS-26.5-x86_64-i386-64bit-Mach-O",
@@ -22,12 +17,12 @@
         "statsmodels": "0.14.6"
       },
       "analysis_source_sha256_prefixes": {
-        "glmm.py": "fe7fb5fe9f7be434",
-        "mexico_confirmed_cases.py": "a634b89a78a385af",
-        "paths.py": "b673d3ba83f99e9f",
+        "glmm.py": "642266df884e5e76",
+        "mexico_confirmed_cases.py": "1d09b2ab8e4ad719",
+        "paths.py": "d201319188332a70",
         "s10_consistency_calibration.py": "db77ffa6e2e0a056",
-        "s11_site_definitions.py": "d6c58f3321f0defa",
-        "s12_composition_ladder.py": "83ffbef05482d065",
+        "s11_site_definitions.py": "a9500504954518e0",
+        "s12_composition_ladder.py": "3134d62b8e27d278",
         "s1_power_simulation.py": "a9c8050df9da5b06",
         "s1_power_simulation_fast.py": "2ff3e7043966b8da",
         "s2_mundlak_decomposition.py": "8bfa7a6a1946ddad",
@@ -38,11 +33,11 @@
         "s7_evalue_sensitivity.py": "4f92e12d54c3bcab",
         "s8_leave_one_out.py": "b2a2b4e1ecb66931",
         "s9_two_stage_vs_one_stage.py": "40005e859f673fac",
-        "validate_glmm.py": "1fcd2a4e6dccf259"
+        "validate_glmm.py": "f5cb6614dae03d03"
       }
     }
   },
-  "estimator_fingerprint": "fe7fb5fe9f7be434",
+  "estimator_fingerprint": "642266df884e5e76",
   "units_completed": [
     "coverage_g012_s035_b00",
     "coverage_g012_s035_b01",
@@ -294,14 +289,7 @@
     "lme4": {
       "r_version": "R version 4.2.2 Patched (2022-11-10 r83330)",
       "lme4_version": "1.1.31",
-      "matrix_version": "1.5.3",
-      "optimizer": "bobyqa",
-      "maxfun": 100000,
-      "n_cells": 3000,
-      "n_groups": 12,
-      "n_records": 88978,
-      "largest_absolute_gradient": 0.0008153870112437,
-      "seconds": 6.067483186722,
+      "seconds": 3.929758787155,
       "nAGQ": 15,
       "formula": "cbind(deaths, alive) ~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12 + x13 + x14 + x15 + (1 | group)",
       "terms": [
@@ -362,9 +350,6 @@
       "log_likelihood": -1184.06480258655,
       "singular": false,
       "converged": true,
-      "profile_parameter": {},
-      "profile_ci": {},
-      "profile_messages": [],
       "convergence_messages": [],
       "completed": true
     },
@@ -398,7 +383,7 @@
     "n_terms": 16,
     "n_groups": 12,
     "true_sigma": 0.35,
-    "python_seconds": 52.7,
+    "python_seconds": 31.9,
     "binomial_coefficient_constant": 9317.520482967186
   },
   "h6_shape": {
@@ -471,14 +456,7 @@
     "lme4": {
       "r_version": "R version 4.2.2 Patched (2022-11-10 r83330)",
       "lme4_version": "1.1.31",
-      "matrix_version": "1.5.3",
-      "optimizer": "bobyqa",
-      "maxfun": 100000,
-      "n_cells": 160000,
-      "n_groups": 32,
-      "n_records": 4805290,
-      "largest_absolute_gradient": 0.04863948561251,
-      "seconds": 159.160036325455,
+      "seconds": 180.961337566376,
       "nAGQ": 15,
       "formula": "cbind(deaths, alive) ~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12 + x13 + x14 + x15 + (1 | group)",
       "terms": [
@@ -539,9 +517,6 @@
       "log_likelihood": -67847.799524489,
       "singular": false,
       "converged": true,
-      "profile_parameter": {},
-      "profile_ci": {},
-      "profile_messages": [],
       "convergence_messages": [],
       "completed": true
     },
@@ -575,28 +550,28 @@
     "n_terms": 16,
     "n_groups": 32,
     "true_sigma": 0.35,
-    "python_seconds": 3027.2,
+    "python_seconds": 3365.4,
     "binomial_coefficient_constant": 493277.60490864667
   },
   "quadrature_refinement": {
     "fits": {
       "7": {
         "nodes": 7,
-        "beta_1": 0.07507681917720609,
-        "se_1": 0.009039521707229978,
-        "sigma": 0.37450309522432285,
-        "log_likelihood": -51046.15717121638,
+        "beta_1": 0.0750767336998014,
+        "se_1": 0.009039521972558024,
+        "sigma": 0.3745064588612795,
+        "log_likelihood": -51046.157171214174,
         "true_beta_1": 0.07991813534673345,
-        "seconds": 284.1
+        "seconds": 222.3
       },
       "11": {
         "nodes": 11,
-        "beta_1": 0.07507674300097174,
-        "se_1": 0.009039521150561879,
-        "sigma": 0.37450747089547726,
-        "log_likelihood": -51046.15717120297,
+        "beta_1": 0.07507690090393968,
+        "se_1": 0.0090395216994496,
+        "sigma": 0.37450443823540525,
+        "log_likelihood": -51046.157171203595,
         "true_beta_1": 0.07991813534673345,
-        "seconds": 292.3
+        "seconds": 248.9
       },
       "15": {
         "nodes": 15,
@@ -605,30 +580,30 @@
         "sigma": 0.3745039770207983,
         "log_likelihood": -51046.157171205414,
         "true_beta_1": 0.07991813534673345,
-        "seconds": 242.6
+        "seconds": 248.1
       },
       "21": {
         "nodes": 21,
-        "beta_1": 0.07507680875337983,
-        "se_1": 0.009039520614315982,
-        "sigma": 0.3745056108359686,
-        "log_likelihood": -51046.15717120353,
+        "beta_1": 0.07507683953068063,
+        "se_1": 0.009039521695619453,
+        "sigma": 0.37450888241421404,
+        "log_likelihood": -51046.15717120317,
         "true_beta_1": 0.07991813534673345,
-        "seconds": 187.4
+        "seconds": 262.5
       },
       "25": {
         "nodes": 25,
-        "beta_1": 0.07507676877823993,
-        "se_1": 0.00903952114355334,
-        "sigma": 0.37450458791162206,
-        "log_likelihood": -51046.15717120368,
+        "beta_1": 0.07507699262040007,
+        "se_1": 0.00903952142388154,
+        "sigma": 0.37450674534052864,
+        "log_likelihood": -51046.15717120335,
         "true_beta_1": 0.07991813534673345,
-        "seconds": 295.5
+        "seconds": 269.1
       }
     },
     "reported_nodes": 15,
-    "shift_to_the_finest_in_beta": 4.278957915770931e-08,
-    "shift_to_the_finest_in_sigma": 6.108908237600907e-07
+    "shift_to_the_finest_in_beta": 1.8105258098310983e-07,
+    "shift_to_the_finest_in_sigma": 2.768319730339641e-06
   },
   "coverage": [
     {
@@ -711,6 +686,5 @@
       "fits_at_the_boundary": 0,
       "profile_coverage_is_conditional_on_a_non_boundary_fit": false
     }
-  ],
-  "units_that_raised": {}
+  ]
 }
