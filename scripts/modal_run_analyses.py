@@ -37,6 +37,8 @@ image = (
         "pandas==3.0.3",
         "patsy==1.0.2",
         "statsmodels==0.14.6",
+        # the primary analysis the loader checks itself against imports it
+        "tqdm==4.70.1",
     )
     .env({"PYTHONPATH": REMOTE})
     .add_local_dir(ANALYSES, REMOTE, copy=True, ignore=IGNORED)
