@@ -624,3 +624,37 @@ def test_likelihood_differences_agree_between_implementations():
     shifted = ((model.loglik(first, warm_start=False) + constant)
                - (model.loglik(second, warm_start=False) + constant))
     assert shifted == pytest.approx(mine, rel=1e-12)
+
+
+def test_the_loader_uses_no_name_it_does_not_have():
+    """Extracting code out of `load` once left it referring to a local it had lost.
+
+    `load` reads the 1.9 GB snapshot, so no test calls it; this checks statically that
+    every name it uses is one it defines, imports, or takes from the module.
+    """
+    import ast
+    import builtins
+
+    source = Path(mexico_confirmed_cases.__file__).read_text()
+    tree = ast.parse(source)
+    imported = {alias.asname or alias.name.split(".")[0]
+                for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom))
+                for alias in node.names}
+    module_level = {target.id for node in tree.body if isinstance(node, ast.Assign)
+                    for target in node.targets if isinstance(target, ast.Name)}
+    defined = {node.name for node in tree.body
+               if isinstance(node, (ast.FunctionDef, ast.ClassDef))}
+
+    for function in [node for node in tree.body if isinstance(node, ast.FunctionDef)]:
+        local = {name.id for name in ast.walk(function)
+                 if isinstance(name, ast.Name) and isinstance(name.ctx, ast.Store)}
+        local |= {argument.arg for argument in function.args.args}
+        local |= {item.optional_vars.id for item in ast.walk(function)
+                  if isinstance(item, ast.withitem) and isinstance(item.optional_vars, ast.Name)}
+        local |= {comprehension.target.id for comprehension in ast.walk(function)
+                  if isinstance(comprehension, ast.comprehension)
+                  and isinstance(comprehension.target, ast.Name)}
+        used = {name.id for name in ast.walk(function)
+                if isinstance(name, ast.Name) and isinstance(name.ctx, ast.Load)}
+        unknown = used - local - imported - module_level - defined - set(dir(builtins))
+        assert not unknown, f"{function.name} uses undefined {sorted(unknown)}"

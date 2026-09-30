@@ -251,9 +251,9 @@ def load() -> pd.DataFrame:
             "MUNICIPIO_RES_max_sentinel_pseudo_site": int(
                 raw.loc[municipality_codes.isin(MUNICIPALITY_SENTINELS)]
                 .groupby("ENTIDAD_RES").size().max()) if unknown_municipality else 0,
-            "FECHA_SINTOMAS_min": str(onset.min()),
-            "FECHA_SINTOMAS_max": str(onset.max()),
-            "FECHA_SINTOMAS_invalid_or_out_of_range": int((~onset_valid).sum()),
+            "FECHA_SINTOMAS_min": str(df["onset"].min()),
+            "FECHA_SINTOMAS_max": str(df["onset"].max()),
+            "FECHA_SINTOMAS_invalid_or_out_of_range": int(df["onset"].isna().sum()),
             "onset_months": int(df["onset_month"].nunique()),
             "FECHA_DEF_alive_code": int((raw["FECHA_DEF"] == ALIVE_CODE).sum()),
             "FECHA_DEF_missing": int(raw["FECHA_DEF"].isna().sum()),
