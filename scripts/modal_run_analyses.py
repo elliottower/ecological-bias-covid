@@ -22,6 +22,7 @@ ANALYSES = os.path.join(os.path.expanduser("~"),
 REMOTE = "/root/repo/paper/analyses"
 # Never copied, so never in the manifest the container checks itself against.
 IGNORED = ["__pycache__", "results", "tests", "logs", "attestations", ".DS_Store"]
+VALIDATION = "/root/repo/paper/analyses/validation/glmm_validation.json"
 
 image = (
     modal.Image.debian_slim(python_version="3.13")
@@ -38,8 +39,11 @@ image = (
         "statsmodels==0.14.6",
     )
     .env({"PYTHONPATH": REMOTE})
-    .add_local_dir(ANALYSES, REMOTE, copy=True,
-                   ignore=IGNORED)
+    .add_local_dir(ANALYSES, REMOTE, copy=True, ignore=IGNORED)
+    # The results directory is a mounted volume in the container and does not carry the
+    # validation artifact, so it travels separately and the preflight is pointed at it.
+    .add_local_file(os.path.join(ANALYSES, "results/glmm_validation.json"),
+                    VALIDATION, copy=True)
 )
 
 app = modal.App("jamia-analyses", image=image)
@@ -87,6 +91,7 @@ def _prepare(commit, manifest):
                            + "; ".join(mismatched))
 
     os.environ["ANALYSIS_COMMIT"] = commit
+    os.environ["VALIDATION_ARTIFACT"] = VALIDATION
     Path(OUT).mkdir(parents=True, exist_ok=True)
     print(f"verified {len(manifest)} files against the launcher's manifest", flush=True)
 

@@ -27,6 +27,7 @@ and that one refits a model whose result file already exists.
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import tempfile
 import time
@@ -361,10 +362,13 @@ def assemble(payloads, started_at):
 def preflight(path=None):
     """Refuse to fit H6 unless the estimator behind it was validated, and completely.
 
+    The artifact is normally beside the results; where the results directory is a mounted
+    volume that does not carry it, `VALIDATION_ARTIFACT` says where it is instead.
+
     A validation that is partial, stale, or produced by different estimator code is not
     a validation of the run about to happen, so this raises rather than warns.
     """
-    path = Path(path or OUTPUT)
+    path = Path(path or os.environ.get("VALIDATION_ARTIFACT") or OUTPUT)
     if not path.exists():
         raise ValidationIncomplete(f"no validation artifact at {path}")
     report = json.loads(path.read_text())
