@@ -214,6 +214,37 @@ class BootstrapModel:
         return observed_slope - implied_slope, None
 
 
+BOOTSTRAP_SHARDS = RESULTS / "s12_bootstrap_shards"
+
+
+def _shard(name, seed, draws):
+    return BOOTSTRAP_SHARDS / f"{name}_seed{seed}_draws{draws}.json"
+
+
+def load_bootstrap_shard(name, seed, draws):
+    """One model's draws, if this seed and draw count already produced them."""
+    path = _shard(name, seed, draws)
+    if not path.exists():
+        return None
+    try:
+        record = json.loads(path.read_text())
+    except json.JSONDecodeError:
+        return None
+    return {"values": np.array(record["values"], dtype=float),
+            "reasons": record["reasons"]}
+
+
+def save_bootstrap_shard(name, seed, draws, values, reasons):
+    """Written the moment a model finishes, so a later failure costs only what follows."""
+    BOOTSTRAP_SHARDS.mkdir(parents=True, exist_ok=True)
+    _shard(name, seed, draws).write_text(json.dumps({
+        "model": name, "seed": seed, "draws": draws,
+        "finished_at": datetime.now().isoformat(timespec="seconds"),
+        "values": [None if np.isnan(v) else float(v) for v in values],
+        "reasons": reasons,
+    }))
+
+
 def bootstrap_ladder(df, formulas, covariate_sets, seed, draws):
     """State bootstrap for every model, refitting inside each draw.
 
@@ -224,6 +255,14 @@ def bootstrap_ladder(df, formulas, covariate_sets, seed, draws):
     collected, failures = {}, {}
     for (name, formula, needs_onset), covariates in zip(formulas, covariate_sets):
         started = time.time()
+        # A model whose draws are already on disk is not redrawn. Six models at 2,000
+        # draws is hours of work, and losing all of it to a failure in the last one is
+        # the failure mode the checkpointing rule exists for.
+        done = load_bootstrap_shard(name, seed, draws)
+        if done is not None:
+            collected[name], failures[name] = done["values"], done["reasons"]
+            print(f"    {name}: {len(done['values'])} draws already on disk", flush=True)
+            continue
         model = BootstrapModel(df, formula, covariates, needs_onset)
         print(f"    {name}: {model.design.shape[0]:,} cells x {model.design.shape[1]} terms, "
               f"built in {time.time() - started:.0f}s", flush=True)
@@ -242,6 +281,7 @@ def bootstrap_ladder(df, formulas, covariate_sets, seed, draws):
                 print(f"      {name} draw {draw}/{draws} [{datetime.now():%H:%M:%S}]", flush=True)
         collected[name] = np.array(values)
         failures[name] = reasons
+        save_bootstrap_shard(name, seed, draws, values, reasons)
         print(f"    {name}: {draws} draws in {time.time() - started:.0f}s, "
               f"CI {[round(x, 4) for x in interval(collected[name])]}, "
               f"failed {sum(reasons.values())} {reasons or ''}", flush=True)

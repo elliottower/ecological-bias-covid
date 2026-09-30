@@ -658,3 +658,19 @@ def test_the_loader_uses_no_name_it_does_not_have():
                 if isinstance(name, ast.Name) and isinstance(name.ctx, ast.Load)}
         unknown = used - local - imported - module_level - defined - set(dir(builtins))
         assert not unknown, f"{function.name} uses undefined {sorted(unknown)}"
+
+
+def test_a_finished_bootstrap_model_is_not_redrawn(tmp_path, monkeypatch):
+    """Six models at 2,000 draws is hours; a failure in the last must not cost the rest."""
+    monkeypatch.setattr(s12, "BOOTSTRAP_SHARDS", tmp_path)
+    values = np.array([0.3, np.nan, 0.5])
+    reasons = {"fit: LinAlgError": 1}
+    assert s12.load_bootstrap_shard("model_5", 7, 3) is None
+
+    s12.save_bootstrap_shard("model_5", 7, 3, values, reasons)
+    back = s12.load_bootstrap_shard("model_5", 7, 3)
+    assert np.isnan(back["values"][1])                      # a failed draw stays failed
+    assert back["values"][[0, 2]].tolist() == [0.3, 0.5]
+    assert back["reasons"] == reasons
+    assert s12.load_bootstrap_shard("model_5", 8, 3) is None   # a different seed is a different run
+    assert s12.load_bootstrap_shard("model_5", 7, 2000) is None
