@@ -197,11 +197,21 @@ def read_markers(markers: list) -> dict:
 
 
 def _verified_commit():
-    """The launcher does the check the container cannot: a clean, committed tree."""
-    from paths import _git, require_clean_tree
+    """The launcher does the check the container cannot: a clean, committed tree.
 
-    require_clean_tree()
-    return _git("rev-parse", "HEAD").stdout.strip()
+    `paths` is loaded by file rather than by name: this runs on the laptop, where the
+    analyses are not on the import path, and the module is loaded here rather than at
+    import so that the container, which has no such file, can still import this script.
+    """
+    import importlib.util
+
+    specification = importlib.util.spec_from_file_location(
+        "paths", os.path.join(ANALYSES, "paths.py"))
+    paths = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(paths)
+
+    paths.require_clean_tree()
+    return paths._git("rev-parse", "HEAD").stdout.strip()
 
 
 @app.local_entrypoint()
