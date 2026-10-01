@@ -234,8 +234,7 @@ def cached_stage(name, compute):
     Keyed by the commit, so code that changed invalidates what it produced. The ladder
     fits and H6 cost hours; a failure after them should cost only what follows them.
     """
-    commit = (os.environ.get(SUPPLIED_COMMIT) or _git("rev-parse", "HEAD").stdout.strip()
-              or "unknown")[:12]
+    commit = _run_commit()
     path = STAGE_SHARDS / f"{name}_{commit}.json"
     if path.exists():
         try:
@@ -249,8 +248,14 @@ def cached_stage(name, compute):
     return value
 
 
+def _run_commit():
+    """The commit a checkpoint belongs to, so code that changed cannot reuse its output."""
+    return (os.environ.get(SUPPLIED_COMMIT) or _git("rev-parse", "HEAD").stdout.strip()
+            or "unknown")[:12]
+
+
 def _shard(name, seed, draws):
-    return BOOTSTRAP_SHARDS / f"{name}_seed{seed}_draws{draws}.json"
+    return BOOTSTRAP_SHARDS / f"{name}_seed{seed}_draws{draws}_{_run_commit()}.json"
 
 
 def load_bootstrap_shard(name, seed, draws):
@@ -680,6 +685,7 @@ def main():
 
     print("\n  H6, the contextual model:")
     contextual = cached_stage("h6_contextual", lambda: contextual_model(df, knots))
+    share = contextual["elderly_share_per_sd"]
     print(describe_contextual(contextual))
 
     print("\n  unknown-comorbidity sensitivity:")

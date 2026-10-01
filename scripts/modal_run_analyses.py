@@ -10,7 +10,13 @@ refuses to return data unless it reproduces the primary analysis exactly, so run
 here is only safe if that check passes, which is what `verify` is for.
 
     modal run scripts/modal_run_analyses.py::verify          # the loader, and nothing else
-    modal run --detach scripts/modal_run_analyses.py::run    # S11 and S12
+    modal deploy scripts/modal_run_analyses.py               # then
+    modal run scripts/modal_run_analyses.py::launch --stages s12
+
+`launch` spawns on the deployed app, which is the only form that survives the laptop
+sleeping: `--detach` keeps the last triggered function alive after the client goes away,
+and a deployed function never depended on the client to begin with. `run` holds the
+client open for the whole run and is for a stage short enough to watch.
 """
 
 import os
@@ -153,6 +159,16 @@ def verify():
 
     print(json.dumps(verify_loader.remote(_verified_commit(), _manifest(ANALYSES)),
                      indent=2))
+
+
+@app.local_entrypoint()
+def launch(stages: str = "s12"):
+    """Spawn on the deployed app and return; the run does not depend on this client."""
+    commit, manifest = _verified_commit(), _manifest(ANALYSES)
+    print(f"launching {stages} from {commit[:12]}, {len(manifest)} files in the manifest")
+    deployed = modal.Function.from_name(app.name, "run_stage")
+    for stage in stages.split(","):
+        print(f"  {stage}: {deployed.spawn(stage, commit, manifest).object_id}", flush=True)
 
 
 @app.local_entrypoint()

@@ -6,6 +6,8 @@ the quantity it claims to preserve, a failed mixed-model fit must not reach a
 result file as a number, and a results path must never be written twice.
 """
 
+import ast
+import builtins
 import json
 import subprocess
 import sys
@@ -626,43 +628,82 @@ def test_likelihood_differences_agree_between_implementations():
     assert shifted == pytest.approx(mine, rel=1e-12)
 
 
-def test_the_loader_uses_no_name_it_does_not_have():
-    """Extracting code out of `load` once left it referring to a local it had lost.
-
-    `load` reads the 1.9 GB snapshot, so no test calls it; this checks statically that
-    every name it uses is one it defines, imports, or takes from the module.
-    """
-    import ast
-    import builtins
-
-    source = Path(mexico_confirmed_cases.__file__).read_text()
-    tree = ast.parse(source)
+def names_a_function_uses_but_never_binds(path):
+    """Every name a module's top-level functions load without binding, importing or sharing."""
+    tree = ast.parse(Path(path).read_text())
     imported = {alias.asname or alias.name.split(".")[0]
                 for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom))
                 for alias in node.names}
     module_level = {target.id for node in tree.body if isinstance(node, ast.Assign)
                     for target in node.targets if isinstance(target, ast.Name)}
+    module_level |= {node.target.id for node in tree.body
+                     if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name)}
     defined = {node.name for node in tree.body
                if isinstance(node, (ast.FunctionDef, ast.ClassDef))}
 
+    findings = {}
     for function in [node for node in tree.body if isinstance(node, ast.FunctionDef)]:
-        local = {name.id for name in ast.walk(function)
-                 if isinstance(name, ast.Name) and isinstance(name.ctx, ast.Store)}
-        local |= {argument.arg for argument in function.args.args}
-        local |= {item.optional_vars.id for item in ast.walk(function)
-                  if isinstance(item, ast.withitem) and isinstance(item.optional_vars, ast.Name)}
-        local |= {comprehension.target.id for comprehension in ast.walk(function)
-                  if isinstance(comprehension, ast.comprehension)
-                  and isinstance(comprehension.target, ast.Name)}
-        used = {name.id for name in ast.walk(function)
-                if isinstance(name, ast.Name) and isinstance(name.ctx, ast.Load)}
-        unknown = used - local - imported - module_level - defined - set(dir(builtins))
-        assert not unknown, f"{function.name} uses undefined {sorted(unknown)}"
+        bound = set()
+        for node in ast.walk(function):
+            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+                bound.add(node.id)
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                arguments = node.args
+                bound |= {argument.arg for argument in [*arguments.posonlyargs,
+                                                        *arguments.args,
+                                                        *arguments.kwonlyargs]}
+                bound |= {argument.arg
+                          for argument in (arguments.vararg, arguments.kwarg) if argument}
+                if not isinstance(node, ast.Lambda):
+                    bound.add(node.name)
+            elif isinstance(node, ast.withitem) and isinstance(node.optional_vars, ast.Name):
+                bound.add(node.optional_vars.id)
+            elif isinstance(node, ast.comprehension) and isinstance(node.target, ast.Name):
+                bound.add(node.target.id)
+            elif isinstance(node, ast.ExceptHandler) and node.name:
+                bound.add(node.name)
+            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                bound |= {alias.asname or alias.name.split(".")[0] for alias in node.names}
+            elif isinstance(node, (ast.Global, ast.Nonlocal)):
+                bound |= set(node.names)
+        used = {node.id for node in ast.walk(function)
+                if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load)}
+        unknown = used - bound - imported - module_level - defined - set(dir(builtins))
+        if unknown:
+            findings[function.name] = sorted(unknown)
+    return findings
+
+
+def test_no_analysis_function_uses_a_name_it_does_not_have():
+    """Twice now, moving code out of a long function left it referring to a lost local.
+
+    Both failures surfaced only when a run reached the line, four hours in: `load` lost
+    `onset` when `records` was extracted, and `main` lost `share` when the H6 summary
+    became a function. The analyses read a 1.9 GB snapshot, so no test calls them end to
+    end; this reads them instead.
+    """
+    offenders = {path.name: found
+                 for path in sorted(Path(s12.__file__).parent.glob("*.py"))
+                 if (found := names_a_function_uses_but_never_binds(path))}
+    assert not offenders, offenders
+
+
+def test_the_undefined_name_check_sees_a_name_that_is_not_there(tmp_path):
+    module = tmp_path / "module.py"
+    module.write_text("CONSTANT = 2\n\n"
+                      "def good(x):\n"
+                      "    [y for y in range(x)]\n"
+                      "    with open('f') as handle:\n"
+                      "        return handle, CONSTANT, good\n\n"
+                      "def bad(x):\n"
+                      "    return x + missing\n")
+    assert names_a_function_uses_but_never_binds(module) == {"bad": ["missing"]}
 
 
 def test_a_finished_bootstrap_model_is_not_redrawn(tmp_path, monkeypatch):
     """Six models at 2,000 draws is hours; a failure in the last must not cost the rest."""
     monkeypatch.setattr(s12, "BOOTSTRAP_SHARDS", tmp_path)
+    monkeypatch.setenv(paths.SUPPLIED_COMMIT, "aaaaaaaaaaaa")
     values = np.array([0.3, np.nan, 0.5])
     reasons = {"fit: LinAlgError": 1}
     assert s12.load_bootstrap_shard("model_5", 7, 3) is None
@@ -674,6 +715,10 @@ def test_a_finished_bootstrap_model_is_not_redrawn(tmp_path, monkeypatch):
     assert back["reasons"] == reasons
     assert s12.load_bootstrap_shard("model_5", 8, 3) is None   # a different seed is a different run
     assert s12.load_bootstrap_shard("model_5", 7, 2000) is None
+
+    # Draws produced by code that has since changed are not draws of the current model.
+    monkeypatch.setenv(paths.SUPPLIED_COMMIT, "bbbbbbbbbbbb")
+    assert s12.load_bootstrap_shard("model_5", 7, 3) is None
 
 
 def test_the_h6_summary_renders_from_what_contextual_model_returns(monkeypatch):
@@ -708,3 +753,62 @@ def test_a_finished_stage_is_read_back_rather_than_recomputed(tmp_path, monkeypa
     monkeypatch.setenv("ANALYSIS_COMMIT", "999999999999")
     s12.cached_stage("ladder_primary", compute)
     assert len(calls) == 2                       # different code, so not reused
+
+
+def snapshot_shaped_records(n_records=20_000, n_sites=5, months=6):
+    """Every column `main` reads, so the whole analysis can run on a frame in memory."""
+    frame, _ = contextual_frame(n_records, n_sites)
+    rng = np.random.default_rng()
+    frame["has_comorbidity"] = frame[s12.COMORBIDITIES].max(axis=1)
+    frame["comorbidity_unknown"] = frame["comorbidity_unknown"].astype(int)
+    onset = (pd.Timestamp(s12.SNAPSHOT_DATE)
+             - pd.to_timedelta(rng.integers(1, months * 28, n_records), unit="D"))
+    frame["onset"] = pd.Series(onset).where(rng.random(n_records) > 0.03)
+    frame["onset_month"] = (frame["onset"].dt.to_period("M").astype("string")
+                            .where(frame["onset"].notna()))
+    return frame
+
+
+def test_the_whole_ladder_runs_and_assembles_its_output(tmp_path, monkeypatch):
+    """Eighteen fits reach an output dict nothing had ever executed.
+
+    Two runs died assembling it, hours in: once on a key its producer had stopped
+    returning, once on a local lost when the H6 summary became a function. Neither is
+    reachable from a unit test of the pieces. The snapshot is 1.9 GB and glmer is not
+    installed here, so the loader and the R fit are stubbed and everything between is
+    the registered code, at a size that runs in under a minute.
+    """
+    monkeypatch.setenv(paths.SUPPLIED_COMMIT, "0123456789ab")
+    monkeypatch.setattr(s12, "COMORBIDITIES", s12.COMORBIDITIES[:3])
+    monkeypatch.setattr(s12, "OUTPUT_DIR", tmp_path)
+    monkeypatch.setattr(s12, "STAGE_SHARDS", tmp_path / "stages")
+    monkeypatch.setattr(s12, "BOOTSTRAP_SHARDS", tmp_path / "bootstrap")
+    monkeypatch.setattr(s12, "BOOTSTRAP_DRAWS", 6)
+    monkeypatch.setattr(s12, "MINIMUM_VALID_DRAWS", 2)
+    monkeypatch.setattr(validate_glmm, "preflight",
+                        lambda: {"units": 56, "validated_fingerprint": "stub"})
+    monkeypatch.setattr(mexico_confirmed_cases, "load", snapshot_shaped_records)
+    monkeypatch.setattr(s12, "fit_contextual_in_r",
+                        lambda cells, terms, index: r_payload_static(len(terms) + 1))
+
+    s12.main()
+
+    written = json.loads((tmp_path / "s12_composition_ladder.json").read_text())
+    assert set(written["primary_ladder"]) == {name for name, _, _
+                                              in s12.model_specifications(range(5))}
+    for hypothesis in ("h4_composition_contrast", "h5_temporal_contrast",
+                       "h6_contextual_association"):
+        assert {"criterion", "evaluable", "holds"} <= set(written[hypothesis])
+    assert written["h6_contextual_association"]["per_sd_or"] > 0
+    assert written["primary_ladder"]["model_5_age_spline"]["bootstrap"]["valid_draws"] >= 2
+    assert (tmp_path / "s12_bootstrap_draws.csv").exists()
+
+    # The resume path, which is the one a crash makes you take. The stubbed loader draws a
+    # new frame on every call, so a stage that was recomputed cannot return the same slope.
+    s12.main()
+    resumed = json.loads((tmp_path / "s12_composition_ladder.json").read_text())
+    for model, entry in written["primary_ladder"].items():
+        assert resumed["primary_ladder"][model]["slope_difference"] == entry["slope_difference"]
+    assert (resumed["sensitivity_unknown_comorbidity_rate"]["slope_difference"]
+            == written["sensitivity_unknown_comorbidity_rate"]["slope_difference"])
+    assert len(list((tmp_path / "superseded").glob("s12_composition_ladder_*.json"))) == 1

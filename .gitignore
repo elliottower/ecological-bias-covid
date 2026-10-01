@@ -44,4 +44,6 @@ fee-waiver*
 .results/
 paper/analyses/results/mexico_cells.csv
 paper/analyses/results/mexico_per_state.csv
+paper/analyses/results/s12_stage_shards/
+paper/analyses/results/s12_bootstrap_shards/
 paper/analyses/logs/
