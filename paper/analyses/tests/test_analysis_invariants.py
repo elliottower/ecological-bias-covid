@@ -365,7 +365,9 @@ def test_s12_bootstrap_draw_equals_an_explicit_refit_on_duplicated_states():
                                   rel=1e-6)
 
 
-def test_every_s12_model_sees_the_same_state_multiplicities():
+def test_every_s12_model_sees_the_same_state_multiplicities(tmp_path, monkeypatch):
+    monkeypatch.setattr(s12, "BOOTSTRAP_SHARDS", tmp_path)
+    monkeypatch.setenv(paths.SUPPLIED_COMMIT, "1111111111aa")
     frame, knots = contextual_frame(n_records=6_000, n_sites=6)
     frame["has_comorbidity"] = frame[s12.COMORBIDITIES].max(axis=1)
     frame["onset_month"] = "2021-01"
@@ -392,7 +394,9 @@ def test_every_s12_model_sees_the_same_state_multiplicities():
             assert np.array_equal(per_model[0][draw], other[draw])
 
 
-def test_s12_counts_a_failed_draw_instead_of_aborting(monkeypatch):
+def test_s12_counts_a_failed_draw_instead_of_aborting(tmp_path, monkeypatch):
+    monkeypatch.setattr(s12, "BOOTSTRAP_SHARDS", tmp_path)
+    monkeypatch.setenv(paths.SUPPLIED_COMMIT, "2222222222bb")
     frame, _ = contextual_frame(n_records=4_000, n_sites=5)
     frame["has_comorbidity"] = frame[s12.COMORBIDITIES].max(axis=1)
     formulas = [("model_1", "elderly", False)]
@@ -410,7 +414,6 @@ def test_s12_counts_a_failed_draw_instead_of_aborting(monkeypatch):
 
     monkeypatch.setattr(s12.sm, "GLM", Exploding)
     values, failures = s12.bootstrap_ladder(frame, formulas, covariate_sets, seed=3, draws=6)
-    monkeypatch.undo()
 
     failed = int(np.isnan(values["model_1"]).sum())
     assert 0 < failed < 6
@@ -769,6 +772,66 @@ def snapshot_shaped_records(n_records=20_000, n_sites=5, months=6):
     return frame
 
 
+def counting(function, name, log):
+    def wrapper(*arguments, **keywords):
+        log.append(name)
+        return function(*arguments, **keywords)
+    return wrapper
+
+
+def test_a_checkpoint_needs_a_commit_to_belong_to(monkeypatch):
+    """Without one, every run shares a namespace and reads back the last run's answer."""
+    monkeypatch.delenv(paths.SUPPLIED_COMMIT, raising=False)
+    monkeypatch.setattr(s12, "_git", lambda *arguments: subprocess.CompletedProcess(
+        arguments, returncode=128, stdout="", stderr="not a git repository"))
+    with pytest.raises(RuntimeError, match="no commit is available"):
+        s12._run_commit()
+
+
+def test_a_checkpoint_whose_fingerprint_disagrees_is_not_reused(tmp_path, monkeypatch):
+    """The filename carries a commit prefix, which is a name; the record is the identity."""
+    monkeypatch.setattr(s12, "STAGE_SHARDS", tmp_path)
+    monkeypatch.setenv(paths.SUPPLIED_COMMIT, "dddddddddddd")
+
+    for field, replacement in (("data_sha256", "0" * 64),
+                               ("cache_schema", s12.CACHE_SCHEMA + 1),
+                               ("commit", "eeeeeeeeeeee")):
+        assert s12.cached_stage(field, lambda: {"slope": 1.0})["slope"] == 1.0
+        path, = tmp_path.glob(f"{field}_*.json")
+        record = json.loads(path.read_text())
+        assert record["fingerprint"]["data_sha256"] == paths.EXPECTED_SNAPSHOT_SHA256
+        record["fingerprint"][field] = replacement
+        path.write_text(json.dumps(record))
+        assert s12.cached_stage(field, lambda: {"slope": 2.0})["slope"] == 2.0
+
+
+def test_a_glmer_that_never_finished_is_not_cached_as_the_h6_answer(tmp_path, monkeypatch):
+    """An R timeout must not stand as the registered verdict on every later resume.
+
+    The distinction the cache has to make: a fit that completed and then failed a gate is
+    an outcome H6 registers, and a fit the environment never produced is not.
+    """
+    monkeypatch.setattr(s12, "STAGE_SHARDS", tmp_path)
+    monkeypatch.setenv(paths.SUPPLIED_COMMIT, "cccccccccccc")
+    frame, knots = contextual_frame(n_records=2_000, n_sites=4)
+    cacheable = {"cacheable": lambda value: value["glmer_completed"]}
+
+    monkeypatch.setattr(s12, "fit_contextual_in_r",
+                        lambda *arguments: {"completed": False, "stderr_tail": "timed out"})
+    failed = s12.cached_stage("h6_contextual",
+                              lambda: s12.contextual_model(frame, knots), **cacheable)
+    assert failed["glmer_completed"] is False
+    assert not list(tmp_path.glob("h6_contextual_*.json"))
+
+    monkeypatch.setattr(s12, "fit_contextual_in_r",
+                        lambda cells, terms, index: r_payload_static(len(terms) + 1))
+    fitted = s12.cached_stage("h6_contextual",
+                              lambda: s12.contextual_model(frame, knots), **cacheable)
+    assert fitted["glmer_completed"] is True
+    assert fitted["evaluable"] is False          # a gate failed, and that is a result
+    assert len(list(tmp_path.glob("h6_contextual_*.json"))) == 1
+
+
 def test_the_whole_ladder_runs_and_assembles_its_output(tmp_path, monkeypatch):
     """Eighteen fits reach an output dict nothing had ever executed.
 
@@ -790,8 +853,16 @@ def test_the_whole_ladder_runs_and_assembles_its_output(tmp_path, monkeypatch):
     monkeypatch.setattr(mexico_confirmed_cases, "load", snapshot_shaped_records)
     monkeypatch.setattr(s12, "fit_contextual_in_r",
                         lambda cells, terms, index: r_payload_static(len(terms) + 1))
+    calls = []
+    for name in ("run_ladder", "contextual_model", "unknown_comorbidity_sensitivity",
+                 "save_bootstrap_shard"):
+        monkeypatch.setattr(s12, name, counting(getattr(s12, name), name, calls))
 
     s12.main()
+    computed = [calls.count(name) for name in ("run_ladder", "contextual_model",
+                                               "unknown_comorbidity_sensitivity",
+                                               "save_bootstrap_shard")]
+    assert computed == [3, 1, 1, 6]
 
     written = json.loads((tmp_path / "s12_composition_ladder.json").read_text())
     assert set(written["primary_ladder"]) == {name for name, _, _
@@ -806,6 +877,9 @@ def test_the_whole_ladder_runs_and_assembles_its_output(tmp_path, monkeypatch):
     # The resume path, which is the one a crash makes you take. The stubbed loader draws a
     # new frame on every call, so a stage that was recomputed cannot return the same slope.
     s12.main()
+    assert [calls.count(name) for name in ("run_ladder", "contextual_model",
+                                           "unknown_comorbidity_sensitivity",
+                                           "save_bootstrap_shard")] == computed
     resumed = json.loads((tmp_path / "s12_composition_ladder.json").read_text())
     for model, entry in written["primary_ladder"].items():
         assert resumed["primary_ladder"][model]["slope_difference"] == entry["slope_difference"]

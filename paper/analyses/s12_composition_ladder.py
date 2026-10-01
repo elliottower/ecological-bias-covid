@@ -31,8 +31,8 @@ from scipy import stats
 import glmm
 import mexico_confirmed_cases
 import validate_glmm
-from paths import (PROJECT_ROOT, RESULTS, SUPPLIED_COMMIT, _git, require_clean_tree,
-                   run_metadata, write_result, write_table)
+from paths import (EXPECTED_SNAPSHOT_SHA256, PROJECT_ROOT, RESULTS, SUPPLIED_COMMIT,
+                   _git, require_clean_tree, run_metadata, write_result, write_table)
 
 OUTPUT_DIR = RESULTS
 COMORBIDITIES = [c.lower() for c in mexico_confirmed_cases.COMORBIDITY_COLS]
@@ -49,6 +49,7 @@ MINIMUM_EXPOSURE_SD = 1e-6  # a draw with no elderly-share variation carries no 
 # that hits it is a failed draw, not a reason to abandon the run.
 FIT_FAILURES = (PerfectSeparationError, np.linalg.LinAlgError, ValueError, RuntimeError)
 MINIMUM_VALID_DRAWS = 100  # below this an interval is not reported at all
+CACHE_SCHEMA = 1  # raise by hand when a checkpoint's layout or meaning changes
 # Numerical acceptance thresholds for H6, fixed before the model is fitted. A fit that
 # fails any of them leaves H6 not evaluable, with every diagnostic still reported.
 ESTIMATOR = "lme4::glmer, nAGQ = 15, reproduced by glmm.py"
@@ -228,58 +229,112 @@ class _Numpy(json.JSONEncoder):
         return super().default(value)
 
 
-def cached_stage(name, compute):
-    """Run a stage once. A stage that finished is read back rather than recomputed.
+def checkpoint_written():
+    """Flush a finished checkpoint to durable storage.
 
-    Keyed by the commit, so code that changed invalidates what it produced. The ladder
-    fits and H6 cost hours; a failure after them should cost only what follows them.
+    A launcher whose results directory is a mounted volume replaces this with the volume's
+    commit: writing the path is not the same as the volume holding it, and a run that is
+    killed rather than raising keeps only what was flushed. Locally the write is the flush.
     """
-    commit = _run_commit()
-    path = STAGE_SHARDS / f"{name}_{commit}.json"
-    if path.exists():
-        try:
-            print(f"    {name}: already on disk from {commit}", flush=True)
-            return json.loads(path.read_text())
-        except json.JSONDecodeError:
-            pass
-    value = compute()
-    STAGE_SHARDS.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, cls=_Numpy))
-    return value
+
+
+def _fingerprint():
+    """What a checkpoint must match to be reused: the code, the data, and this layout."""
+    return {"commit": _run_commit(), "data_sha256": EXPECTED_SNAPSHOT_SHA256,
+            "cache_schema": CACHE_SCHEMA}
 
 
 def _run_commit():
     """The commit a checkpoint belongs to, so code that changed cannot reuse its output."""
-    return (os.environ.get(SUPPLIED_COMMIT) or _git("rev-parse", "HEAD").stdout.strip()
-            or "unknown")[:12]
+    commit = (os.environ.get(SUPPLIED_COMMIT)
+              or _git("rev-parse", "HEAD").stdout.strip())
+    if not commit:
+        raise RuntimeError(
+            "no commit is available, so a checkpoint could not be told apart from one "
+            f"written by different code; set {SUPPLIED_COMMIT} or run in the repository")
+    return commit
 
 
-def _shard(name, seed, draws):
-    return BOOTSTRAP_SHARDS / f"{name}_seed{seed}_draws{draws}_{_run_commit()}.json"
+def _write_checkpoint(path, value):
+    """Write beside the target and rename, so a kill cannot leave half a shard behind."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    pending = path.with_name(path.name + ".pending")
+    pending.write_text(json.dumps({"fingerprint": _fingerprint(), "value": value},
+                                  cls=_Numpy))
+    pending.replace(path)
+    try:
+        checkpoint_written()
+    except Exception as error:   # the shard is written; flushing it further is best effort
+        print(f"    {path.name} is on disk but was not flushed: {error}", flush=True)
 
 
-def load_bootstrap_shard(name, seed, draws):
-    """One model's draws, if this seed and draw count already produced them."""
-    path = _shard(name, seed, draws)
+def _read_checkpoint(path):
+    """The stored value, if the file is whole and this code on this data produced it.
+
+    The filename carries a twelve-character commit prefix, which is a name rather than an
+    identity; what is checked is the fingerprint inside the file.
+    """
     if not path.exists():
         return None
     try:
         record = json.loads(path.read_text())
     except json.JSONDecodeError:
         return None
-    return {"values": np.array(record["values"], dtype=float),
-            "reasons": record["reasons"]}
+    if record.get("fingerprint") != _fingerprint():
+        return None
+    return record
+
+
+def cached_stage(name, compute, cacheable=lambda value: True):
+    """Run a stage once. A stage that finished is read back rather than recomputed.
+
+    Keyed by the commit, so code that changed invalidates what it produced. The ladder
+    fits and H6 cost hours; a failure after them should cost only what follows them.
+
+    `cacheable` separates a result from a failure to produce one. A fit that completed and
+    then failed a registered gate is an outcome and is kept; a fit the environment never
+    finished is not, and caching it would let an R timeout stand as the answer on every
+    later resume.
+    """
+    path = STAGE_SHARDS / f"{name}_{_run_commit()[:12]}.json"
+    stored = _read_checkpoint(path)
+    if stored is not None:
+        print(f"    {name}: already on disk from this commit", flush=True)
+        return stored["value"]
+    value = compute()
+    if not cacheable(value):
+        print(f"    {name}: not written, this did not complete", flush=True)
+        return value
+    _write_checkpoint(path, value)
+    return value
+
+
+def _shard(name, seed, draws):
+    return BOOTSTRAP_SHARDS / f"{name}_seed{seed}_draws{draws}_{_run_commit()[:12]}.json"
+
+
+def load_bootstrap_shard(name, seed, draws):
+    """One model's draws, if this code on this data already produced them at this seed."""
+    stored = _read_checkpoint(_shard(name, seed, draws))
+    if stored is None:
+        return None
+    record = stored["value"]
+    if (record["model"], record["seed"], record["draws"]) != (name, seed, draws):
+        return None
+    values = np.array(record["values"], dtype=float)
+    if len(values) != draws:
+        return None
+    return {"values": values, "reasons": record["reasons"]}
 
 
 def save_bootstrap_shard(name, seed, draws, values, reasons):
     """Written the moment a model finishes, so a later failure costs only what follows."""
-    BOOTSTRAP_SHARDS.mkdir(parents=True, exist_ok=True)
-    _shard(name, seed, draws).write_text(json.dumps({
+    _write_checkpoint(_shard(name, seed, draws), {
         "model": name, "seed": seed, "draws": draws,
         "finished_at": datetime.now().isoformat(timespec="seconds"),
         "values": [None if np.isnan(v) else float(v) for v in values],
         "reasons": reasons,
-    }))
+    })
 
 
 def bootstrap_ladder(df, formulas, covariate_sets, seed, draws):
@@ -474,7 +529,8 @@ def contextual_model(df, knots):
             np.array(primary["estimate"], dtype=float) - reproduction["beta"])))
 
     if not primary.get("completed"):
-        return {"converged": False, "convergence_message": primary.get("stderr_tail", ""),
+        return {"glmer_completed": False,
+                "converged": False, "convergence_message": primary.get("stderr_tail", ""),
                 "seconds": elapsed, "n_cells": int(len(cells)), "age_term": age_term,
                 "registered_covariates": bool(registered_covariates), "evaluable": False,
                 "elderly_share_per_sd": None, "estimator": ESTIMATOR,
@@ -517,6 +573,7 @@ def contextual_model(df, knots):
         "profile_interval_available": bool(profile),
     }
     return {
+        "glmer_completed": True,
         "estimator": ESTIMATOR,
         "fitted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "seconds": elapsed,
@@ -684,7 +741,8 @@ def main():
                                    lambda: run_ladder(plausible, formulas, "age"))
 
     print("\n  H6, the contextual model:")
-    contextual = cached_stage("h6_contextual", lambda: contextual_model(df, knots))
+    contextual = cached_stage("h6_contextual", lambda: contextual_model(df, knots),
+                              cacheable=lambda value: value["glmer_completed"])
     share = contextual["elderly_share_per_sd"]
     print(describe_contextual(contextual))
 

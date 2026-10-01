@@ -9,6 +9,7 @@ The snapshot lives on its own volume and is never rebuilt: the loader hashes it 
 refuses to return data unless it reproduces the primary analysis exactly, so running it
 here is only safe if that check passes, which is what `verify` is for.
 
+    modal run scripts/modal_run_analyses.py::tests           # the invariant suite
     modal run scripts/modal_run_analyses.py::verify          # the loader, and nothing else
     modal deploy scripts/modal_run_analyses.py               # then
     modal run scripts/modal_run_analyses.py::launch --stages s12
@@ -19,20 +20,27 @@ and a deployed function never depended on the client to begin with. `run` holds 
 client open for the whole run and is for a stage short enough to watch.
 """
 
+import hashlib
+import json
 import os
+import subprocess
+from datetime import datetime, timezone
 
 import modal
 
 ANALYSES = os.path.join(os.path.expanduser("~"),
                         "Documents/GitHub/ecological-bias-covid/paper/analyses")
 REMOTE = "/root/repo/paper/analyses"
+REMOTE_TESTS = REMOTE + "/tests"
 # Never copied, so never in the manifest the container checks itself against.
 IGNORED = ["__pycache__", "results", "tests", "logs", "attestations", ".DS_Store"]
 VALIDATION = "/root/repo/paper/analyses/validation/glmm_validation.json"
 
 image = (
     modal.Image.debian_slim(python_version="3.13")
-    .apt_install("r-base-core", "r-cran-lme4", "r-cran-jsonlite", "r-cran-matrix")
+    # git: not for the run, which is handed a verified commit, but so the suite can
+    # build a repository and check that the clean-tree guard refuses a dirty one.
+    .apt_install("git", "r-base-core", "r-cran-lme4", "r-cran-jsonlite", "r-cran-matrix")
     .run_commands(
         "R -e \"stopifnot(requireNamespace('lme4'), requireNamespace('jsonlite')); "
         "cat(R.version.string, as.character(packageVersion('lme4')))\"",
@@ -46,8 +54,15 @@ image = (
         # the primary analysis the loader checks itself against imports it
         "tqdm==4.70.1",
     )
+    # The suite runs here rather than on the laptop: it fits models on tens of thousands
+    # of records, and running it locally exhausted the machine's memory and swap.
+    .pip_install("pytest==9.1.1")
     .env({"PYTHONPATH": REMOTE})
     .add_local_dir(ANALYSES, REMOTE, copy=True, ignore=IGNORED)
+    # Copied separately, so the tests are available here without entering the manifest
+    # that fixes which code produced a number.
+    .add_local_dir(os.path.join(ANALYSES, "tests"), REMOTE_TESTS, copy=True,
+                   ignore=["__pycache__", ".DS_Store"])
     # The results directory is a mounted volume in the container and does not carry the
     # validation artifact, so it travels separately and the preflight is pointed at it.
     .add_local_file(os.path.join(ANALYSES, "results/glmm_validation.json"),
@@ -60,6 +75,8 @@ results = modal.Volume.from_name("jamia-analysis-results", create_if_missing=Tru
 
 DATA = "/root/repo/data/mexico_covid"
 OUT = "/root/repo/paper/analyses/results"
+LOGS = os.path.join(ANALYSES, "logs")
+STAGES = ("s11", "s12")
 TIMEOUT = 86_400
 
 
@@ -137,12 +154,46 @@ def run_stage(stage: str, commit: str, manifest: dict) -> str:
         import s11_site_definitions as analysis
     elif stage == "s12":
         import s12_composition_ladder as analysis
+        # Writing a checkpoint to the mounted path is not the volume holding it. Flushing
+        # each one as it is written is what makes a kill cost the unit in progress rather
+        # than everything since the last background commit.
+        analysis.checkpoint_written = results.commit
     else:
         raise ValueError(f"no stage named {stage}")
-    analysis.main()
-    results.commit()
+    try:
+        analysis.main()
+    finally:
+        try:
+            results.commit()
+        except Exception as error:   # the run's own failure is the one worth reporting
+            print(f"  the closing volume commit failed: {error}", flush=True)
     print(f"[{datetime.now(timezone.utc):%H:%M:%S}] {stage} done", flush=True)
     return stage
+
+
+@app.function(timeout=600, volumes={OUT: results})
+def write_then_raise(marker: str, flush: bool):
+    """Write a checkpoint and fail, so persistence can be observed instead of assumed."""
+    from pathlib import Path
+
+    path = Path(OUT) / "smoke" / f"{marker}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"marker": marker, "flushed": flush}))
+    if flush:
+        results.commit()
+    raise RuntimeError(f"intentional failure after writing {path}")
+
+
+@app.function(timeout=600, volumes={OUT: results})
+def read_markers(markers: list) -> dict:
+    """What a container that starts afterwards finds on the volume."""
+    from pathlib import Path
+
+    results.reload()
+    return {marker: (json.loads(found.read_text())
+                     if (found := Path(OUT) / "smoke" / f"{marker}.json").exists()
+                     else None)
+            for marker in markers}
 
 
 def _verified_commit():
@@ -161,14 +212,75 @@ def verify():
                      indent=2))
 
 
+@app.function(cpu=8.0, memory=32_768, timeout=3_600, volumes={DATA: snapshot})
+def run_tests(selection: str) -> int:
+    """The invariant suite, in the image the analyses themselves run in.
+
+    The snapshot volume is mounted for the module beside the data that
+    `mexico_confirmed_cases` executes at import to check itself against, not for the
+    1.9 GB CSV, which no test reads.
+    """
+    arguments = ["python", "-m", "pytest", REMOTE_TESTS, "-q"]
+    if selection:
+        arguments += ["-k", selection]
+    return subprocess.run(arguments, cwd=REMOTE, check=False).returncode
+
+
+@app.local_entrypoint()
+def tests(k: str = ""):
+    """Run the suite remotely. It fits models, so it does not run on the laptop."""
+    code = run_tests.remote(k)
+    print("the suite passed" if code == 0 else f"pytest exited {code}")
+
+
+@app.local_entrypoint()
+def smoke():
+    """Does a checkpoint written before a crash survive into the next container?
+
+    The claim that it does was read off the Modal client's source rather than measured,
+    and a durability claim nobody has observed is the kind the next failed run disproves.
+    Both arms raise after writing; only one flushes the volume first.
+    """
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    markers = {True: f"flushed_{stamp}", False: f"unflushed_{stamp}"}
+    for flush, marker in markers.items():
+        try:
+            write_then_raise.remote(marker, flush)
+        except Exception as error:
+            print(f"  {marker}: raised as intended ({type(error).__name__})")
+    found = read_markers.remote(list(markers.values()))
+    for marker, record in found.items():
+        print(f"  {marker}: {'survived' if record else 'LOST'}")
+    print(json.dumps(found, indent=2))
+
+
 @app.local_entrypoint()
 def launch(stages: str = "s12"):
     """Spawn on the deployed app and return; the run does not depend on this client."""
+    wanted = [stage.strip() for stage in stages.split(",") if stage.strip()]
+    unknown = [stage for stage in wanted if stage not in STAGES]
+    if not wanted:
+        raise ValueError(f"no stage named in {stages!r}")
+    if unknown:
+        raise ValueError(f"no stage called {', '.join(unknown)}; known: {', '.join(STAGES)}")
+
     commit, manifest = _verified_commit(), _manifest(ANALYSES)
-    print(f"launching {stages} from {commit[:12]}, {len(manifest)} files in the manifest")
+    digest = hashlib.sha256(json.dumps(manifest, sort_keys=True).encode()).hexdigest()
+    print(f"launching {', '.join(wanted)} from {commit[:12]}, "
+          f"manifest {digest[:12]}, {len(manifest)} files")
+
     deployed = modal.Function.from_name(app.name, "run_stage")
-    for stage in stages.split(","):
-        print(f"  {stage}: {deployed.spawn(stage, commit, manifest).object_id}", flush=True)
+    calls = {stage: deployed.spawn(stage, commit, manifest).object_id for stage in wanted}
+
+    os.makedirs(LOGS, exist_ok=True)
+    receipt = os.path.join(LOGS, f"launch_{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}.json")
+    with open(receipt, "w") as handle:
+        json.dump({"spawned_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                   "commit": commit, "manifest_sha256": digest,
+                   "files_in_manifest": len(manifest), "calls": calls}, handle, indent=2)
+    for stage, call in calls.items():
+        print(f"  {stage}: {call}")
+    print(f"receipt: {receipt}")
 
 
 @app.local_entrypoint()
