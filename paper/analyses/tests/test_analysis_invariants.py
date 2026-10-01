@@ -674,3 +674,37 @@ def test_a_finished_bootstrap_model_is_not_redrawn(tmp_path, monkeypatch):
     assert back["reasons"] == reasons
     assert s12.load_bootstrap_shard("model_5", 8, 3) is None   # a different seed is a different run
     assert s12.load_bootstrap_shard("model_5", 7, 2000) is None
+
+
+def test_the_h6_summary_renders_from_what_contextual_model_returns(monkeypatch):
+    """A print written against a shape its producer stopped returning cost four hours."""
+    frame, knots = contextual_frame(n_records=3_000, n_sites=5)
+    monkeypatch.setattr(s12, "fit_contextual_in_r",
+                        lambda cells, terms, index: r_payload_static(len(terms) + 1))
+    line = s12.describe_contextual(s12.contextual_model(frame, knots))
+    assert "elderly share per SD" in line and "evaluable" in line
+
+    failed = {"elderly_share_per_sd": None, "convergence_message": "glmer did not finish"}
+    assert "glmer did not finish" in s12.describe_contextual(failed)
+    assert "no reason recorded" in s12.describe_contextual({"elderly_share_per_sd": None})
+
+
+def test_a_finished_stage_is_read_back_rather_than_recomputed(tmp_path, monkeypatch):
+    monkeypatch.setattr(s12, "STAGE_SHARDS", tmp_path)
+    monkeypatch.setenv("ANALYSIS_COMMIT", "abc123def456")
+    calls = []
+
+    def compute():
+        calls.append(1)
+        return {"slope": np.float64(0.42), "draws": np.array([1.0, 2.0])}
+
+    first = s12.cached_stage("ladder_primary", compute)
+    second = s12.cached_stage("ladder_primary", compute)
+    assert len(calls) == 1                       # the second call did not recompute
+    assert second["slope"] == 0.42               # numpy scalars survive the round trip
+    assert second["draws"] == [1.0, 2.0]
+    assert first["slope"] == second["slope"]
+
+    monkeypatch.setenv("ANALYSIS_COMMIT", "999999999999")
+    s12.cached_stage("ladder_primary", compute)
+    assert len(calls) == 2                       # different code, so not reused

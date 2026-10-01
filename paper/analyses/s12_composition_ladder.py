@@ -14,6 +14,7 @@ is model 5 against model 6. No monotonic ordering is required or predicted.
 
 import gc
 import json
+import os
 import subprocess
 import tempfile
 import time
@@ -30,8 +31,8 @@ from scipy import stats
 import glmm
 import mexico_confirmed_cases
 import validate_glmm
-from paths import (PROJECT_ROOT, RESULTS, require_clean_tree, run_metadata,
-                   write_result, write_table)
+from paths import (PROJECT_ROOT, RESULTS, SUPPLIED_COMMIT, _git, require_clean_tree,
+                   run_metadata, write_result, write_table)
 
 OUTPUT_DIR = RESULTS
 COMORBIDITIES = [c.lower() for c in mexico_confirmed_cases.COMORBIDITY_COLS]
@@ -214,7 +215,38 @@ class BootstrapModel:
         return observed_slope - implied_slope, None
 
 
+STAGE_SHARDS = RESULTS / "s12_stage_shards"
 BOOTSTRAP_SHARDS = RESULTS / "s12_bootstrap_shards"
+
+
+class _Numpy(json.JSONEncoder):
+    def default(self, value):
+        if isinstance(value, np.generic):
+            return value.item()
+        if isinstance(value, np.ndarray):
+            return value.tolist()
+        return super().default(value)
+
+
+def cached_stage(name, compute):
+    """Run a stage once. A stage that finished is read back rather than recomputed.
+
+    Keyed by the commit, so code that changed invalidates what it produced. The ladder
+    fits and H6 cost hours; a failure after them should cost only what follows them.
+    """
+    commit = (os.environ.get(SUPPLIED_COMMIT) or _git("rev-parse", "HEAD").stdout.strip()
+              or "unknown")[:12]
+    path = STAGE_SHARDS / f"{name}_{commit}.json"
+    if path.exists():
+        try:
+            print(f"    {name}: already on disk from {commit}", flush=True)
+            return json.loads(path.read_text())
+        except json.JSONDecodeError:
+            pass
+    value = compute()
+    STAGE_SHARDS.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value, cls=_Numpy))
+    return value
 
 
 def _shard(name, seed, draws):
@@ -586,6 +618,30 @@ def unknown_comorbidity_sensitivity(df, formulas):
     return entry
 
 
+def describe_contextual(contextual):
+    """The H6 summary line, as a function so a test can render it.
+
+    Three prints have now been written against a shape their producer had stopped
+    returning, each discovered only when a long run reached them. A summary that is a
+    function is a summary a test can call.
+    """
+    share = contextual["elderly_share_per_sd"]
+    if share is None:
+        return f"    did not fit: {contextual.get('convergence_message', 'no reason recorded')}"
+    interval = share.get("profile_ci", share["ci"])
+    reproduction = contextual.get("reproduction") or {}
+    return (f"    elderly share per SD: OR {share['or']:.3f} "
+            f"[{interval[0]:.3f}, {interval[1]:.3f}] ({share['interval_used']}), "
+            f"p {share['p']:.2e}, sigma {contextual['random_intercept_sd']:.4f}\n"
+            f"    reproduction differs by "
+            f"{reproduction.get('largest_absolute_coefficient_difference')}, "
+            f"boundary deviance {reproduction.get('boundary_deviance_difference')}\n"
+            f"    evaluable {contextual['evaluable']}"
+            + (f", failed gates {contextual['failed_gates']}"
+               if contextual.get("failed_gates") else "")
+            + f" ({contextual['seconds']}s)")
+
+
 def main():
     require_clean_tree()
     # H6 is fitted by one implementation and checked by another; the check only means
@@ -609,33 +665,26 @@ def main():
           f"({onset_missing / len(df):.2%})")
 
     print("\n  primary ladder:")
-    primary = run_ladder(df, formulas, "primary")
+    primary = cached_stage("ladder_primary", lambda: run_ladder(df, formulas, "primary"))
 
     cutoff = pd.Timestamp(SNAPSHOT_DATE) - pd.Timedelta(days=RECENT_ONSET_DAYS)
     recent = df[df["onset"].notna() & (df["onset"] < cutoff)]
     print(f"\n  sensitivity, onset before {cutoff:%Y-%m-%d} ({len(recent):,} records):")
-    recent_onset = run_ladder(recent, formulas, "recent-onset")
+    recent_onset = cached_stage("ladder_recent_onset",
+                                lambda: run_ladder(recent, formulas, "recent-onset"))
 
     plausible = df[df["age"] <= IMPLAUSIBLE_AGE]
     print(f"\n  sensitivity, ages <= {IMPLAUSIBLE_AGE} ({len(plausible):,} records):")
-    age_sensitivity = run_ladder(plausible, formulas, "age")
+    age_sensitivity = cached_stage("ladder_age",
+                                   lambda: run_ladder(plausible, formulas, "age"))
 
     print("\n  H6, the contextual model:")
-    contextual = contextual_model(df, knots)
-    share = contextual["elderly_share_per_sd"]
-    if share is None:
-        print(f"    did not converge: {contextual['convergence_message']}")
-    else:
-        interval_shown = share.get("profile_ci", share["ci"])
-        print(f"    elderly share per SD: OR {share['or']:.3f} "
-              f"[{interval_shown[0]:.3f}, {interval_shown[1]:.3f}] "
-              f"({share['interval_used']}), p {share['p']:.2e}, "
-              f"sigma {contextual['random_intercept_sd']:.4f}, boundary deviance "
-              f"{contextual['boundary']['deviance_difference_against_zero_variance']:.1f}, "
-              f"{contextual['seconds']}s")
+    contextual = cached_stage("h6_contextual", lambda: contextual_model(df, knots))
+    print(describe_contextual(contextual))
 
     print("\n  unknown-comorbidity sensitivity:")
-    unknown = unknown_comorbidity_sensitivity(df, formulas)
+    unknown = cached_stage("unknown_comorbidity",
+                           lambda: unknown_comorbidity_sensitivity(df, formulas))
     print(f"    model 5 plus the state unknown rate: difference {unknown['slope_difference']:+.4f} "
           f"against {primary['model_5_age_spline']['slope_difference']:+.4f}")
 
