@@ -886,3 +886,41 @@ def test_the_whole_ladder_runs_and_assembles_its_output(tmp_path, monkeypatch):
     assert (resumed["sensitivity_unknown_comorbidity_rate"]["slope_difference"]
             == written["sensitivity_unknown_comorbidity_rate"]["slope_difference"])
     assert len(list((tmp_path / "superseded").glob("s12_composition_ladder_*.json"))) == 1
+
+
+def test_the_comparison_tells_a_flat_surface_from_an_optimizer_that_stopped(tmp_path):
+    """One number cannot distinguish the two, and only one of them is a defect.
+
+    `elderly_share_z` has to be among the names, because the comparison reports the
+    difference on the coefficient H6 is about by name.
+    """
+    design, deaths, n, groups = grouped_binomial(n_groups=30, cells_per_group=10)
+    fit = glmm.fit_random_intercept(design, deaths, n, groups, errors=False)
+    names = ["intercept", "elderly_share_z"]
+
+    settled = {"completed": True, "estimate": list(fit["beta"]),
+               "random_intercept_sd": fit["sigma"]}
+    agreed = s12.compare_implementations(settled, fit, names)
+    assert agreed["largest_absolute_coefficient_difference"] == pytest.approx(0, abs=1e-12)
+    assert agreed["our_optimizer_stopped_short"] is False
+    assert agreed["our_estimate_scores_higher_by"] == pytest.approx(0, abs=1e-6)
+
+    # The same comparison, against a reproduction that stopped before the optimum.
+    nudged = np.asarray(fit["beta"], dtype=float) + np.array([0.0, 0.05])
+    parameters = np.concatenate([nudged, [np.log(fit["sigma"])]])
+    short = {**fit, "beta": nudged, "params": parameters,
+             "log_likelihood": float(fit["model"].loglik(parameters, warm_start=False))}
+    caught = s12.compare_implementations(settled, short, names)
+    assert caught["our_optimizer_stopped_short"] is True
+    assert caught["our_estimate_scores_higher_by"] < 0
+    assert caught["largest_difference_term"] == "elderly_share_z"
+    # the difference is lme4 minus ours, and it is ours that was nudged upward
+    assert caught["registered_coefficient_lme4_minus_glmm_py"] == pytest.approx(-0.05,
+                                                                                abs=1e-9)
+
+
+def test_the_comparison_reports_nothing_when_a_fit_is_missing():
+    assert s12.compare_implementations({"completed": False}, None, [])["comparable"] is False
+    assert s12.compare_implementations(
+        {"completed": True}, None, [])["largest_absolute_coefficient_difference"] is None
+

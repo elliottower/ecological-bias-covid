@@ -467,6 +467,65 @@ def spline_basis(ages, knots):
     return pd.concat([frame, design], axis=1)
 
 
+def compare_implementations(primary, reproduction, names):
+    """Where the two fits of H6 differ, and whether either one stopped short.
+
+    The gate reports one number, the largest absolute coefficient difference, which
+    cannot say which coefficient moved or why. Two implementations landing a little
+    apart on a flat surface and one of them failing to converge produce the same
+    number, so this evaluates each implementation's log-likelihood at the other's
+    estimate: if R's estimate scores higher under our own likelihood than our own
+    estimate does, our optimizer stopped short, which is a defect rather than
+    arithmetic.
+    """
+    if not primary.get("completed") or reproduction is None:
+        return {"largest_absolute_coefficient_difference": None,
+                "comparable": False,
+                "reason": ("glmer did not complete" if not primary.get("completed")
+                            else "the reproduction did not converge")}
+
+    ours = np.asarray(reproduction["beta"], dtype=float)
+    theirs = np.array(primary["estimate"], dtype=float)
+    differences = theirs - ours
+    largest = int(np.argmax(np.abs(differences)))
+    per_term = {name: {"lme4": float(theirs[i]), "glmm_py": float(ours[i]),
+                       "lme4_minus_glmm_py": float(differences[i])}
+                for i, name in enumerate(names)}
+
+    their_sigma = float(primary["random_intercept_sd"])
+    model, ours_params = reproduction["model"], reproduction["params"]
+    at_theirs = {}
+    if ours_params is not None and their_sigma > 0:
+        theirs_params = np.concatenate([theirs, [np.log(their_sigma)]])
+        ours_loglik = float(reproduction["log_likelihood"])
+        theirs_loglik = float(model.loglik(theirs_params, warm_start=False))
+        gradient = []
+        for position in range(len(theirs_params)):
+            step = np.zeros(len(theirs_params)); step[position] = 1e-5
+            gradient.append((model.loglik(theirs_params + step, warm_start=False)
+                             - model.loglik(theirs_params - step, warm_start=False))
+                            / 2e-5)
+        at_theirs = {
+            "log_likelihood_at_our_estimate": ours_loglik,
+            "log_likelihood_at_lme4_estimate": theirs_loglik,
+            "our_estimate_scores_higher_by": ours_loglik - theirs_loglik,
+            "our_optimizer_stopped_short": bool(theirs_loglik > ours_loglik),
+            "max_absolute_gradient_at_lme4_estimate": float(np.max(np.abs(gradient))),
+        }
+
+    return {
+        "comparable": True,
+        "largest_absolute_coefficient_difference": float(np.max(np.abs(differences))),
+        "largest_difference_term": names[largest],
+        "registered_coefficient_lme4_minus_glmm_py": float(
+            differences[names.index("elderly_share_z")]),
+        "sigma_lme4": their_sigma,
+        "sigma_glmm_py": float(reproduction["sigma"]),
+        "per_term": per_term,
+        **at_theirs,
+    }
+
+
 def contextual_model(df, knots):
     """H6: the state's elderly share beside the record-level covariates.
 
@@ -523,10 +582,8 @@ def contextual_model(df, knots):
         reproduction, reproduced, message = None, False, str(error)
     elapsed = round(time.time() - started, 1)
 
-    agreement = None
-    if primary.get("completed") and reproduction is not None:
-        agreement = float(np.max(np.abs(
-            np.array(primary["estimate"], dtype=float) - reproduction["beta"])))
+    comparison = compare_implementations(primary, reproduction, ["intercept"] + terms)
+    agreement = comparison["largest_absolute_coefficient_difference"]
 
     if not primary.get("completed"):
         return {"glmer_completed": False,
@@ -584,6 +641,9 @@ def contextual_model(df, knots):
         "lme4": {k: v for k, v in primary.items() if k != "estimate" and k != "se"},
         "lme4_estimates": {name: float(value) for name, value
                            in zip(["intercept"] + terms, estimate)},
+        "glmm_py_estimates": (None if reproduction is None else
+                              {name: float(value) for name, value
+                               in zip(["intercept"] + terms, reproduction["beta"])}),
         "reproduction": {
             "implementation": "glmm.py, adaptive Gauss-Hermite quadrature",
             "converged": reproduced,
@@ -591,6 +651,7 @@ def contextual_model(df, knots):
             "sigma": None if reproduction is None else reproduction["sigma"],
             "largest_absolute_coefficient_difference": agreement,
             "tolerance": REPRODUCTION_TOLERANCE,
+            "comparison": comparison,
             "hessian_diagnostics": diagnostics or None,
             "max_absolute_gradient": gradient,
             "relative_gradient": relative_gradient,
