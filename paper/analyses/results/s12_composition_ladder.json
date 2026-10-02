@@ -1,5 +1,47 @@
 {
-  "timestamp": "2026-09-24 15:33:47",
+  "timestamp": "2026-10-01 19:19:12",
+  "run": {
+    "run_id": "s12_2026-10-01T19:19:12",
+    "commit": "d9d06916c1d925c275235ba7ffe081011b48ff60",
+    "analysis_tree_dirty": false,
+    "paths_watched_for_changes": [
+      "paper/analyses",
+      "scripts"
+    ],
+    "commit_verified_by": "the launcher, which held the repository",
+    "snapshot_sha256": "25ccc890d190bf66a90aae98507f78f6bfe8b0e9be10767936a0e929512dbc6d",
+    "started_at": "2026-10-01T22:29:50",
+    "environment": {
+      "python": "3.13.3",
+      "platform": "Linux-4.19.0-gvisor-x86_64-with-glibc2.36",
+      "packages": {
+        "numpy": "2.5.1",
+        "scipy": "1.18.0",
+        "pandas": "3.0.3",
+        "patsy": "1.0.2",
+        "statsmodels": "0.14.6"
+      },
+      "analysis_source_sha256_prefixes": {
+        "glmm.py": "fe7fb5fe9f7be434",
+        "mexico_confirmed_cases.py": "5abae30ee4f638a2",
+        "paths.py": "b673d3ba83f99e9f",
+        "s10_consistency_calibration.py": "db77ffa6e2e0a056",
+        "s11_site_definitions.py": "d6c58f3321f0defa",
+        "s12_composition_ladder.py": "b4fe8aa566078fc5",
+        "s1_power_simulation.py": "a9c8050df9da5b06",
+        "s1_power_simulation_fast.py": "2ff3e7043966b8da",
+        "s2_mundlak_decomposition.py": "8bfa7a6a1946ddad",
+        "s3_expected_ecological.py": "7c272e800016de61",
+        "s4_ecological_bounds.py": "6ba57b29fb33e554",
+        "s5_positive_control.py": "0e067db0f5490708",
+        "s6_alternative_pseudosites.py": "e9760330a0026091",
+        "s7_evalue_sensitivity.py": "4f92e12d54c3bcab",
+        "s8_leave_one_out.py": "b2a2b4e1ecb66931",
+        "s9_two_stage_vs_one_stage.py": "40005e859f673fac",
+        "validate_glmm.py": "1fcd2a4e6dccf259"
+      }
+    }
+  },
   "registration": {
     "file": "ANALYSIS_PROTOCOL_2_SITE_DEFINITIONS.md",
     "commit": "a38196b",
@@ -16,297 +58,760 @@
   "primary_ladder": {
     "model_1_elderly_only": {
       "observed_slope": 1.310530561199809,
-      "implied_slope": 0.3318655304208896,
-      "slope_difference": 0.9786650307789194,
-      "calibration_error": 0.022686244202309344,
+      "implied_slope": 0.33186553042088973,
+      "slope_difference": 0.9786650307789193,
+      "calibration_error": 0.022686244202309358,
       "formula": "elderly",
       "terms": 2,
       "cells": 64,
       "records": 3993464,
-      "seconds": 0.3,
+      "seconds": 0.2,
       "bootstrap": {
         "draws": 2000,
-        "draws_failed_to_converge": 0,
+        "valid_draws": 2000,
+        "failed_draws": 0,
+        "failure_reasons": {},
+        "unstable": false,
+        "minimum_valid_draws": 100,
+        "interval_is_conditional_on_valid_draws": false,
         "slope_difference_ci": [
-          0.6053832699783155,
-          1.4582404604702985
+          0.605383269978316,
+          1.4582404604702988
         ],
-        "mc_se": 0.004934688334787482
+        "mc_se": 0.004934688334787481
       }
     },
     "model_2_elderly_sex_any_comorbidity": {
       "observed_slope": 1.310530561199809,
-      "implied_slope": 0.45373416986380843,
-      "slope_difference": 0.8567963913360006,
-      "calibration_error": 0.021004512078576912,
+      "implied_slope": 0.45373416986380816,
+      "slope_difference": 0.8567963913360008,
+      "calibration_error": 0.021004512078576915,
       "formula": "elderly + male + has_comorbidity",
       "terms": 4,
       "cells": 256,
       "records": 3993464,
-      "seconds": 0.4,
-      "change_in_difference_from_previous": -0.12186863944291881,
+      "seconds": 0.3,
+      "change_in_difference_from_previous": -0.12186863944291848,
       "bootstrap": {
         "draws": 2000,
-        "draws_failed_to_converge": 0,
+        "valid_draws": 2000,
+        "failed_draws": 0,
+        "failure_reasons": {},
+        "unstable": false,
+        "minimum_valid_draws": 100,
+        "interval_is_conditional_on_valid_draws": false,
         "slope_difference_ci": [
-          0.4955949073724566,
-          1.3026919427219583
+          0.4955949073724571,
+          1.3026919427219588
         ],
         "mc_se": 0.004712290046586232
       }
     },
     "model_3_nine_comorbidities": {
       "observed_slope": 1.310530561199809,
-      "implied_slope": 0.49491231664296614,
+      "implied_slope": 0.4949123166429661,
       "slope_difference": 0.815618244556843,
-      "calibration_error": 0.019478355422770977,
+      "calibration_error": 0.019478355422771012,
       "formula": "elderly + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
       "terms": 12,
       "cells": 17623,
       "records": 3993464,
-      "seconds": 1.1,
-      "change_in_difference_from_previous": -0.041178146779157654,
+      "seconds": 0.6,
+      "change_in_difference_from_previous": -0.041178146779157876,
       "bootstrap": {
         "draws": 2000,
-        "draws_failed_to_converge": 0,
+        "valid_draws": 2000,
+        "failed_draws": 0,
+        "failure_reasons": {},
+        "unstable": false,
+        "minimum_valid_draws": 100,
+        "interval_is_conditional_on_valid_draws": false,
         "slope_difference_ci": [
-          0.4774867085449033,
-          1.2428542199177242
+          0.477486708544904,
+          1.2428542199177235
         ],
         "mc_se": 0.004382432750371105
       }
     },
     "model_4_age_bands": {
-      "observed_slope": 1.3108267518773238,
-      "implied_slope": 0.6498351376073225,
-      "slope_difference": 0.6609916142700013,
-      "calibration_error": 0.019207876390470127,
+      "observed_slope": 1.3108267518773236,
+      "implied_slope": 0.6498351376073231,
+      "slope_difference": 0.6609916142700004,
+      "calibration_error": 0.019207876390470138,
       "formula": "C(age_band) + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
       "terms": 22,
       "cells": 41449,
       "records": 3993464,
-      "seconds": 2.0,
-      "change_in_difference_from_previous": -0.15462663028684165,
+      "seconds": 1.1,
+      "change_in_difference_from_previous": -0.15462663028684254,
       "bootstrap": {
         "draws": 2000,
-        "draws_failed_to_converge": 8,
+        "valid_draws": 1992,
+        "failed_draws": 8,
+        "failure_reasons": {
+          "convergence": 8
+        },
+        "unstable": false,
+        "minimum_valid_draws": 100,
+        "interval_is_conditional_on_valid_draws": true,
         "slope_difference_ci": [
-          0.269295736596431,
-          1.1482595363026022
+          0.26929573659643047,
+          1.1482595363026058
         ],
         "mc_se": 0.004943501735261694
       }
     },
     "model_5_age_spline": {
       "observed_slope": 1.310530561199809,
-      "implied_slope": 0.6548676808689182,
-      "slope_difference": 0.6556628803308908,
-      "calibration_error": 0.019275772413299846,
+      "implied_slope": 0.6548676808689206,
+      "slope_difference": 0.6556628803308885,
+      "calibration_error": 0.01927577241329991,
       "formula": "cr(age, knots=[29.0, 39.0, 51.0], lower_bound=16.0, upper_bound=73.0, constraints='center') + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
       "terms": 15,
       "cells": 639766,
       "records": 3993464,
-      "seconds": 3.9,
-      "change_in_difference_from_previous": -0.005328733939110486,
+      "seconds": 2.2,
+      "change_in_difference_from_previous": -0.005328733939111929,
       "bootstrap": {
         "draws": 2000,
-        "draws_failed_to_converge": 0,
+        "valid_draws": 2000,
+        "failed_draws": 0,
+        "failure_reasons": {},
+        "unstable": false,
+        "minimum_valid_draws": 100,
+        "interval_is_conditional_on_valid_draws": false,
         "slope_difference_ci": [
-          0.2599657155375266,
-          1.1486485640120099
+          0.25996571553752446,
+          1.1486485640120128
         ],
-        "mc_se": 0.004971697918257708
+        "mc_se": 0.004971697918257709
       }
     },
     "model_6_age_spline_and_month": {
       "observed_slope": 1.310530561199809,
-      "implied_slope": 0.716433725948031,
-      "slope_difference": 0.594096835251778,
-      "calibration_error": 0.01873441533108935,
+      "implied_slope": 0.7164337259480309,
+      "slope_difference": 0.5940968352517781,
+      "calibration_error": 0.01873441533108934,
       "formula": "cr(age, knots=[29.0, 39.0, 51.0], lower_bound=16.0, upper_bound=73.0, constraints='center') + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo + C(onset_month)",
       "terms": 38,
       "cells": 639766,
       "records": 3993464,
-      "seconds": 9.8,
-      "change_in_difference_from_previous": -0.061566045079112786,
+      "seconds": 4.3,
+      "change_in_difference_from_previous": -0.06156604507911034,
       "bootstrap": {
         "draws": 2000,
-        "draws_failed_to_converge": 3,
+        "valid_draws": 1997,
+        "failed_draws": 3,
+        "failure_reasons": {
+          "convergence": 3
+        },
+        "unstable": false,
+        "minimum_valid_draws": 100,
+        "interval_is_conditional_on_valid_draws": true,
         "slope_difference_ci": [
-          0.21160825320332086,
-          1.0699533326445567
+          0.21160825320333213,
+          1.0699533326445596
         ],
-        "mc_se": 0.004848313419576812
+        "mc_se": 0.004848313419576804
       }
     }
   },
+  "h6_contextual_model": {
+    "glmer_completed": true,
+    "estimator": "lme4::glmer, nAGQ = 15, reproduced by glmm.py",
+    "fitted_at": "2026-10-01 21:58:24",
+    "seconds": 9471.4,
+    "n_cells": 152919,
+    "n_records": 3993464,
+    "terms": [
+      "intercept",
+      "age_spline_1",
+      "age_spline_2",
+      "age_spline_3",
+      "age_spline_4",
+      "male",
+      "diabetes",
+      "hipertension",
+      "obesidad",
+      "cardiovascular",
+      "renal_cronica",
+      "epoc",
+      "asma",
+      "inmusupr",
+      "tabaquismo",
+      "elderly_share_z"
+    ],
+    "elderly_share_per_sd": {
+      "log_or": 0.1669191385306,
+      "se": 0.04826837199007,
+      "or": 1.1816587107853906,
+      "ci": [
+        1.0749919029697135,
+        1.2989096056608445
+      ],
+      "p": 0.0005439039916100572,
+      "profile_ci": [
+        1.0718650086151642,
+        1.302664916569401
+      ],
+      "profile_log_or_ci": [
+        0.06940012992013,
+        0.2644121020387
+      ],
+      "interval_used": "profile likelihood"
+    },
+    "lme4": {
+      "r_version": "R version 4.2.2 Patched (2022-11-10 r83330)",
+      "lme4_version": "1.1.31",
+      "matrix_version": "1.5.3",
+      "optimizer": "bobyqa",
+      "maxfun": 100000,
+      "n_cells": 152919,
+      "n_groups": 32,
+      "n_records": 3993464,
+      "largest_absolute_gradient": 0.02407701686025,
+      "seconds": 5652.03848838806,
+      "nAGQ": 15,
+      "formula": "cbind(deaths, alive) ~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12 + x13 + x14 + x15 + (1 | group)",
+      "terms": [
+        "(Intercept)",
+        "x1",
+        "x2",
+        "x3",
+        "x4",
+        "x5",
+        "x6",
+        "x7",
+        "x8",
+        "x9",
+        "x10",
+        "x11",
+        "x12",
+        "x13",
+        "x14",
+        "x15"
+      ],
+      "random_intercept_sd": 0.2681833586967,
+      "log_likelihood": -94766.7038870689,
+      "singular": false,
+      "converged": true,
+      "profile_parameter": "x15",
+      "profile_ci": [
+        0.06940012992013,
+        0.2644121020387
+      ],
+      "profile_messages": [],
+      "convergence_messages": [],
+      "completed": true
+    },
+    "lme4_estimates": {
+      "intercept": -2.506433250041,
+      "age_spline_1": -3.035222979772,
+      "age_spline_2": -0.7401879752906,
+      "age_spline_3": -1.866342533714,
+      "age_spline_4": 2.907461639223,
+      "male": 0.5994637171962,
+      "diabetes": 0.5365690388612,
+      "hipertension": 0.2765934081047,
+      "obesidad": 0.5378509309172,
+      "cardiovascular": 0.110014434402,
+      "renal_cronica": 1.194301106355,
+      "epoc": 0.2718999957544,
+      "asma": -0.1405164774057,
+      "inmusupr": 0.6355371669195,
+      "tabaquismo": -0.03732073318134,
+      "elderly_share_z": 0.1669191385306
+    },
+    "reproduction": {
+      "implementation": "glmm.py, adaptive Gauss-Hermite quadrature",
+      "converged": true,
+      "message": "",
+      "sigma": 0.26816173659322395,
+      "largest_absolute_coefficient_difference": 7.650620009913567e-05,
+      "tolerance": 0.0001,
+      "hessian_diagnostics": {
+        "steps": [
+          0.0001,
+          0.0003
+        ],
+        "max_relative_difference_between_steps": 0.0002078885185767061,
+        "asymmetry_before_symmetrization": 0.0,
+        "positive_definite": true,
+        "condition_number": 1164.4683300759725
+      },
+      "max_absolute_gradient": 0.25385525077581406,
+      "relative_gradient": 3.377120712824578e-07,
+      "boundary_deviance_difference": 21557.138411047403,
+      "infeasible_evaluations": 0
+    },
+    "gate_thresholds": {
+      "hessian_step_agreement": 0.001,
+      "condition_number": 10000000000.0,
+      "relative_gradient": 1e-06
+    },
+    "random_intercept_sd": 0.2681833586967,
+    "singular": false,
+    "converged": true,
+    "n_states": 32,
+    "age_term": "the centered model-5 spline, evaluated per distinct age",
+    "age_representation": "model-5 centered spline basis",
+    "registered_covariates": true,
+    "gates": {
+      "registered_covariates": true,
+      "converged": true,
+      "term_order_matches": true,
+      "variance_component_off_the_boundary": true,
+      "finite_estimate": true,
+      "reproduced_independently": true,
+      "hessian_positive_definite": true,
+      "hessian_agrees_across_steps": true,
+      "hessian_well_conditioned": true,
+      "gradient_at_the_optimum": true,
+      "profile_interval_available": true
+    },
+    "failed_gates": [],
+    "evaluable": true,
+    "state_table": {
+      "1": {
+        "elderly_share": 0.069479222,
+        "unknown_rate": 0.0003793915,
+        "elderly_share_z": -0.1525449841,
+        "unknown_rate_z": -0.33571557
+      },
+      "2": {
+        "elderly_share": 0.074913999,
+        "unknown_rate": 0.001939131,
+        "elderly_share_z": 0.2269648376,
+        "unknown_rate_z": 0.0769490579
+      },
+      "3": {
+        "elderly_share": 0.0370311733,
+        "unknown_rate": 0.0008074347,
+        "elderly_share_z": -2.4183883064,
+        "unknown_rate_z": -0.2224669707
+      },
+      "4": {
+        "elderly_share": 0.0699560527,
+        "unknown_rate": 0.0001198562,
+        "elderly_share_z": -0.1192479509,
+        "unknown_rate_z": -0.4043815413
+      },
+      "5": {
+        "elderly_share": 0.0708389775,
+        "unknown_rate": 0.0052624911,
+        "elderly_share_z": -0.0575934201,
+        "unknown_rate_z": 0.9562196767
+      },
+      "6": {
+        "elderly_share": 0.0618135902,
+        "unknown_rate": 0.0006460328,
+        "elderly_share_z": -0.6878351283,
+        "unknown_rate_z": -0.2651695361
+      },
+      "7": {
+        "elderly_share": 0.0789886583,
+        "unknown_rate": 0.0002689739,
+        "elderly_share_z": 0.511497803,
+        "unknown_rate_z": -0.364929059
+      },
+      "8": {
+        "elderly_share": 0.0828614781,
+        "unknown_rate": 0.0018380766,
+        "elderly_share_z": 0.7819363449,
+        "unknown_rate_z": 0.0502128016
+      },
+      "9": {
+        "elderly_share": 0.0584782149,
+        "unknown_rate": 0.0027463102,
+        "elderly_share_z": -0.9207439804,
+        "unknown_rate_z": 0.2905067116
+      },
+      "10": {
+        "elderly_share": 0.0626405714,
+        "unknown_rate": 0.0215246814,
+        "elderly_share_z": -0.6300871323,
+        "unknown_rate_z": 5.2587525537
+      },
+      "11": {
+        "elderly_share": 0.0682438981,
+        "unknown_rate": 0.0002545501,
+        "elderly_share_z": -0.2388074997,
+        "unknown_rate_z": -0.3687451991
+      },
+      "12": {
+        "elderly_share": 0.0821783473,
+        "unknown_rate": 0.0004053347,
+        "elderly_share_z": 0.7342334016,
+        "unknown_rate_z": -0.3288516864
+      },
+      "13": {
+        "elderly_share": 0.0781992443,
+        "unknown_rate": 0.0001135203,
+        "elderly_share_z": 0.4563731194,
+        "unknown_rate_z": -0.4060578504
+      },
+      "14": {
+        "elderly_share": 0.0890605154,
+        "unknown_rate": 0.0017517141,
+        "elderly_share_z": 1.2148143707,
+        "unknown_rate_z": 0.0273636438
+      },
+      "15": {
+        "elderly_share": 0.072217942,
+        "unknown_rate": 0.0006440751,
+        "elderly_share_z": 0.0386995016,
+        "unknown_rate_z": -0.2656874773
+      },
+      "16": {
+        "elderly_share": 0.089540412,
+        "unknown_rate": 0.0021859118,
+        "elderly_share_z": 1.2483254953,
+        "unknown_rate_z": 0.142240538
+      },
+      "17": {
+        "elderly_share": 0.0924391611,
+        "unknown_rate": 0.0005803714,
+        "elderly_share_z": 1.4507447894,
+        "unknown_rate_z": -0.2825417377
+      },
+      "18": {
+        "elderly_share": 0.085289876,
+        "unknown_rate": 8.65301e-05,
+        "elderly_share_z": 0.9515110746,
+        "unknown_rate_z": -0.413198702
+      },
+      "19": {
+        "elderly_share": 0.0629414356,
+        "unknown_rate": 0.0008479353,
+        "elderly_share_z": -0.6090778177,
+        "unknown_rate_z": -0.2117516101
+      },
+      "20": {
+        "elderly_share": 0.0743690463,
+        "unknown_rate": 0.0004684854,
+        "elderly_share_z": 0.1889108591,
+        "unknown_rate_z": -0.3121437506
+      },
+      "21": {
+        "elderly_share": 0.0789665098,
+        "unknown_rate": 0.0009285626,
+        "elderly_share_z": 0.5099511811,
+        "unknown_rate_z": -0.190419838
+      },
+      "22": {
+        "elderly_share": 0.0502405078,
+        "unknown_rate": 0.0004534164,
+        "elderly_share_z": -1.495982072,
+        "unknown_rate_z": -0.3161305864
+      },
+      "23": {
+        "elderly_share": 0.0358930749,
+        "unknown_rate": 0.0006257621,
+        "elderly_share_z": -2.4978615813,
+        "unknown_rate_z": -0.2705325917
+      },
+      "24": {
+        "elderly_share": 0.0726823418,
+        "unknown_rate": 0.0026619908,
+        "elderly_share_z": 0.071128487,
+        "unknown_rate_z": 0.2681980745
+      },
+      "25": {
+        "elderly_share": 0.0932446548,
+        "unknown_rate": 0.0008330138,
+        "elderly_share_z": 1.5069923218,
+        "unknown_rate_z": -0.2156994481
+      },
+      "26": {
+        "elderly_share": 0.0755290174,
+        "unknown_rate": 0.0005157214,
+        "elderly_share_z": 0.269911498,
+        "unknown_rate_z": -0.2996463657
+      },
+      "27": {
+        "elderly_share": 0.0500404104,
+        "unknown_rate": 0.0003150642,
+        "elderly_share_z": -1.5099548507,
+        "unknown_rate_z": -0.352734817
+      },
+      "28": {
+        "elderly_share": 0.0645179589,
+        "unknown_rate": 0.0005483648,
+        "elderly_share_z": -0.4989893837,
+        "unknown_rate_z": -0.2910098141
+      },
+      "29": {
+        "elderly_share": 0.0725417235,
+        "unknown_rate": 0.0015105184,
+        "elderly_share_z": 0.0613091239,
+        "unknown_rate_z": -0.0364501797
+      },
+      "30": {
+        "elderly_share": 0.0846314925,
+        "unknown_rate": 0.0006897968,
+        "elderly_share_z": 0.9055362366,
+        "unknown_rate_z": -0.253590777
+      },
+      "31": {
+        "elderly_share": 0.0694215955,
+        "unknown_rate": 0.000561431,
+        "elderly_share_z": -0.1565690347,
+        "unknown_rate_z": -0.2875528629
+      },
+      "32": {
+        "elderly_share": 0.08404874,
+        "unknown_rate": 0.0002307763,
+        "elderly_share_z": 0.8648426967,
+        "unknown_rate_z": -0.3750350865
+      }
+    }
+  },
+  "sensitivity_unknown_comorbidity_rate": {
+    "observed_slope": 1.310530561199809,
+    "implied_slope": 0.7102790292275528,
+    "slope_difference": 0.6002515319722562,
+    "calibration_error": 0.019247869420622187,
+    "unknown_rate_coefficient": {
+      "log_or": -45.08886157838614,
+      "se": 47.77639802028457,
+      "or": 2.619124971104875e-20,
+      "ci": [
+        5.624257697496839e-61,
+        1.2196837312981277e+21
+      ],
+      "converged": true,
+      "clusters": 32,
+      "uncertainty": "state-clustered sandwich with a small-sample correction; the covariate takes one value per state, so a model-based interval would treat millions of records as independent information about it, and 32 clusters is few enough that even the clustered interval is read as a nuisance-parameter diagnostic"
+    },
+    "correlation_with_elderly_share": -0.09632310588901016,
+    "per_state_unknown_rate": {
+      "1": 0.00037939145610440855,
+      "2": 0.0019391310063761257,
+      "3": 0.0008074347323591343,
+      "4": 0.00011985617259288853,
+      "5": 0.005262491107364564,
+      "6": 0.0006460327714805896,
+      "7": 0.00026897386470614603,
+      "8": 0.0018380765577390426,
+      "9": 0.0027463102412248024,
+      "10": 0.021524681371581898,
+      "11": 0.0002545500827287769,
+      "12": 0.0004053347280334728,
+      "13": 0.00011352026336701102,
+      "14": 0.001751714091366036,
+      "15": 0.0006440751203564426,
+      "16": 0.0021859117984589322,
+      "17": 0.0005803714377201409,
+      "18": 8.653014133256418e-05,
+      "19": 0.0008479353484824799,
+      "20": 0.0004684853508234531,
+      "21": 0.0009285625851182369,
+      "22": 0.0004534163939597051,
+      "23": 0.0006257621462037096,
+      "24": 0.0026619907693425883,
+      "25": 0.0008330137910060955,
+      "26": 0.0005157214459540041,
+      "27": 0.00031506417720305203,
+      "28": 0.0005483648327959988,
+      "29": 0.0015105183656928122,
+      "30": 0.0006897967563128721,
+      "31": 0.0005614309962136049,
+      "32": 0.0002307763315794332
+    },
+    "records_with_all_flags_unknown": 7080,
+    "note": "model 5 plus the state's rate of records whose nine comorbidity flags are all unknown, which the primary coding places in the reference group"
+  },
+  "bootstrap_draws_file": "results/s12_bootstrap_draws.csv",
   "sensitivity_recent_onset_excluded": {
     "model_1_elderly_only": {
       "observed_slope": 1.3327783307905978,
-      "implied_slope": 0.33489181881714,
-      "slope_difference": 0.9978865119734579,
-      "calibration_error": 0.023096292219565426,
+      "implied_slope": 0.33489181881714025,
+      "slope_difference": 0.9978865119734576,
+      "calibration_error": 0.023096292219565415,
       "formula": "elderly",
       "terms": 2,
       "cells": 64,
       "records": 3916019,
-      "seconds": 0.4
+      "seconds": 0.2
     },
     "model_2_elderly_sex_any_comorbidity": {
       "observed_slope": 1.3327783307905978,
-      "implied_slope": 0.456672825647742,
-      "slope_difference": 0.8761055051428559,
-      "calibration_error": 0.02139914095976715,
+      "implied_slope": 0.45667282564774253,
+      "slope_difference": 0.8761055051428552,
+      "calibration_error": 0.021399140959767193,
       "formula": "elderly + male + has_comorbidity",
       "terms": 4,
       "cells": 256,
       "records": 3916019,
-      "seconds": 0.5,
-      "change_in_difference_from_previous": -0.121781006830602
+      "seconds": 0.3,
+      "change_in_difference_from_previous": -0.12178100683060233
     },
     "model_3_nine_comorbidities": {
       "observed_slope": 1.3327783307905978,
-      "implied_slope": 0.5002880854507259,
-      "slope_difference": 0.8324902453398719,
-      "calibration_error": 0.01981917194538611,
+      "implied_slope": 0.5002880854507248,
+      "slope_difference": 0.832490245339873,
+      "calibration_error": 0.01981917194538606,
       "formula": "elderly + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
       "terms": 12,
       "cells": 17545,
       "records": 3916019,
-      "seconds": 1.5,
-      "change_in_difference_from_previous": -0.043615259802983974
+      "seconds": 0.7,
+      "change_in_difference_from_previous": -0.0436152598029822
     },
     "model_4_age_bands": {
       "observed_slope": 1.3330656793215427,
-      "implied_slope": 0.6531858179794049,
-      "slope_difference": 0.6798798613421378,
-      "calibration_error": 0.0195304065830883,
+      "implied_slope": 0.6531858179794068,
+      "slope_difference": 0.679879861342136,
+      "calibration_error": 0.019530406583088373,
       "formula": "C(age_band) + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
       "terms": 22,
       "cells": 41210,
       "records": 3916019,
-      "seconds": 2.1,
-      "change_in_difference_from_previous": -0.15261038399773408
+      "seconds": 1.0,
+      "change_in_difference_from_previous": -0.15261038399773708
     },
     "model_5_age_spline": {
       "observed_slope": 1.3327783307905978,
-      "implied_slope": 0.6582568526132576,
-      "slope_difference": 0.6745214781773402,
-      "calibration_error": 0.019596408663875377,
+      "implied_slope": 0.658256852613257,
+      "slope_difference": 0.6745214781773409,
+      "calibration_error": 0.01959640866387533,
       "formula": "cr(age, knots=[29.0, 39.0, 51.0], lower_bound=16.0, upper_bound=73.0, constraints='center') + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
       "terms": 15,
       "cells": 626860,
       "records": 3916019,
-      "seconds": 4.2,
-      "change_in_difference_from_previous": -0.005358383164797642
+      "seconds": 2.2,
+      "change_in_difference_from_previous": -0.005358383164795089
     },
     "model_6_age_spline_and_month": {
       "observed_slope": 1.3327783307905978,
-      "implied_slope": 0.7100854575794867,
-      "slope_difference": 0.6226928732111111,
-      "calibration_error": 0.01901917643618995,
+      "implied_slope": 0.7100854575794873,
+      "slope_difference": 0.6226928732111106,
+      "calibration_error": 0.019019176436189944,
       "formula": "cr(age, knots=[29.0, 39.0, 51.0], lower_bound=16.0, upper_bound=73.0, constraints='center') + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo + C(onset_month)",
       "terms": 37,
       "cells": 626860,
       "records": 3916019,
-      "seconds": 6.4,
-      "change_in_difference_from_previous": -0.0518286049662291
+      "seconds": 3.1,
+      "change_in_difference_from_previous": -0.05182860496623032
     }
   },
   "sensitivity_implausible_ages_excluded": {
     "model_1_elderly_only": {
-      "observed_slope": 1.3106934419288259,
-      "implied_slope": 0.3322794814436656,
-      "slope_difference": 0.9784139604851603,
-      "calibration_error": 0.022667483923526473,
+      "observed_slope": 1.310693441928826,
+      "implied_slope": 0.33227948144366565,
+      "slope_difference": 0.9784139604851605,
+      "calibration_error": 0.02266748392352649,
       "formula": "elderly",
       "terms": 2,
       "cells": 64,
       "records": 3993165,
-      "seconds": 0.4
+      "seconds": 0.2
     },
     "model_2_elderly_sex_any_comorbidity": {
-      "observed_slope": 1.3106934419288259,
-      "implied_slope": 0.45393098618003963,
-      "slope_difference": 0.8567624557487863,
-      "calibration_error": 0.020994955131320926,
+      "observed_slope": 1.310693441928826,
+      "implied_slope": 0.4539309861800397,
+      "slope_difference": 0.8567624557487864,
+      "calibration_error": 0.02099495513132094,
       "formula": "elderly + male + has_comorbidity",
       "terms": 4,
       "cells": 256,
       "records": 3993165,
-      "seconds": 0.5,
-      "change_in_difference_from_previous": -0.12165150473637398
+      "seconds": 0.3,
+      "change_in_difference_from_previous": -0.1216515047363741
     },
     "model_3_nine_comorbidities": {
-      "observed_slope": 1.3106934419288259,
-      "implied_slope": 0.495169405962207,
-      "slope_difference": 0.8155240359666189,
-      "calibration_error": 0.019469146527057574,
+      "observed_slope": 1.310693441928826,
+      "implied_slope": 0.4951694059622068,
+      "slope_difference": 0.8155240359666193,
+      "calibration_error": 0.01946914652705757,
       "formula": "elderly + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
       "terms": 12,
       "cells": 17622,
       "records": 3993165,
-      "seconds": 1.4,
-      "change_in_difference_from_previous": -0.04123841978216736
+      "seconds": 0.7,
+      "change_in_difference_from_previous": -0.041238419782167135
     },
     "model_4_age_bands": {
-      "observed_slope": 1.3106934419288259,
-      "implied_slope": 0.6496638905015049,
-      "slope_difference": 0.661029551427321,
-      "calibration_error": 0.019208342031437696,
+      "observed_slope": 1.310693441928826,
+      "implied_slope": 0.6496638905015059,
+      "slope_difference": 0.6610295514273202,
+      "calibration_error": 0.019208342031437748,
       "formula": "C(age_band) + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
       "terms": 22,
       "cells": 41420,
       "records": 3993165,
-      "seconds": 2.1,
-      "change_in_difference_from_previous": -0.15449448453929793
+      "seconds": 1.0,
+      "change_in_difference_from_previous": -0.15449448453929904
     },
     "model_5_age_spline": {
-      "observed_slope": 1.3106934419288259,
-      "implied_slope": 0.6568634564363807,
-      "slope_difference": 0.6538299854924452,
-      "calibration_error": 0.019227274023028356,
+      "observed_slope": 1.310693441928826,
+      "implied_slope": 0.6568634564363808,
+      "slope_difference": 0.6538299854924453,
+      "calibration_error": 0.019227274023028353,
       "formula": "cr(age, knots=[29.0, 39.0, 51.0], lower_bound=16.0, upper_bound=73.0, constraints='center') + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
       "terms": 15,
       "cells": 639654,
       "records": 3993165,
-      "seconds": 4.4,
-      "change_in_difference_from_previous": -0.007199565934875807
+      "seconds": 2.3,
+      "change_in_difference_from_previous": -0.007199565934874919
     },
     "model_6_age_spline_and_month": {
-      "observed_slope": 1.3106934419288259,
-      "implied_slope": 0.7181181038703836,
-      "slope_difference": 0.5925753380584423,
-      "calibration_error": 0.018689182967095087,
+      "observed_slope": 1.310693441928826,
+      "implied_slope": 0.7181181038703826,
+      "slope_difference": 0.5925753380584435,
+      "calibration_error": 0.018689182967095107,
       "formula": "cr(age, knots=[29.0, 39.0, 51.0], lower_bound=16.0, upper_bound=73.0, constraints='center') + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo + C(onset_month)",
       "terms": 38,
       "cells": 639654,
       "records": 3993165,
-      "seconds": 10.4,
-      "change_in_difference_from_previous": -0.061254647434002885
+      "seconds": 4.6,
+      "change_in_difference_from_previous": -0.061254647434001774
     }
   },
   "h4_composition_contrast": {
     "criterion": "the model-5 difference is smaller than the model-2 difference and its bootstrap CI excludes 0",
-    "model_2_difference": 0.8567963913360006,
-    "model_5_difference": 0.6556628803308908,
+    "model_2_difference": 0.8567963913360008,
+    "model_5_difference": 0.6556628803308885,
     "smaller": true,
+    "share_of_model_2_difference_explained": 0.23475065142546325,
     "ci": [
-      0.2599657155375266,
-      1.1486485640120099
+      0.25996571553752446,
+      1.1486485640120128
     ],
+    "valid_draws": 2000,
+    "unstable": false,
+    "evaluable": true,
+    "holds": true
+  },
+  "h6_contextual_association": {
+    "criterion": "the per-standard-deviation state-level odds ratio under the record-level covariates has a CI excluding 1",
+    "per_sd_or": 1.1816587107853906,
+    "ci": [
+      1.0718650086151642,
+      1.302664916569401
+    ],
+    "interval_used": "profile likelihood",
+    "wald_ci": [
+      1.0749919029697135,
+      1.2989096056608445
+    ],
+    "evaluable": true,
     "holds": true,
-    "share_of_model_2_difference_explained": 0.23475065142546037
+    "age_term": "the centered model-5 spline, evaluated per distinct age",
+    "note": "a model that does not converge, or whose random intercept sits at its boundary, leaves H6 not evaluable: the estimate is reported descriptively and the registered criterion is not applied. The registration voids a hypothesis on nonconvergence; extending that to a boundary solution is a pre-run implementation decision recorded in PROTOCOL_CORRECTION_ADDENDUM.md section 11, because at sigma = 0 the interval on a state-level covariate treats records as independent"
   },
   "h5_temporal_contrast": {
     "criterion": "the model-6 difference is smaller than the model-5 difference and its bootstrap CI excludes 0",
-    "model_5_difference": 0.6556628803308908,
-    "model_6_difference": 0.594096835251778,
+    "model_5_difference": 0.6556628803308885,
+    "model_6_difference": 0.5940968352517781,
     "smaller": true,
     "ci": [
-      0.21160825320332086,
-      1.0699533326445567
+      0.21160825320333213,
+      1.0699533326445596
     ],
+    "valid_draws": 1997,
+    "unstable": false,
+    "evaluable": true,
     "holds": true
   }
 }

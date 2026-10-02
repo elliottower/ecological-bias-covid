@@ -1,5 +1,47 @@
 {
-  "timestamp": "2026-09-24 15:23:36",
+  "timestamp": "2026-09-30 14:34:58",
+  "run": {
+    "run_id": "s11_2026-09-30T14:34:58",
+    "commit": "437dab936ac7ab19f9ff6b78c30fd544323a9148",
+    "analysis_tree_dirty": false,
+    "paths_watched_for_changes": [
+      "paper/analyses",
+      "scripts"
+    ],
+    "commit_verified_by": "the launcher, which held the repository",
+    "snapshot_sha256": "25ccc890d190bf66a90aae98507f78f6bfe8b0e9be10767936a0e929512dbc6d",
+    "started_at": "2026-09-30T14:35:45",
+    "environment": {
+      "python": "3.13.3",
+      "platform": "Linux-4.19.0-gvisor-x86_64-with-glibc2.36",
+      "packages": {
+        "numpy": "2.5.1",
+        "scipy": "1.18.0",
+        "pandas": "3.0.3",
+        "patsy": "1.0.2",
+        "statsmodels": "0.14.6"
+      },
+      "analysis_source_sha256_prefixes": {
+        "glmm.py": "fe7fb5fe9f7be434",
+        "mexico_confirmed_cases.py": "5abae30ee4f638a2",
+        "paths.py": "b673d3ba83f99e9f",
+        "s10_consistency_calibration.py": "db77ffa6e2e0a056",
+        "s11_site_definitions.py": "d6c58f3321f0defa",
+        "s12_composition_ladder.py": "83ffbef05482d065",
+        "s1_power_simulation.py": "a9c8050df9da5b06",
+        "s1_power_simulation_fast.py": "2ff3e7043966b8da",
+        "s2_mundlak_decomposition.py": "8bfa7a6a1946ddad",
+        "s3_expected_ecological.py": "7c272e800016de61",
+        "s4_ecological_bounds.py": "6ba57b29fb33e554",
+        "s5_positive_control.py": "0e067db0f5490708",
+        "s6_alternative_pseudosites.py": "e9760330a0026091",
+        "s7_evalue_sensitivity.py": "4f92e12d54c3bcab",
+        "s8_leave_one_out.py": "b2a2b4e1ecb66931",
+        "s9_two_stage_vs_one_stage.py": "40005e859f673fac",
+        "validate_glmm.py": "1fcd2a4e6dccf259"
+      }
+    }
+  },
   "registration": {
     "file": "ANALYSIS_PROTOCOL_2_SITE_DEFINITIONS.md",
     "commit": "a38196b",
@@ -7,20 +49,24 @@
   },
   "seeds": {
     "partition": 20260924,
-    "bootstrap": 20260925
+    "bootstrap": 20260925,
+    "substreams": "numpy SeedSequence(20260925).spawn, one per analysis, in the order ['treating_state', 'residence_state', 'sector', 'municipality_1000', 'municipality_500', 'municipality_250', 'municipality_all_valid', 'municipality_paired']"
   },
   "definitions": {
     "treating_unit_state": {
       "observed_slope": 1.310530561199809,
-      "implied_slope": 0.45373416986380866,
-      "slope_difference": 0.8567963913360004,
+      "implied_slope": 0.45373416986380843,
+      "slope_difference": 0.8567963913360006,
       "observed_p": 5.324808408832103e-06,
       "observed_r_squared": 0.5041447571974051,
-      "weighted_observed_slope": 1.8222253501130994,
-      "weighted_implied_slope": 0.5007591823194326,
-      "weighted_slope_difference": 1.3214661677936668,
-      "binomial_log_odds_slope": 26.52196760902315,
-      "binomial_se": 0.15241962332250866,
+      "weighted_observed_slope": 1.8222253501130987,
+      "weighted_implied_slope": 0.5007591823194317,
+      "weighted_slope_difference": 1.321466167793667,
+      "binomial_log_odds_slope": 26.5219676090231,
+      "binomial_se": 0.15241962332250863,
+      "binomial_implied_log_odds_slope": 7.220432293425937,
+      "binomial_implied_note": "a binomial-deviance projection of model-implied mortality onto elderly share, weighted by site records; its standard error is not sampling uncertainty, because the response comes from a fitted model, so uncertainty comes from the bootstrap",
+      "binomial_log_odds_difference": 19.301535315597164,
       "n_sites": 32,
       "n_records": 3993464,
       "n_deaths": 299581,
@@ -30,9 +76,9 @@
       "elderly_share_sd": 0.014320517381504853,
       "coefficients": {
         "intercept": -3.7952702573142463,
-        "beta_elderly": 2.076233837869408,
-        "beta_male": 0.5465855745715338,
-        "beta_has_comorbidity": 1.3377875174140201
+        "beta_elderly": 2.0762338378694087,
+        "beta_male": 0.5465855745715336,
+        "beta_has_comorbidity": 1.337787517414018
       },
       "minimum_site_records": 1000,
       "sites_before_size_rule": 32,
@@ -41,37 +87,50 @@
       "residence_states_represented": 32,
       "bootstrap": {
         "draws": 2000,
+        "valid_draws": 2000,
+        "failed_draws": 0,
+        "failure_reasons": {
+          "fit": 0,
+          "no_exposure_variation": 0
+        },
+        "unstable": false,
+        "minimum_valid_draws": 100,
+        "interval_is_conditional_on_valid_draws": false,
         "slope_difference_ci": [
-          0.4955949286744182,
-          1.302691939654225
+          0.5098784268403347,
+          1.3018050401583579
         ],
-        "slope_difference_mc_se": 0.004712289832375725,
+        "slope_difference_mc_se": 0.004546241528701409,
         "implied_slope_ci": [
-          0.39441217525440514,
-          0.5441900051540112
+          0.3965203121122332,
+          0.5435915420125481
         ]
       },
       "ratio": {
         "reportable": true,
         "rule": "the resampling distribution of the implied slope excludes zero",
         "ci": [
-          2.0343643473711817,
-          3.917510481051272
+          2.0722973312295916,
+          3.8207377474244595
         ],
-        "point": 2.8883223884001805
-      }
+        "point": 2.888322388400182
+      },
+      "records_without_this_code": 0
     },
     "residence_state": {
       "observed_slope": 1.3046633992047134,
-      "implied_slope": 0.45500796260349974,
-      "slope_difference": 0.8496554366012137,
+      "implied_slope": 0.45500796260349935,
+      "slope_difference": 0.8496554366012141,
       "observed_p": 1.2153296607634768e-06,
       "observed_r_squared": 0.5494984318676168,
-      "weighted_observed_slope": 1.8213560796139572,
-      "weighted_implied_slope": 0.5089069929079932,
-      "weighted_slope_difference": 1.312449086705964,
-      "binomial_log_odds_slope": 26.609255849138503,
-      "binomial_se": 0.14788256685711462,
+      "weighted_observed_slope": 1.8213560796139567,
+      "weighted_implied_slope": 0.5089069929079924,
+      "weighted_slope_difference": 1.3124490867059644,
+      "binomial_log_odds_slope": 26.609255849138464,
+      "binomial_se": 0.14788256685711454,
+      "binomial_implied_log_odds_slope": 7.341250347775151,
+      "binomial_implied_note": "a binomial-deviance projection of model-implied mortality onto elderly share, weighted by site records; its standard error is not sampling uncertainty, because the response comes from a fitted model, so uncertainty comes from the bootstrap",
+      "binomial_log_odds_difference": 19.268005501363312,
       "n_sites": 32,
       "n_records": 3993464,
       "n_deaths": 299581,
@@ -81,9 +140,9 @@
       "elderly_share_sd": 0.01469941786591538,
       "coefficients": {
         "intercept": -3.7952702573142463,
-        "beta_elderly": 2.076233837869408,
-        "beta_male": 0.5465855745715338,
-        "beta_has_comorbidity": 1.3377875174140201
+        "beta_elderly": 2.0762338378694087,
+        "beta_male": 0.5465855745715336,
+        "beta_has_comorbidity": 1.337787517414018
       },
       "minimum_site_records": 1000,
       "sites_before_size_rule": 32,
@@ -92,37 +151,50 @@
       "residence_states_represented": 32,
       "bootstrap": {
         "draws": 2000,
+        "valid_draws": 2000,
+        "failed_draws": 0,
+        "failure_reasons": {
+          "fit": 0,
+          "no_exposure_variation": 0
+        },
+        "unstable": false,
+        "minimum_valid_draws": 100,
+        "interval_is_conditional_on_valid_draws": false,
         "slope_difference_ci": [
-          0.47554512437921387,
-          1.2935934704882388
+          0.5070687725551938,
+          1.3195588661355668
         ],
-        "slope_difference_mc_se": 0.004684864249848065,
+        "slope_difference_mc_se": 0.004743334928928414,
         "implied_slope_ci": [
-          0.3949429814953206,
-          0.5351304976450182
+          0.3931915796396225,
+          0.532567769691217
         ]
       },
       "ratio": {
         "reportable": true,
         "rule": "the resampling distribution of the implied slope excludes zero",
         "ci": [
-          2.001540618945278,
-          3.835419578339416
+          2.056264127700021,
+          3.8966443458686095
         ],
-        "point": 2.8673419070285924
-      }
+        "point": 2.867341907028595
+      },
+      "records_without_this_code": 0
     },
     "health_care_sector": {
-      "observed_slope": 1.1934547784966896,
-      "implied_slope": 0.42775258125352017,
-      "slope_difference": 0.7657021972431695,
-      "observed_p": 5.884903100159325e-05,
-      "observed_r_squared": 0.8472543865818725,
-      "weighted_observed_slope": 1.4283578656994864,
-      "weighted_implied_slope": 0.4667036000272102,
-      "weighted_slope_difference": 0.9616542656722762,
-      "binomial_log_odds_slope": 14.053441425014817,
-      "binomial_se": 0.06611621231638114,
+      "observed_slope": 1.1934547784966891,
+      "implied_slope": 0.42775258125352006,
+      "slope_difference": 0.765702197243169,
+      "observed_p": 5.8849031001594e-05,
+      "observed_r_squared": 0.8472543865818721,
+      "weighted_observed_slope": 1.4283578656994866,
+      "weighted_implied_slope": 0.46670360002721034,
+      "weighted_slope_difference": 0.9616542656722763,
+      "binomial_log_odds_slope": 14.053441425014821,
+      "binomial_se": 0.06611621231638115,
+      "binomial_implied_log_odds_slope": 5.718477626449403,
+      "binomial_implied_note": "a binomial-deviance projection of model-implied mortality onto elderly share, weighted by site records; its standard error is not sampling uncertainty, because the response comes from a fitted model, so uncertainty comes from the bootstrap",
+      "binomial_log_odds_difference": 8.334963798565418,
       "n_sites": 11,
       "n_records": 3992055,
       "n_deaths": 299545,
@@ -131,165 +203,402 @@
       "elderly_share_max": 0.1899581589958159,
       "elderly_share_sd": 0.04482320755270265,
       "coefficients": {
-        "intercept": -3.794994659168924,
-        "beta_elderly": 2.0761069895899857,
-        "beta_male": 0.5465592840277893,
-        "beta_has_comorbidity": 1.3378387256306246
+        "intercept": -3.794994659168921,
+        "beta_elderly": 2.0761069895899844,
+        "beta_male": 0.5465592840277875,
+        "beta_has_comorbidity": 1.3378387256306237
       },
       "minimum_site_records": 1000,
-      "sites_before_size_rule": 15,
-      "records_excluded_by_size_rule": 1409,
+      "sites_before_size_rule": 14,
+      "records_excluded_by_size_rule": 1389,
       "treating_states_represented": 32,
       "residence_states_represented": 32,
       "bootstrap": {
         "draws": 2000,
+        "valid_draws": 2000,
+        "failed_draws": 0,
+        "failure_reasons": {
+          "fit": 0,
+          "no_exposure_variation": 0
+        },
+        "unstable": false,
+        "minimum_valid_draws": 100,
+        "interval_is_conditional_on_valid_draws": false,
         "slope_difference_ci": [
-          0.2755438508241359,
-          1.1890417962999633
+          0.29094942002536817,
+          1.1891280733582072
         ],
-        "slope_difference_mc_se": 0.00548812977220613,
+        "slope_difference_mc_se": 0.0052267255653456485,
         "implied_slope_ci": [
-          0.24621622246925468,
-          0.7126548514347705
+          0.2481174981540026,
+          0.7237304317546516
         ]
       },
       "ratio": {
         "reportable": true,
         "rule": "the resampling distribution of the implied slope excludes zero",
         "ci": [
-          1.4022123634464467,
-          5.423243261386858
+          1.4526433449759095,
+          5.364627427848749
         ],
-        "point": 2.7900586245424748
+        "point": 2.7900586245424743
+      },
+      "records_without_this_code": 20,
+      "influence": {
+        "full_slope_difference": 0.765702197243169,
+        "slope_difference_without_each_site": {
+          "3": 0.7845713978340334,
+          "4": 0.9810683545698058,
+          "5": 0.7598301797926785,
+          "6": 0.7310171595360011,
+          "7": 0.7166132997188063,
+          "8": 0.8247548785153178,
+          "9": 0.7246141747557234,
+          "10": 0.6594346773610705,
+          "11": 0.7710451933698049,
+          "12": 0.6399098038188725,
+          "13": 0.8407165227820368
+        },
+        "deletion_change": {
+          "3": 0.018869200590864388,
+          "4": 0.21536615732663678,
+          "5": -0.005872017450490485,
+          "6": -0.03468503770716791,
+          "7": -0.04908889752436274,
+          "8": 0.0590526812721488,
+          "9": -0.041088022487445586,
+          "10": -0.10626751988209848,
+          "11": 0.005342996126635913,
+          "12": -0.1257923934242965,
+          "13": 0.07501432553886778
+        },
+        "largest_deletion_change": {
+          "site": "4",
+          "change": 0.21536615732663678
+        },
+        "range": [
+          0.6399098038188725,
+          0.9810683545698058
+        ],
+        "leverage": {
+          "3": 0.13263780820411816,
+          "4": 0.17509471532236973,
+          "5": 0.09528316859972319,
+          "6": 0.17425370303922452,
+          "7": 0.16072469586525215,
+          "8": 0.16715143099661864,
+          "9": 0.1079750291780088,
+          "10": 0.2330899023749183,
+          "11": 0.1145385108916107,
+          "12": 0.2408677120729,
+          "13": 0.3983833234552566
+        },
+        "site_records": {
+          "3": 45567,
+          "4": 1549497,
+          "5": 27033,
+          "6": 122661,
+          "7": 2909,
+          "8": 23741,
+          "9": 118209,
+          "10": 22596,
+          "11": 11153,
+          "12": 2066299,
+          "13": 2390
+        }
       }
     },
     "municipality": {
+      "records_without_a_municipality_code": 2874,
       "threshold_1000": {
-        "observed_slope": 0.9009462428774595,
-        "implied_slope": 0.42614100311199815,
-        "slope_difference": 0.47480523976546135,
-        "observed_p": 4.990269566527636e-30,
-        "observed_r_squared": 0.2867694019180693,
-        "weighted_observed_slope": 1.1842782900946451,
-        "weighted_implied_slope": 0.45968458698307924,
-        "weighted_slope_difference": 0.7245937031115659,
-        "binomial_log_odds_slope": 17.244968517081972,
-        "binomial_se": 0.10848342156803246,
-        "n_sites": 386,
-        "n_records": 3668330,
-        "n_deaths": 260038,
-        "median_site_size": 2993.5,
+        "observed_slope": 0.8928359699858434,
+        "implied_slope": 0.4239369459302502,
+        "slope_difference": 0.46889902405559314,
+        "observed_p": 1.3377508218716192e-29,
+        "observed_r_squared": 0.2837439175603033,
+        "weighted_observed_slope": 1.1819546939356367,
+        "weighted_implied_slope": 0.45902252321920567,
+        "weighted_slope_difference": 0.722932170716431,
+        "binomial_log_odds_slope": 17.20248192577386,
+        "binomial_se": 0.10852964953466414,
+        "binomial_implied_log_odds_slope": 6.8471626309408,
+        "binomial_implied_note": "a binomial-deviance projection of model-implied mortality onto elderly share, weighted by site records; its standard error is not sampling uncertainty, because the response comes from a fitted model, so uncertainty comes from the bootstrap",
+        "binomial_log_odds_difference": 10.355319294833059,
+        "n_sites": 385,
+        "n_records": 3665523,
+        "n_deaths": 260036,
+        "median_site_size": 3005.0,
         "elderly_share_min": 0.01632371536958271,
         "elderly_share_max": 0.1456445993031359,
-        "elderly_share_sd": 0.023134588086731352,
+        "elderly_share_sd": 0.023114759688808224,
         "threshold": 1000,
-        "municipalities_before_rule": 2453,
+        "municipalities_before_rule": 2429,
         "states_represented": 32,
         "states_absent": [],
-        "records_excluded_by_size_rule": 325134
+        "records_excluded_by_size_rule": 325067,
+        "clustered_bootstrap": {
+          "draws": 2000,
+          "valid_draws": 2000,
+          "failed_draws": 0,
+          "failure_reasons": {
+            "fit": 0,
+            "no_exposure_variation": 0
+          },
+          "unstable": false,
+          "minimum_valid_draws": 100,
+          "interval_is_conditional_on_valid_draws": false,
+          "slope_difference_ci": [
+            0.25736388649974523,
+            0.6979012902458547
+          ],
+          "slope_difference_mc_se": 0.0025525580997202636,
+          "implied_slope_ci": [
+            0.37310657866796887,
+            0.4884906436006259
+          ],
+          "resampling": "states of residence drawn with replacement, municipalities kept within them"
+        }
       },
       "threshold_500": {
-        "observed_slope": 0.8396703298629794,
-        "implied_slope": 0.42308166952369347,
-        "slope_difference": 0.41658866033928593,
-        "observed_p": 6.405950048144738e-47,
-        "observed_r_squared": 0.30870379713899593,
-        "weighted_observed_slope": 1.1359140745685752,
-        "weighted_implied_slope": 0.4564043819320058,
-        "weighted_slope_difference": 0.6795096926365694,
-        "binomial_log_odds_slope": 15.196729110123295,
-        "binomial_se": 0.09194472659291875,
-        "n_sites": 563,
-        "n_records": 3795345,
-        "n_deaths": 273146,
-        "median_site_size": 1666.0,
+        "observed_slope": 0.8351774466879456,
+        "implied_slope": 0.42193167677734983,
+        "slope_difference": 0.41324576991059575,
+        "observed_p": 1.6718542680342101e-46,
+        "observed_r_squared": 0.3067982529926848,
+        "weighted_observed_slope": 1.133847773698441,
+        "weighted_implied_slope": 0.4558259664406205,
+        "weighted_slope_difference": 0.6780218072578204,
+        "binomial_log_odds_slope": 15.163249574917304,
+        "binomial_se": 0.09198477755448105,
+        "binomial_implied_log_odds_slope": 6.506207707633922,
+        "binomial_implied_note": "a binomial-deviance projection of model-implied mortality onto elderly share, weighted by site records; its standard error is not sampling uncertainty, because the response comes from a fitted model, so uncertainty comes from the bootstrap",
+        "binomial_log_odds_difference": 8.657041867283382,
+        "n_sites": 562,
+        "n_records": 3792538,
+        "n_deaths": 273144,
+        "median_site_size": 1665.5,
         "elderly_share_min": 0.01632371536958271,
         "elderly_share_max": 0.20652173913043478,
-        "elderly_share_sd": 0.029172710147738454,
+        "elderly_share_sd": 0.029157935268835637,
         "threshold": 500,
-        "municipalities_before_rule": 2453,
+        "municipalities_before_rule": 2429,
         "states_represented": 32,
         "states_absent": [],
-        "records_excluded_by_size_rule": 198119
+        "records_excluded_by_size_rule": 198052,
+        "clustered_bootstrap": {
+          "draws": 2000,
+          "valid_draws": 2000,
+          "failed_draws": 0,
+          "failure_reasons": {
+            "fit": 0,
+            "no_exposure_variation": 0
+          },
+          "unstable": false,
+          "minimum_valid_draws": 100,
+          "interval_is_conditional_on_valid_draws": false,
+          "slope_difference_ci": [
+            0.24480230032859504,
+            0.6281649230618229
+          ],
+          "slope_difference_mc_se": 0.002175256076816556,
+          "implied_slope_ci": [
+            0.369016698785655,
+            0.48223164791255135
+          ],
+          "resampling": "states of residence drawn with replacement, municipalities kept within them"
+        }
       },
       "threshold_250": {
-        "observed_slope": 0.798121379008351,
-        "implied_slope": 0.4252690375571093,
-        "slope_difference": 0.3728523414512417,
-        "observed_p": 1.8038182487267136e-70,
-        "observed_r_squared": 0.31782692416022085,
-        "weighted_observed_slope": 1.0963743203271423,
-        "weighted_implied_slope": 0.45348575255533385,
-        "weighted_slope_difference": 0.6428885677718085,
-        "binomial_log_odds_slope": 13.582148465243623,
-        "binomial_se": 0.07810404008133177,
-        "n_sites": 826,
-        "n_records": 3890185,
-        "n_deaths": 284189,
-        "median_site_size": 891.5,
+        "observed_slope": 0.7955624255920304,
+        "implied_slope": 0.42468289555213323,
+        "slope_difference": 0.37087953003989715,
+        "observed_p": 4.6457825458640795e-70,
+        "observed_r_squared": 0.31657870514963293,
+        "weighted_observed_slope": 1.0945748818092595,
+        "weighted_implied_slope": 0.4529929802616872,
+        "weighted_slope_difference": 0.6415819015475723,
+        "binomial_log_odds_slope": 13.555698045674418,
+        "binomial_se": 0.07813689142248975,
+        "binomial_implied_log_odds_slope": 6.1770986432884705,
+        "binomial_implied_note": "a binomial-deviance projection of model-implied mortality onto elderly share, weighted by site records; its standard error is not sampling uncertainty, because the response comes from a fitted model, so uncertainty comes from the bootstrap",
+        "binomial_log_odds_difference": 7.378599402385948,
+        "n_sites": 825,
+        "n_records": 3887378,
+        "n_deaths": 284187,
+        "median_site_size": 891.0,
         "elderly_share_min": 0.01632371536958271,
         "elderly_share_max": 0.25170068027210885,
-        "elderly_share_sd": 0.036296532266168614,
+        "elderly_share_sd": 0.036284358596223684,
         "threshold": 250,
-        "municipalities_before_rule": 2453,
+        "municipalities_before_rule": 2429,
         "states_represented": 32,
         "states_absent": [],
-        "records_excluded_by_size_rule": 103279
+        "records_excluded_by_size_rule": 103212,
+        "clustered_bootstrap": {
+          "draws": 2000,
+          "valid_draws": 2000,
+          "failed_draws": 0,
+          "failure_reasons": {
+            "fit": 0,
+            "no_exposure_variation": 0
+          },
+          "unstable": false,
+          "minimum_valid_draws": 100,
+          "interval_is_conditional_on_valid_draws": false,
+          "slope_difference_ci": [
+            0.1883879071011232,
+            0.5701392094295085
+          ],
+          "slope_difference_mc_se": 0.0021683903124912426,
+          "implied_slope_ci": [
+            0.3697671419556034,
+            0.48311101909838483
+          ],
+          "resampling": "states of residence drawn with replacement, municipalities kept within them"
+        }
+      },
+      "all_valid_municipalities": {
+        "observed_slope": 0.4795177406281538,
+        "implied_slope": 0.3562167217309865,
+        "slope_difference": 0.12330101889716727,
+        "observed_p": 1.4531311876222206e-123,
+        "observed_r_squared": 0.20573162596912803,
+        "weighted_observed_slope": 1.001321806223838,
+        "weighted_implied_slope": 0.43398177674159083,
+        "weighted_slope_difference": 0.5673400294822473,
+        "binomial_log_odds_slope": 10.35370770632309,
+        "binomial_se": 0.05591014288404502,
+        "binomial_implied_log_odds_slope": 5.172960005213286,
+        "binomial_implied_note": "a binomial-deviance projection of model-implied mortality onto elderly share, weighted by site records; its standard error is not sampling uncertainty, because the response comes from a fitted model, so uncertainty comes from the bootstrap",
+        "binomial_log_odds_difference": 5.180747701109805,
+        "n_sites": 2429,
+        "n_records": 3990590,
+        "n_deaths": 299575,
+        "median_site_size": 102.0,
+        "elderly_share_min": 0.0,
+        "elderly_share_max": 1.0,
+        "elderly_share_sd": 0.11409611668640877,
+        "note": "every valid municipality, no size rule; read the grouped-binomial slopes, because equal-site rates are unstable in the smallest municipalities",
+        "clustered_bootstrap": {
+          "draws": 2000,
+          "valid_draws": 2000,
+          "failed_draws": 0,
+          "failure_reasons": {},
+          "unstable": false,
+          "minimum_valid_draws": 100,
+          "interval_is_conditional_on_valid_draws": false,
+          "scale": "binomial log odds, the scale the unthresholded analysis is registered on",
+          "observed_slope_ci": [
+            7.233032999206487,
+            13.31426020514351
+          ],
+          "implied_slope_ci": [
+            4.469278754227571,
+            5.826520387618835
+          ],
+          "slope_difference_ci": [
+            2.5955934409651498,
+            7.621340104408767
+          ],
+          "slope_difference_mc_se": 0.031247562219602686,
+          "resampling": "states of residence drawn with replacement, municipalities kept within them"
+        }
       }
     }
   },
   "paired_municipality_state": {
     "grouping": "municipality of residence against state of residence, both on the records retained by the municipality size rule; municipalities nest in states of residence, so the bootstrap clusters on state of residence",
-    "municipality": 0.4748052397654613,
-    "state_of_residence": 1.006887725785161,
-    "paired_difference": -0.5320824860196997,
-    "matched_records": 3668330,
-    "matched_municipalities": 386,
+    "municipality": 0.46889902405559314,
+    "state_of_residence": 1.0087040635354887,
+    "paired_difference": -0.5398050394798956,
+    "matched_records": 3665523,
+    "matched_municipalities": 385,
     "matched_states": 32,
     "threshold": 1000,
     "bootstrap": {
       "draws": 2000,
-      "draws_failed_to_converge": 0,
+      "valid_draws": 2000,
+      "failed_draws": 0,
+      "failure_reasons": {},
+      "unstable": false,
+      "minimum_valid_draws": 100,
+      "interval_is_conditional_on_valid_draws": false,
       "paired_difference_ci": [
-        -1.2122873442135764,
-        -0.16520822201397464
+        -1.164217871003656,
+        -0.12993299068764605
       ],
-      "paired_difference_mc_se": 0.005949580191389818,
+      "paired_difference_mc_se": 0.005966264705401559,
       "resampling": "states drawn with replacement; municipalities kept within drawn states"
     }
   },
   "composition_preserving_partition": {
     "replications": 500,
-    "mean_slope_difference": 0.00010850400316364917,
-    "median_slope_difference": 0.0004965576587989406,
+    "quota_table": "results/s11_partition_quotas.csv",
+    "per_replication_estimates": "results/s11_partition_composition_preserving_draws.csv",
+    "realized_quota_deviations": {
+      "size_deviations": 0,
+      "elderly_deviations": 0
+    },
+    "mean_slope_difference": 0.00010850400316375286,
+    "median_slope_difference": 0.0004965576587989962,
     "randomization_interval": [
-      -0.02332284070478285,
-      0.022361009585235462
+      -0.023322840704782712,
+      0.022361009585235573
     ],
-    "mc_se_of_mean": 0.0005184156654019189,
+    "mc_se_of_mean": 0.0005184156654019193,
     "mean_observed_slope": 0.3321316094032045,
-    "mean_implied_slope": 0.33202310540004076,
+    "mean_implied_slope": 0.3320231054000407,
     "mean_elderly_share_sd": 0.014320517381504857,
-    "attenuation_vs_treating_state": 0.9994204515248979
+    "attenuation_vs_treating_state": 0.9994204515248978
   },
   "size_matched_unrestricted_partition": {
     "replications": 500,
-    "mean_slope_difference": -0.003440586643151829,
-    "median_slope_difference": -0.015219820006945717,
+    "quota_table": "results/s11_partition_quotas.csv",
+    "per_replication_estimates": "results/s11_partition_size_matched_unrestricted_draws.csv",
+    "realized_quota_deviations": {
+      "size_deviations": 0,
+      "elderly_deviations": 0
+    },
+    "mean_slope_difference": -0.003440586643151672,
+    "median_slope_difference": -0.015219820006946189,
     "randomization_interval": [
-      -0.4311522642949694,
-      0.40956798024214036
+      -0.431152264294971,
+      0.4095679802421412
     ],
     "mc_se_of_mean": 0.0094850399323119,
     "mean_observed_slope": 0.32618124678916116,
-    "mean_implied_slope": 0.329621833432313,
+    "mean_implied_slope": 0.3296218334323129,
     "mean_elderly_share_sd": 0.0009815458852221724,
-    "attenuation_vs_treating_state": 0.9822364566932876
+    "attenuation_vs_treating_state": 0.9822364566932871
   },
   "h1": {
     "criterion": "the 97.5th percentile of the composition-preserving randomization distribution falls below 0.1714, 20% of the 0.8568 measured across treating states",
     "margin": 0.1713601812898951,
-    "upper_percentile": 0.022361009585235462,
+    "upper_percentile": 0.022361009585235573,
+    "holds": true
+  },
+  "h2_residence_state": {
+    "criterion": "the discrepancy under residence states is of the same sign and order as under treating states, with a bootstrap CI excluding 0",
+    "estimate": 0.8496554366012141,
+    "ci": [
+      0.5070687725551938,
+      1.3195588661355668
+    ],
+    "valid_draws": 2000,
+    "unstable": false,
+    "evaluable": true,
+    "holds": true
+  },
+  "h3_paired_municipality_state": {
+    "criterion": "the municipality discrepancy is smaller than the residence-state discrepancy on the same records, with a paired CI excluding 0",
+    "estimate": -0.5398050394798956,
+    "ci": [
+      -1.164217871003656,
+      -0.12993299068764605
+    ],
+    "valid_draws": 2000,
+    "unstable": false,
+    "evaluable": true,
     "holds": true
   }
 }

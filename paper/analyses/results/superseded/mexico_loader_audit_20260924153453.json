@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-01T19:19:52",
+  "timestamp": "2026-09-24T15:34:53",
   "source_url": "https://datosabiertos.salud.gob.mx/gobmx/salud/datos_abiertos/historicos/2022/01/datos_abiertos_covid19_03.01.2022.zip",
   "csv": "220103COVID19MEXICO.csv",
   "csv_sha256": "25ccc890d190bf66a90aae98507f78f6bfe8b0e9be10767936a0e929512dbc6d",
@@ -19,15 +19,7 @@
     "site": "ENTIDAD_UM (state of the treating medical unit)",
     "elderly": "EDAD >= 70",
     "male": "SEXO == 2 (1 is female, 99 unknown; unknown falls in the reference group)",
-    "comorbidity": "any of ['DIABETES', 'HIPERTENSION', 'OBESIDAD', 'CARDIOVASCULAR', 'RENAL_CRONICA', 'EPOC', 'ASMA', 'INMUSUPR', 'TABAQUISMO'] == 1 (2 is no, 97/98/99 unknown; unknown falls in the reference group)",
-    "municipality": "ENTIDAD_RES x 1000 + MUNICIPIO_RES; codes {997: 'NO APLICA', 998: 'SE IGNORA', 999: 'NO ESPECIFICADO'} carry no municipality",
-    "sector": "SECTOR; codes {99: 'NO ESPECIFICADO'} carry no sector",
-    "catalogue": "diccionario_datos_abiertos.zip, Secretar\u00eda de Salud, catalogue dated 2024-07-08; archived beside the snapshot",
-    "catalogue_sha256": {
-      "expected": "54289770794a81bcb87d15004ba0eee9f24900fd18c31d9d086114dc189c091e",
-      "observed": null,
-      "matches": null
-    }
+    "comorbidity": "any of ['DIABETES', 'HIPERTENSION', 'OBESIDAD', 'CARDIOVASCULAR', 'RENAL_CRONICA', 'EPOC', 'ASMA', 'INMUSUPR', 'TABAQUISMO'] == 1 (2 is no, 97/98/99 unknown; unknown falls in the reference group)"
   },
   "codes_among_confirmed_cases": {
     "EDAD_min": 0,
@@ -123,29 +115,8 @@
       "14": 1,
       "99": 20
     },
-    "MUNICIPIO_RES_sentinels": {
-      "997 (NO APLICA)": 0,
-      "998 (SE IGNORA)": 0,
-      "999 (NO ESPECIFICADO)": 2874
-    },
-    "MUNICIPIO_RES_codes_above_570": {
-      "999": 2874
-    },
-    "SECTOR_sentinels": {
-      "99 (NO ESPECIFICADO)": 20
-    },
-    "outside_catalogue": {
-      "ENTIDAD_UM_outside_1_32": 0,
-      "ENTIDAD_RES_outside_1_32": 0,
-      "MUNICIPIO_RES_outside_1_570_and_not_a_sentinel": 0,
-      "records_with_no_municipality": 2874,
-      "records_with_no_residence_state": 0,
-      "records_with_no_treating_state": 0,
-      "records_with_no_onset_month": 0
-    },
-    "MUNICIPIO_RES_sentinel_records": 2874,
-    "MUNICIPIO_RES_distinct_valid": 2429,
-    "MUNICIPIO_RES_max_sentinel_pseudo_site": 2807,
+    "MUNICIPIO_RES_unknown_999": 2874,
+    "MUNICIPIO_RES_distinct": 2453,
     "FECHA_SINTOMAS_min": "2020-02-19 00:00:00",
     "FECHA_SINTOMAS_max": "2022-01-03 00:00:00",
     "FECHA_SINTOMAS_invalid_or_out_of_range": 0,

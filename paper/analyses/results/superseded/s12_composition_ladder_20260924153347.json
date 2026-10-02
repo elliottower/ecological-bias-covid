@@ -1,0 +1,312 @@
+{
+  "timestamp": "2026-09-24 15:33:47",
+  "registration": {
+    "file": "ANALYSIS_PROTOCOL_2_SITE_DEFINITIONS.md",
+    "commit": "a38196b",
+    "tag": "registration-s11-s12"
+  },
+  "spline_knots": [
+    16.0,
+    29.0,
+    39.0,
+    51.0,
+    73.0
+  ],
+  "records_without_valid_onset": 0,
+  "primary_ladder": {
+    "model_1_elderly_only": {
+      "observed_slope": 1.310530561199809,
+      "implied_slope": 0.3318655304208896,
+      "slope_difference": 0.9786650307789194,
+      "calibration_error": 0.022686244202309344,
+      "formula": "elderly",
+      "terms": 2,
+      "cells": 64,
+      "records": 3993464,
+      "seconds": 0.3,
+      "bootstrap": {
+        "draws": 2000,
+        "draws_failed_to_converge": 0,
+        "slope_difference_ci": [
+          0.6053832699783155,
+          1.4582404604702985
+        ],
+        "mc_se": 0.004934688334787482
+      }
+    },
+    "model_2_elderly_sex_any_comorbidity": {
+      "observed_slope": 1.310530561199809,
+      "implied_slope": 0.45373416986380843,
+      "slope_difference": 0.8567963913360006,
+      "calibration_error": 0.021004512078576912,
+      "formula": "elderly + male + has_comorbidity",
+      "terms": 4,
+      "cells": 256,
+      "records": 3993464,
+      "seconds": 0.4,
+      "change_in_difference_from_previous": -0.12186863944291881,
+      "bootstrap": {
+        "draws": 2000,
+        "draws_failed_to_converge": 0,
+        "slope_difference_ci": [
+          0.4955949073724566,
+          1.3026919427219583
+        ],
+        "mc_se": 0.004712290046586232
+      }
+    },
+    "model_3_nine_comorbidities": {
+      "observed_slope": 1.310530561199809,
+      "implied_slope": 0.49491231664296614,
+      "slope_difference": 0.815618244556843,
+      "calibration_error": 0.019478355422770977,
+      "formula": "elderly + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
+      "terms": 12,
+      "cells": 17623,
+      "records": 3993464,
+      "seconds": 1.1,
+      "change_in_difference_from_previous": -0.041178146779157654,
+      "bootstrap": {
+        "draws": 2000,
+        "draws_failed_to_converge": 0,
+        "slope_difference_ci": [
+          0.4774867085449033,
+          1.2428542199177242
+        ],
+        "mc_se": 0.004382432750371105
+      }
+    },
+    "model_4_age_bands": {
+      "observed_slope": 1.3108267518773238,
+      "implied_slope": 0.6498351376073225,
+      "slope_difference": 0.6609916142700013,
+      "calibration_error": 0.019207876390470127,
+      "formula": "C(age_band) + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
+      "terms": 22,
+      "cells": 41449,
+      "records": 3993464,
+      "seconds": 2.0,
+      "change_in_difference_from_previous": -0.15462663028684165,
+      "bootstrap": {
+        "draws": 2000,
+        "draws_failed_to_converge": 8,
+        "slope_difference_ci": [
+          0.269295736596431,
+          1.1482595363026022
+        ],
+        "mc_se": 0.004943501735261694
+      }
+    },
+    "model_5_age_spline": {
+      "observed_slope": 1.310530561199809,
+      "implied_slope": 0.6548676808689182,
+      "slope_difference": 0.6556628803308908,
+      "calibration_error": 0.019275772413299846,
+      "formula": "cr(age, knots=[29.0, 39.0, 51.0], lower_bound=16.0, upper_bound=73.0, constraints='center') + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
+      "terms": 15,
+      "cells": 639766,
+      "records": 3993464,
+      "seconds": 3.9,
+      "change_in_difference_from_previous": -0.005328733939110486,
+      "bootstrap": {
+        "draws": 2000,
+        "draws_failed_to_converge": 0,
+        "slope_difference_ci": [
+          0.2599657155375266,
+          1.1486485640120099
+        ],
+        "mc_se": 0.004971697918257708
+      }
+    },
+    "model_6_age_spline_and_month": {
+      "observed_slope": 1.310530561199809,
+      "implied_slope": 0.716433725948031,
+      "slope_difference": 0.594096835251778,
+      "calibration_error": 0.01873441533108935,
+      "formula": "cr(age, knots=[29.0, 39.0, 51.0], lower_bound=16.0, upper_bound=73.0, constraints='center') + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo + C(onset_month)",
+      "terms": 38,
+      "cells": 639766,
+      "records": 3993464,
+      "seconds": 9.8,
+      "change_in_difference_from_previous": -0.061566045079112786,
+      "bootstrap": {
+        "draws": 2000,
+        "draws_failed_to_converge": 3,
+        "slope_difference_ci": [
+          0.21160825320332086,
+          1.0699533326445567
+        ],
+        "mc_se": 0.004848313419576812
+      }
+    }
+  },
+  "sensitivity_recent_onset_excluded": {
+    "model_1_elderly_only": {
+      "observed_slope": 1.3327783307905978,
+      "implied_slope": 0.33489181881714,
+      "slope_difference": 0.9978865119734579,
+      "calibration_error": 0.023096292219565426,
+      "formula": "elderly",
+      "terms": 2,
+      "cells": 64,
+      "records": 3916019,
+      "seconds": 0.4
+    },
+    "model_2_elderly_sex_any_comorbidity": {
+      "observed_slope": 1.3327783307905978,
+      "implied_slope": 0.456672825647742,
+      "slope_difference": 0.8761055051428559,
+      "calibration_error": 0.02139914095976715,
+      "formula": "elderly + male + has_comorbidity",
+      "terms": 4,
+      "cells": 256,
+      "records": 3916019,
+      "seconds": 0.5,
+      "change_in_difference_from_previous": -0.121781006830602
+    },
+    "model_3_nine_comorbidities": {
+      "observed_slope": 1.3327783307905978,
+      "implied_slope": 0.5002880854507259,
+      "slope_difference": 0.8324902453398719,
+      "calibration_error": 0.01981917194538611,
+      "formula": "elderly + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
+      "terms": 12,
+      "cells": 17545,
+      "records": 3916019,
+      "seconds": 1.5,
+      "change_in_difference_from_previous": -0.043615259802983974
+    },
+    "model_4_age_bands": {
+      "observed_slope": 1.3330656793215427,
+      "implied_slope": 0.6531858179794049,
+      "slope_difference": 0.6798798613421378,
+      "calibration_error": 0.0195304065830883,
+      "formula": "C(age_band) + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
+      "terms": 22,
+      "cells": 41210,
+      "records": 3916019,
+      "seconds": 2.1,
+      "change_in_difference_from_previous": -0.15261038399773408
+    },
+    "model_5_age_spline": {
+      "observed_slope": 1.3327783307905978,
+      "implied_slope": 0.6582568526132576,
+      "slope_difference": 0.6745214781773402,
+      "calibration_error": 0.019596408663875377,
+      "formula": "cr(age, knots=[29.0, 39.0, 51.0], lower_bound=16.0, upper_bound=73.0, constraints='center') + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
+      "terms": 15,
+      "cells": 626860,
+      "records": 3916019,
+      "seconds": 4.2,
+      "change_in_difference_from_previous": -0.005358383164797642
+    },
+    "model_6_age_spline_and_month": {
+      "observed_slope": 1.3327783307905978,
+      "implied_slope": 0.7100854575794867,
+      "slope_difference": 0.6226928732111111,
+      "calibration_error": 0.01901917643618995,
+      "formula": "cr(age, knots=[29.0, 39.0, 51.0], lower_bound=16.0, upper_bound=73.0, constraints='center') + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo + C(onset_month)",
+      "terms": 37,
+      "cells": 626860,
+      "records": 3916019,
+      "seconds": 6.4,
+      "change_in_difference_from_previous": -0.0518286049662291
+    }
+  },
+  "sensitivity_implausible_ages_excluded": {
+    "model_1_elderly_only": {
+      "observed_slope": 1.3106934419288259,
+      "implied_slope": 0.3322794814436656,
+      "slope_difference": 0.9784139604851603,
+      "calibration_error": 0.022667483923526473,
+      "formula": "elderly",
+      "terms": 2,
+      "cells": 64,
+      "records": 3993165,
+      "seconds": 0.4
+    },
+    "model_2_elderly_sex_any_comorbidity": {
+      "observed_slope": 1.3106934419288259,
+      "implied_slope": 0.45393098618003963,
+      "slope_difference": 0.8567624557487863,
+      "calibration_error": 0.020994955131320926,
+      "formula": "elderly + male + has_comorbidity",
+      "terms": 4,
+      "cells": 256,
+      "records": 3993165,
+      "seconds": 0.5,
+      "change_in_difference_from_previous": -0.12165150473637398
+    },
+    "model_3_nine_comorbidities": {
+      "observed_slope": 1.3106934419288259,
+      "implied_slope": 0.495169405962207,
+      "slope_difference": 0.8155240359666189,
+      "calibration_error": 0.019469146527057574,
+      "formula": "elderly + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
+      "terms": 12,
+      "cells": 17622,
+      "records": 3993165,
+      "seconds": 1.4,
+      "change_in_difference_from_previous": -0.04123841978216736
+    },
+    "model_4_age_bands": {
+      "observed_slope": 1.3106934419288259,
+      "implied_slope": 0.6496638905015049,
+      "slope_difference": 0.661029551427321,
+      "calibration_error": 0.019208342031437696,
+      "formula": "C(age_band) + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
+      "terms": 22,
+      "cells": 41420,
+      "records": 3993165,
+      "seconds": 2.1,
+      "change_in_difference_from_previous": -0.15449448453929793
+    },
+    "model_5_age_spline": {
+      "observed_slope": 1.3106934419288259,
+      "implied_slope": 0.6568634564363807,
+      "slope_difference": 0.6538299854924452,
+      "calibration_error": 0.019227274023028356,
+      "formula": "cr(age, knots=[29.0, 39.0, 51.0], lower_bound=16.0, upper_bound=73.0, constraints='center') + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo",
+      "terms": 15,
+      "cells": 639654,
+      "records": 3993165,
+      "seconds": 4.4,
+      "change_in_difference_from_previous": -0.007199565934875807
+    },
+    "model_6_age_spline_and_month": {
+      "observed_slope": 1.3106934419288259,
+      "implied_slope": 0.7181181038703836,
+      "slope_difference": 0.5925753380584423,
+      "calibration_error": 0.018689182967095087,
+      "formula": "cr(age, knots=[29.0, 39.0, 51.0], lower_bound=16.0, upper_bound=73.0, constraints='center') + male + diabetes + hipertension + obesidad + cardiovascular + renal_cronica + epoc + asma + inmusupr + tabaquismo + C(onset_month)",
+      "terms": 38,
+      "cells": 639654,
+      "records": 3993165,
+      "seconds": 10.4,
+      "change_in_difference_from_previous": -0.061254647434002885
+    }
+  },
+  "h4_composition_contrast": {
+    "criterion": "the model-5 difference is smaller than the model-2 difference and its bootstrap CI excludes 0",
+    "model_2_difference": 0.8567963913360006,
+    "model_5_difference": 0.6556628803308908,
+    "smaller": true,
+    "ci": [
+      0.2599657155375266,
+      1.1486485640120099
+    ],
+    "holds": true,
+    "share_of_model_2_difference_explained": 0.23475065142546037
+  },
+  "h5_temporal_contrast": {
+    "criterion": "the model-6 difference is smaller than the model-5 difference and its bootstrap CI excludes 0",
+    "model_5_difference": 0.6556628803308908,
+    "model_6_difference": 0.594096835251778,
+    "smaller": true,
+    "ci": [
+      0.21160825320332086,
+      1.0699533326445567
+    ],
+    "holds": true
+  }
+}
